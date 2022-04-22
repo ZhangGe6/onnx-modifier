@@ -298,7 +298,8 @@ host.BrowserHost = class {
             const script = document.createElement('script');
             script.setAttribute('id', id);
             script.setAttribute('type', 'text/javascript');
-            script.setAttribute('src', url);
+            // script.setAttribute('src', url);
+            script.setAttribute('src', "{{url_for('static', filename='onnx.js')}}");
             script.onload = (e) => {
                 if (this.window.module && this.window.module.exports) {
                     const exports = this.window.module.exports;

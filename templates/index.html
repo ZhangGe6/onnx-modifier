@@ -6,28 +6,29 @@
 <meta http-equiv="Content-Security-Policy" content="script-src 'self' www.google-analytics.com;">
 <meta name="version" content="0.0.0">
 <title>Netron</title>
-<link rel="stylesheet" type="text/css" href="view-grapher.css">
-<link rel="stylesheet" type="text/css" href="view-sidebar.css">
+<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='view-grapher.css')}}">
+<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='view-sidebar.css')}}">
 <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
 <link rel="icon" type="image/png" href="icon.png">
 <link rel="apple-touch-icon" type="image/png" href="icon.png">
 <link rel="apple-touch-icon-precomposed" type="image/png" href="icon.png">
 <link rel="fluid-icon" type="image/png" href="icon.png">
-<script type="text/javascript" src="dagre.js"></script>
-<script type="text/javascript" src="base.js"></script>
-<script type="text/javascript" src="text.js"></script>
-<script type="text/javascript" src="json.js"></script>
-<script type="text/javascript" src="xml.js"></script>
-<script type="text/javascript" src="python.js"></script>
-<script type="text/javascript" src="protobuf.js"></script>
-<script type="text/javascript" src="flatbuffers.js"></script>
-<script type="text/javascript" src="zip.js"></script>
-<script type="text/javascript" src="gzip.js"></script>
-<script type="text/javascript" src="tar.js"></script>
-<script type="text/javascript" src="view-grapher.js"></script>
-<script type="text/javascript" src="view-sidebar.js"></script>
-<script type="text/javascript" src="view.js"></script>
-<script type="text/javascript" src="index.js"></script>
+<script src="{{url_for('static', filename='dagre.js')}}"></script>
+<script src="{{url_for('static', filename='base.js')}}"></script>
+<script src="{{url_for('static', filename='text.js')}}"></script>
+<script src="{{url_for('static', filename='json.js')}}"></script>
+<script src="{{url_for('static', filename='xml.js')}}"></script>
+<script src="{{url_for('static', filename='python.js')}}"></script>
+<script src="{{url_for('static', filename='protobuf.js')}}"></script>
+<script src="{{url_for('static', filename='flatbuffers.js')}}"></script>
+<script src="{{url_for('static', filename='zip.js')}}"></script>
+<script src="{{url_for('static', filename='gzip.js')}}"></script>
+<script src="{{url_for('static', filename='tar.js')}}"></script>
+<script src="{{url_for('static', filename='view-grapher.js')}}"></script>
+<script src="{{url_for('static', filename='view-sidebar.js')}}"></script>
+<script src="{{url_for('static', filename='view.js')}}"></script>
+<script src="{{url_for('static', filename='index.js')}}"></script>
+<script src="{{url_for('static', filename='onnx.js')}}"></script>
 <style>
 html { touch-action: none; overflow: hidden; width: 100%; height: 100%; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; text-rendering: optimizeLegibility; -webkit-text-rendering: optimizeLegibility; -moz-text-rendering: optimizeLegibility; -ms-text-rendering: optimizeLegibility; -o-text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; -moz-font-smoothing: antialiased; -ms-font-smoothing: antialiased; -o-font-smoothing: antialiased; }
 body { touch-action: none; overflow: hidden; width: 100%; height: 100%; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "PingFang SC"; font-size: 12px; text-rendering: geometricPrecision; }
