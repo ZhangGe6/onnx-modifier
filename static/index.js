@@ -284,7 +284,7 @@ host.BrowserHost = class {
     }
 
     require(id) {
-        const url = this._url(id + '.js');
+        const url = this._url('../static/' + id + '.js');
         this.window.__modules__ = this.window.__modules__ || {};
         // console.log(this.window.__modules__)
         // console.log(url)  // file:///C:/Users/ZhangGe/Desktop/netron/source/./onnx.js
@@ -298,8 +298,7 @@ host.BrowserHost = class {
             const script = document.createElement('script');
             script.setAttribute('id', id);
             script.setAttribute('type', 'text/javascript');
-            // script.setAttribute('src', url);
-            script.setAttribute('src', "{{url_for('static', filename='onnx.js')}}");
+            script.setAttribute('src', url);
             script.onload = (e) => {
                 if (this.window.module && this.window.module.exports) {
                     const exports = this.window.module.exports;

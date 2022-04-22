@@ -13,6 +13,9 @@ var python = python || require('./python');
 var sidebar = sidebar || require('./view-sidebar');
 var grapher = grapher || require('./view-grapher');
 
+// var onnx = onnx || require('./onnx');
+
+
 view.View = class {
 
     constructor(host, id) {
@@ -419,8 +422,8 @@ view.View = class {
     }
 
     open(context) {
-        // console.log("view open()");
-        // console.log(context);
+        console.log("view open()");
+        console.log(context);
         this._host.event('Model', 'Open', 'Size', context.stream ? context.stream.length : 0);
         this._sidebar.close();
         return this._timeout(2).then(() => {
@@ -1862,15 +1865,20 @@ view.ModelFactoryService = class {
     }
 
     _openContext(context) {
+        console.log(context)
         const modules = this._filter(context).filter((module) => module && module.length > 0);
         // console.log(modules)  // ['./onnx', './tensorrt', './rknn', './om']
 
         const errors = [];
         let success = false;
+
+        // TODO: to simplify the logic here since this tool is used for only onnx
         const nextModule = () => {
             if (modules.length > 0) {
                 const id = modules.shift();
+                // console.log(id)
                 return this._host.require(id).then((module) => {
+                    console.log(module)
                     const updateErrorContext = (error, context) => {
                         const content = " in '" + context.identifier + "'.";
                         if (error && typeof error.message === 'string' && !error.message.endsWith(content) && (error.context === undefined || error.context === true)) {
