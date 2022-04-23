@@ -267,6 +267,19 @@ sidebar.NodeSidebar = class {
         }
     }
 
+    
+    _strMapToObj(strMap){
+        let obj = Object.create(null);
+        for (let[k, v] of strMap) {
+            obj[k] = v;
+        }
+        return obj;
+    }
+
+    _mapToJson(map) {
+        return JSON.stringify(this._strMapToObj(map));
+    }
+
     // My code
     _addButton(title) {
         const buttonElement = this._host.document.createElement('button');
@@ -290,6 +303,31 @@ sidebar.NodeSidebar = class {
                 this._host._view._graph._modelNodeName2ViewNode.get(this._node.name).element.style.opacity = 1;
                 this._host._view._graph._modelNodeName2State.set(this._node.name,'Existed');
                 console.log(this._host._view._graph._modelNodeName2State.get(this._node.name))
+            });
+        }
+
+        if (title === 'Download') {
+            buttonElement.addEventListener('click', () => {
+                // console.log(this._host._view._graph._modelNodeName2State)
+                // https://healeycodes.com/talking-between-languages
+                fetch('/download', {
+                    // Declare what type of data we're sending
+                    headers: {
+                      'Content-Type': 'application/json'
+                    },
+                    // Specify the method
+                    method: 'POST',
+                    // https://blog.csdn.net/Crazy_SunShine/article/details/80624366
+                    body:  this._mapToJson(
+                        this._host._view._graph._modelNodeName2State
+                    )
+                }).then(function (response) {
+                    return response.text();
+                }).then(function (text) {
+                    console.log('POST response: ');
+                    // Should be 'OK' if everything was successful
+                    console.log(text);
+                });
             });
         }
 
