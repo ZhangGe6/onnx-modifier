@@ -206,6 +206,7 @@ sidebar.NodeSidebar = class {
         this._addButton('Delete');
         this._addButton('Recover');
         this._addButton('Download');
+        this._addButton('RefreshGraph');
 
         // console.log(this._host._view._graph._nodes)
         // console.log(node)
@@ -330,6 +331,14 @@ sidebar.NodeSidebar = class {
                 });
             });
         }
+
+        if (title === 'RefreshGraph') {
+            // console.log('pressed')
+            buttonElement.addEventListener('click', () => {
+                this._host._view._updateGraph();
+            });
+        }
+
 
 
 

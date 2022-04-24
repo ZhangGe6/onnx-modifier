@@ -468,13 +468,25 @@ view.View = class {
     }
 
     _updateGraph(model, graphs) {
+        console.log('view._updateGraph() is called')
         // console.log(model);
         // console.log(graphs);
         const lastModel = this._model;
         const lastGraphs = this._graphs;
-        this._model = model;
-        this._graphs = graphs;
+        // console.log(lastNodeState)
+        // update graph if and only if `model` and `graphs` are provided
+        if (model && graphs) {
+            this._model = model;
+            this._graphs = graphs;
+        }
         const graph = this.activeGraph;
+        
+        this.lastViewGraph = this._graph;
+        // if (lastViewGraph) {
+        //     console.log(this._graph)
+        //     this.lastModelNodeName2State = lastViewGraph._modelNodeName2State;
+        // }
+        
         // console.log("_updateGraph is called");
         return this._timeout(100).then(() => {
             if (graph && graph != lastGraphs[0]) {
@@ -569,7 +581,14 @@ view.View = class {
 
                 const viewGraph = new view.Graph(this, model, groups, options);
                 // console.log(viewGraph)
+                if (this.lastViewGraph) {
+                    console.log(this.lastViewGraph._modelNodeName2ViewNode)
+                    console.log('node state of lastViewGraph is loaded')
+                    viewGraph._modelNodeName2State = this.lastViewGraph._modelNodeName2State;
+                }
+                console.log(viewGraph._modelNodeName2State)
                 viewGraph.add(graph);
+
                 // console.log(viewGraph._arguments)
 
                 // Workaround for Safari background drag/zoom issue:
@@ -917,6 +936,11 @@ view.Graph = class extends grapher.Graph {
 
         for (const node of graph.nodes) {
             // console.log(node)
+            // My code
+            if (this._modelNodeName2State.get(node.name) == 'Deleted') {
+                console.log(this._modelNodeName2State.get(node.name))
+                continue;
+            }
 
             const viewNode = this.createNode(node);
 
