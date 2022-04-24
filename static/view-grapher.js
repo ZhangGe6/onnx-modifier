@@ -16,6 +16,7 @@ grapher.Graph = class {
         // My code
         this._modelNodeName2ViewNode = new Map();
         this._modelNodeName2State = new Map();
+        this._namedEdges = new Map();
     }
 
     get options() {
@@ -39,17 +40,10 @@ grapher.Graph = class {
 
         // My code
         const modelNodeName = node.value.name;
-        // console.log(modelNodeName);
-        const viewNode = this._modelNodeName2ViewNode.get(modelNodeName);
-        if (viewNode) {
-            this._modelNodeName2ViewNode[modelNodeName] = node;
-        }
-        else {
-            this._modelNodeName2ViewNode.set(modelNodeName, node);
-        }
-        
+        this._modelNodeName2ViewNode.set(modelNodeName, node);
         this._modelNodeName2State.set(modelNodeName, 'Exist');
 
+        console.log(modelNodeName)
     }
 
     setEdge(edge) {
@@ -63,6 +57,15 @@ grapher.Graph = class {
         if (!this._edges.has(key)) {
             this._edges.set(key, { v: edge.v, w: edge.w, label: edge });
         }
+
+        // My code
+        // _namedEdges: from : to
+        var from_node_name = edge.from.value.name
+        var to_node_name = edge.to.value.name
+        if (!this._namedEdges.has(from_node_name)) {
+            this._namedEdges.set(from_node_name, []);
+        }
+        this._namedEdges.get(from_node_name).push(to_node_name);
     }
 
     setParent(node, parent) {

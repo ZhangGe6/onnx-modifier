@@ -204,6 +204,7 @@ sidebar.NodeSidebar = class {
         // console.log(node)
         // console.log(this._node)
         this._addButton('Delete');
+        this._addButton('DeleteWithChildren');
         this._addButton('Recover');
         this._addButton('Download');
         this._addButton('RefreshGraph');
@@ -291,19 +292,18 @@ sidebar.NodeSidebar = class {
         // console.log(title)
         if (title === 'Delete') {
             buttonElement.addEventListener('click', () => {
-                console.log(this._host._view._graph._modelNodeName2State.get(this._node.name))
-                this._host._view._graph._modelNodeName2ViewNode.get(this._node.name).element.style.opacity = 0.3;
-                this._host._view._graph._modelNodeName2State.set(this._node.name,'Deleted');
-                console.log(this._host._view._graph._modelNodeName2State.get(this._node.name))
+                this._host._view._graph.delete_node(this._node.name)
+            });
+        }
+        if (title === 'DeleteWithChildren') {
+            buttonElement.addEventListener('click', () => {
+                this._host._view._graph.delete_node_with_children(this._node.name)
             });
         }
         if (title === 'Recover') {
             // console.log('pressed')
             buttonElement.addEventListener('click', () => {
-                console.log(this._host._view._graph._modelNodeName2State.get(this._node.name))
-                this._host._view._graph._modelNodeName2ViewNode.get(this._node.name).element.style.opacity = 1;
-                this._host._view._graph._modelNodeName2State.set(this._node.name,'Existed');
-                console.log(this._host._view._graph._modelNodeName2State.get(this._node.name))
+                this._host._view._graph.recover_node(this._node.name)
             });
         }
 
@@ -338,10 +338,6 @@ sidebar.NodeSidebar = class {
                 this._host._view._updateGraph();
             });
         }
-
-
-
-
     }
 
     toggleInput(name) {

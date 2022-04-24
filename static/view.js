@@ -586,7 +586,7 @@ view.View = class {
                     console.log('node state of lastViewGraph is loaded')
                     viewGraph._modelNodeName2State = this.lastViewGraph._modelNodeName2State;
                 }
-                console.log(viewGraph._modelNodeName2State)
+                // console.log(viewGraph._modelNodeName2State)
                 viewGraph.add(graph);
 
                 // console.log(viewGraph._arguments)
@@ -866,6 +866,8 @@ view.View = class {
 view.Graph = class extends grapher.Graph {
 
     constructor(view, model, compound, options) {
+        // console.log('constructing view.Graph')
+        // console.log(compound)  // undefined
         super(compound, options);
         this.view = view;
         this.model = model;
@@ -1018,6 +1020,38 @@ view.Graph = class extends grapher.Graph {
             }
         }
     }
+
+    // My code
+    delete_node(node_name) {
+        this._modelNodeName2State.set(node_name, 'Deleted');
+        this._modelNodeName2ViewNode.get(node_name).element.style.opacity = 0.3;
+    }
+
+    recover_node(node_name) {
+        this._modelNodeName2State.set(node_name, 'Existed');
+        this._modelNodeName2ViewNode.get(node_name).element.style.opacity = 1;
+    }
+
+
+    delete_node_with_children(node_name) {
+        this.delete_backtrack(node_name);
+    }
+
+    delete_backtrack(node_name) {
+        this._modelNodeName2State.set(node_name, 'Deleted');
+        this._modelNodeName2ViewNode.get(node_name).element.style.opacity = 0.3;
+
+        if (!this._namedEdges.has(node_name)) {
+            return;
+        }
+
+        for (var i = 0; i < this._namedEdges.get(node_name).length; i++) {
+            this.delete_backtrack(this._namedEdges.get(node_name)[i])
+        }
+    }
+
+
+
 
     build(document, origin) {
         for (const argument of this._arguments.values()) {
@@ -1276,7 +1310,7 @@ view.Argument = class {
                 }
                 const edge = this.context.createEdge(this._from, to);
                 edge.v = this._from.name;
-                edge.w = to.name;
+                edge.w = to.name;             
                 if (content) {
                     edge.label = content;
                 }
@@ -1286,6 +1320,7 @@ view.Argument = class {
                 }
                 this.context.setEdge(edge);
                 this._edges.push(edge);
+                // console.log(this.context._namedEdges);
             }
         }
     }
