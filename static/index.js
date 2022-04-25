@@ -233,10 +233,30 @@ host.BrowserHost = class {
                 openFileDialog.click();
             });
             openFileDialog.addEventListener('change', (e) => {
+                console.log(e)
+                console.log(e.target.value)
                 if (e.target && e.target.files && e.target.files.length > 0) {
                     const files = Array.from(e.target.files);
                     const file = files.find((file) => this._view.accept(file.name));
-                    // console.log(files);
+                    var form = new FormData();
+                    // console.log(file)
+                    form.append('file', file);
+                    // console.log(form)
+                    // console.log(form.get('file'))
+                    
+                    // https://stackoverflow.com/questions/66039996/javascript-fetch-upload-files-to-python-flask-restful
+                    fetch('/return_file', {
+                        method: 'POST',
+                        body: form
+                    }).then(function (response) {
+                        return response.text();
+                    }).then(function (text) {
+                        console.log('POST response: ');
+                        // Should be 'OK' if everything was successful
+                        console.log(text);
+                    });
+
+
                     if (file) {
                         this._open(file, files);
                     }
@@ -335,6 +355,7 @@ host.BrowserHost = class {
 
     request(file, encoding, base) {
         const url = base ? (base + '/' + file) : this._url(file);
+        // console.log(url)
         return this._request(url, null, encoding);
     }
 
@@ -811,6 +832,7 @@ host.BrowserHost.BrowserFileContext = class {
     }
 
     open() {
+
         return this.request(this._file.name, null).then((stream) => {
             this._stream = stream;
             // console.log(this)

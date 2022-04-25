@@ -43,7 +43,7 @@ grapher.Graph = class {
         this._modelNodeName2ViewNode.set(modelNodeName, node);
         this._modelNodeName2State.set(modelNodeName, 'Exist');
 
-        console.log(modelNodeName)
+        // console.log(modelNodeName)
     }
 
     setEdge(edge) {

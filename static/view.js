@@ -422,8 +422,8 @@ view.View = class {
     }
 
     open(context) {
-        console.log("view open()");
-        console.log(context);
+        // console.log("view open()");
+        // console.log(context);
         this._host.event('Model', 'Open', 'Size', context.stream ? context.stream.length : 0);
         this._sidebar.close();
         return this._timeout(2).then(() => {
@@ -468,7 +468,7 @@ view.View = class {
     }
 
     _updateGraph(model, graphs) {
-        console.log('view._updateGraph() is called')
+        // console.log('view._updateGraph() is called')
         // console.log(model);
         // console.log(graphs);
         const lastModel = this._model;
@@ -582,8 +582,8 @@ view.View = class {
                 const viewGraph = new view.Graph(this, model, groups, options);
                 // console.log(viewGraph)
                 if (this.lastViewGraph) {
-                    console.log(this.lastViewGraph._modelNodeName2ViewNode)
-                    console.log('node state of lastViewGraph is loaded')
+                    // console.log(this.lastViewGraph._modelNodeName2ViewNode)
+                    // console.log('node state of lastViewGraph is loaded')
                     viewGraph._modelNodeName2State = this.lastViewGraph._modelNodeName2State;
                 }
                 // console.log(viewGraph._modelNodeName2State)
@@ -940,7 +940,7 @@ view.Graph = class extends grapher.Graph {
             // console.log(node)
             // My code
             if (this._modelNodeName2State.get(node.name) == 'Deleted') {
-                console.log(this._modelNodeName2State.get(node.name))
+                // console.log(this._modelNodeName2State.get(node.name))
                 continue;
             }
 
@@ -1924,7 +1924,7 @@ view.ModelFactoryService = class {
     }
 
     _openContext(context) {
-        console.log(context)
+        // console.log(context)
         const modules = this._filter(context).filter((module) => module && module.length > 0);
         // console.log(modules)  // ['./onnx', './tensorrt', './rknn', './om']
 
@@ -1937,7 +1937,7 @@ view.ModelFactoryService = class {
                 const id = modules.shift();
                 // console.log(id)
                 return this._host.require(id).then((module) => {
-                    console.log(module)
+                    // console.log(module)
                     const updateErrorContext = (error, context) => {
                         const content = " in '" + context.identifier + "'.";
                         if (error && typeof error.message === 'string' && !error.message.endsWith(content) && (error.context === undefined || error.context === true)) {
