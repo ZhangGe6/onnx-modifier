@@ -322,10 +322,9 @@ sidebar.NodeSidebar = class {
                     // body:  this._mapToJson(
                     //     this._host._view._graph._modelNodeName2State
                     // )
-                    body: JSON.stringify({
-                        "onnx_file_path" : null,
-                        "node_states": this._mapToJson(this._host._view._graph._modelNodeName2State),
-                    })
+                    body: JSON.stringify(
+                        this._mapToJson(this._host._view._graph._modelNodeName2State)
+                    )
                 }).then(function (response) {
                     return response.text();
                 }).then(function (text) {
