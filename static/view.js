@@ -1014,6 +1014,12 @@ view.Graph = class extends grapher.Graph {
         }
 
         for (const output of graph.outputs) {
+            // My code
+            if (this._modelNodeName2State.get(output.name) == 'Deleted') {
+                // console.log(this._modelNodeName2State.get(node.name))
+                continue;
+            }
+
             const viewOutput = this.createOutput(output);
             for (const argument of output.arguments) {
                 this.createArgument(argument).to(viewOutput);
