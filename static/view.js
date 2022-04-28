@@ -881,7 +881,9 @@ view.Graph = class extends grapher.Graph {
 
     createNode(node) {
         var node_id = (this._nodeKey++).toString();  // in case input (onnx) node has no name
-        const value = new view.Node(this, node, node_id);
+        var modelNodeName = node.name ? node.name : node.type.name + node_id
+
+        const value = new view.Node(this, node, modelNodeName);
         value.name = node_id;
         // value.name = node.name;
         this.setNode(value);
@@ -945,10 +947,10 @@ view.Graph = class extends grapher.Graph {
 
         for (const node of graph.nodes) {
             // console.log(node)
-            if (this._modelNodeName2State.get(node.name) == 'Deleted') {
-                // console.log(this._modelNodeName2State.get(node.name))
-                continue;
-            }
+            // if (this._modelNodeName2State.get(node.name) == 'Deleted') {
+            //     // console.log(this._modelNodeName2State.get(node.name))
+            //     continue;
+            // }
             const viewNode = this.createNode(node);
             // My code
             // if (this._modelNodeName2State.get(viewNode.modelNodeName) == 'Deleted') {
@@ -1085,13 +1087,13 @@ view.Node = class extends grapher.Node {
 
     // 这里的value是一个onnx.Node，这里正在构建的是view.Node
     // context 是指Graph
-    constructor(context, value, node_id) {    
+    constructor(context, value, modelNodeName) {    
         super();
         this.context = context;
         this.value = value;
         view.Node.counter = view.Node.counter || 0;
         this.id = 'node-' + (value.name ? 'name-' + value.name : 'id-' + (view.Node.counter++).toString());
-        this.modelNodeName = value.name ? value.name : value.type.name + node_id
+        this.modelNodeName = modelNodeName
         this._add(this.value);
     }
 

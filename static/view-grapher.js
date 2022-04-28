@@ -47,7 +47,12 @@ grapher.Graph = class {
         // }
         const modelNodeName = node.modelNodeName
         this._modelNodeName2ViewNode.set(modelNodeName, node);
-        this._modelNodeName2State.set(modelNodeName, 'Exist');
+        
+        // _modelNodeName2State save our modifications, and wil be initilized at the first graph construction only
+        // otherwise the modfications will lost
+        if (!this._modelNodeName2State.get(modelNodeName)) {
+            this._modelNodeName2State.set(modelNodeName, 'Exist');
+        }
 
         // console.log(modelNodeName)
         // console.log(node.modelNodeName)
@@ -171,13 +176,18 @@ grapher.Graph = class {
         edgePathGroupDefs.appendChild(marker("arrowhead-vee-select"));
         // <==== 显示 边上的箭头
         
+        console.log(this._modelNodeName2State)
         // console.log(this.nodes)
         for (const nodeId of this.nodes.keys()) {
             const node = this.node(nodeId);
             if (this.children(nodeId).length == 0) {
+                // console.log(node.label.modelNodeName)
+                // console.log(this._modelNodeName2State.get(node.label.modelNodeName))
                 // node
                 // type(node.label) == view.Node
-                node.label.build(document, nodeGroup);   // 如果注释：TypeError Cannot read properties of undefined (reading 'setAttribute')
+                if (this._modelNodeName2State.get(node.label.modelNodeName) == 'Exist') {
+                    node.label.build(document, nodeGroup);  
+                }
             }
 
             else {
@@ -197,7 +207,18 @@ grapher.Graph = class {
         }
 
         for (const edge of this.edges.values()) {
-            edge.label.build(document, edgePathGroup, edgeLabelGroup);
+            var node_from = this._nodes.get(edge.v).label;
+            var node_to = this._nodes.get(edge.w).label;
+            // console.log(this._modelNodeName2State.get(node_from.modelNodeName))
+            // console.log(this._modelNodeName2State.get(node_to.modelNodeName))
+            if (
+                this._modelNodeName2State.get(node_from.modelNodeName) == 'Exist' &&
+                this._modelNodeName2State.get(node_to.modelNodeName) == 'Exist'
+            )
+            {
+                edge.label.build(document, edgePathGroup, edgeLabelGroup);
+            }
+            
         }
     }
 
@@ -207,7 +228,9 @@ grapher.Graph = class {
             const node = this.node(nodeId);
             if (this.children(nodeId).length == 0) {
                 // node
-                node.label.update();  // 让节点显示出来
+                if (this._modelNodeName2State.get(node.label.modelNodeName) == 'Exist') {
+                    node.label.update();  // 让节点显示出来
+                }
             }
             // ===> 这段没有操作
             else {
@@ -223,8 +246,16 @@ grapher.Graph = class {
         }
         // console.log(this.edges)
         for (const edge of this.edges.values()) {
+            var node_from = this._nodes.get(edge.v).label;
+            var node_to = this._nodes.get(edge.w).label;
             // console.log(edge.label)
-            edge.label.update();  // 让边显示出来
+            if (
+                this._modelNodeName2State.get(node_from.modelNodeName) == 'Exist' &&
+                this._modelNodeName2State.get(node_to.modelNodeName) == 'Exist'
+            )
+            {
+                edge.label.update();  // 让边显示出来
+            }
 
         }
     }
