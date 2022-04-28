@@ -46,6 +46,45 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
 .toolbar-back-button:hover { background: #000000; border-color: #000000; }
 .toolbar-name-button { float: left; background: rgba(255, 255, 255, 0.95); border-top-right-radius: 6px; border-bottom-right-radius: 6px; border: 1px solid #777; color: #777; border-left: 1px; border-left-color: #ffffff; margin: 2px 0 2px 0; padding: 0 12px 0 6px; cursor: pointer; width: auto; height: 20px; font-size: 11px; line-height: 0; transition: 0.1s; }
 .toolbar-name-button:hover { color: #000000; }
+.graph-op-button-refresh {
+    cursor: pointer;
+    background-color: white;
+    border: 1px solid grey;
+    border-radius: 3px;
+    color: black;
+    font-family:"Oliviar Sans Light";
+    font-size: 16px;
+    position:absolute;
+    left: 2px;
+    top: 30px;
+}
+.graph-op-button-refresh:active {  background: #e7e7e7; }
+.graph-op-button-reset {
+    cursor: pointer;
+    background-color: white;
+    border: 1px solid grey;
+    border-radius: 3px;
+    color: black;
+    font-family:"Oliviar Sans Light";
+    font-size: 16px;
+    position:absolute;
+    left: 2px;
+    top: 60px;
+}
+.graph-op-button-reset:active {  background: #e7e7e7; }
+.graph-op-button-download {
+    cursor: pointer;
+    background-color: white;
+    border: 1px solid grey;
+    border-radius: 3px;
+    color: black;
+    font-family:"Oliviar Sans Light";
+    font-size: 16px;
+    position:absolute;
+    left: 2px;
+    top: 90px;
+}
+.graph-op-button-download:active {  background: #e7e7e7; }
 .icon .border { stroke: #fff; }
 .icon .stroke { stroke: #808080; }
 .icon:hover .stroke { stroke: #000000; }
@@ -200,6 +239,7 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
             <line class="stroke" x1="78" y1="78" x2="82" y2="82" stroke-width="8" stroke-linecap="square"></line>
         </svg>
     </button>
+
     <button id="zoom-out-button" class="toolbar-button" title="Zoom Out">
         <svg class="icon" viewbox="0 0 100 100">
             <circle class="border" cx="50" cy="50" r="35" stroke-width="8" stroke="#fff"></circle>
@@ -210,6 +250,11 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
             <line class="stroke" x1="78" y1="78" x2="82" y2="82" stroke-width="8" stroke-linecap="square"></line>
         </svg>
     </button>
+
+    <button id="refresh-graph" class="graph-op-button-refresh" type=button>Refresh</button>
+    <button id="reset-graph" class="graph-op-button-reset" type=button>Reset</button>
+    <button id="download-graph" class="graph-op-button-download" type=button>Download</button>
+
     <button id="back-button" class="toolbar-back-button" title="Back">
         &#x276E;
     </button>
