@@ -116,6 +116,8 @@ host.BrowserHost = class {
         });
     }
 
+
+
     start() {
         this.window.addEventListener('error', (e) => {
             this.exception(e.error, true);
@@ -197,6 +199,41 @@ host.BrowserHost = class {
         this._menu.add({
             label: 'About ' + this.document.title,
             click: () => this._about()
+        });
+
+        const refreshButton = this.document.getElementById('refresh-graph');
+        refreshButton.addEventListener('click', () => {
+            this._view._updateGraph();
+        })
+
+        const resetButton = this.document.getElementById('reset-graph');
+        resetButton.addEventListener('click', () => {
+            this._view._graph.resetGraph();
+            this._view._updateGraph();
+        })
+
+        const downloadButton = this.document.getElementById('download-graph');
+        downloadButton.addEventListener('click', () => {
+            // console.log(this._host._view._graph._modelNodeName2State)
+            // https://healeycodes.com/talking-between-languages
+            fetch('/download', {
+                // Declare what type of data we're sending
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                // Specify the method
+                method: 'POST',
+                // https://blog.csdn.net/Crazy_SunShine/article/details/80624366
+                body: JSON.stringify(
+                    this._mapToJson(this._view._graph._modelNodeName2State)
+                )
+            }).then(function (response) {
+                return response.text();
+            }).then(function (text) {
+                console.log('POST response: ');
+                // Should be 'OK' if everything was successful
+                console.log(text);
+            });
         });
 
         this.document.getElementById('version').innerText = this.version;
@@ -565,6 +602,19 @@ host.BrowserHost = class {
         this.document.body.addEventListener('click', eventHandler);
         this._view.show('about');
     }
+
+    _strMapToObj(strMap){
+        let obj = Object.create(null);
+        for (let[k, v] of strMap) {
+            obj[k] = v;
+        }
+        return obj;
+    }
+
+    _mapToJson(map) {
+        return JSON.stringify(this._strMapToObj(map));
+    }
+
 };
 
 host.Dropdown = class {
@@ -879,6 +929,8 @@ host.BrowserHost.BrowserContext = class {
         this._host.exception(error, fatal);
     }
 };
+
+
 
 if (typeof TextDecoder === "undefined") {
     TextDecoder = function TextDecoder(encoding) {
