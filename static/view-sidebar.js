@@ -209,6 +209,7 @@ sidebar.NodeSidebar = class {
         this._addButton('Recover');
         this._addButton('Download');
         this._addButton('RefreshGraph');
+        this._addButton('Reset');
 
         // console.log(this._host._view._graph._nodes)
         // console.log(node)
@@ -342,6 +343,15 @@ sidebar.NodeSidebar = class {
                 this._host._view._updateGraph();
             });
         }
+
+        if (title === 'Reset') {
+            // console.log('pressed')
+            buttonElement.addEventListener('click', () => {
+                this._host._view._graph.resetGraph();
+                this._host._view._updateGraph();
+            });
+        }
+
     }
 
     toggleInput(name) {

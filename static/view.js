@@ -1026,11 +1026,11 @@ view.Graph = class extends grapher.Graph {
         }
 
         for (const output of graph.outputs) {
-            // My code
-            if (this._modelNodeName2State.get(output.name) == 'Deleted') {
-                // console.log(this._modelNodeName2State.get(node.name))
-                continue;
-            }
+            // // My code
+            // if (this._modelNodeName2State.get(output.name) == 'Deleted') {
+            //     // console.log(this._modelNodeName2State.get(node.name))
+            //     continue;
+            // }
 
             const viewOutput = this.createOutput(output);
             for (const argument of output.arguments) {
@@ -1072,6 +1072,17 @@ view.Graph = class extends grapher.Graph {
         for (var i = 0; i < this._namedEdges.get(node_name).length; i++) {
             this.delete_backtrack(this._namedEdges.get(node_name)[i])
         }
+    }
+
+    resetGraph() {
+        for (const nodeId of this.nodes.keys()) {
+            const node = this.node(nodeId);
+            console.log(node.label.modelNodeName)
+            this._modelNodeName2State.set(node.label.modelNodeName, 'Exist')
+        }
+
+        console.log(this._modelNodeName2State)
+
     }
 
 
