@@ -23,6 +23,7 @@ def modify_and_download_model():
     node_states = json.loads(request.get_json())
     
     # print(node_states)
+    onnx_modifier.reload()   # allow for downloading for multiple times
     onnx_modifier.remove_node_by_node_states(node_states)
     onnx_modifier.check_and_save_model()
     
