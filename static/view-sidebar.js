@@ -133,6 +133,12 @@ sidebar.NodeSidebar = class {
         this._inputs = [];
         this._outputs = [];
 
+        this._addButton('Delete With Children');
+        this.add_span('between-delete')
+        this._addButton('Delete Single Node');
+        this.add_separator('line_DR')
+        this._addButton('Recover Node');
+
         if (node.type) {
             let showDocumentation = null;
             const type = node.type;
@@ -197,29 +203,20 @@ sidebar.NodeSidebar = class {
             }
         }
 
+        this.add_separator('sidebar-view-separator')
+
+    }
+
+    add_separator(className) {
         const separator = this._host.document.createElement('div');
-        separator.className = 'sidebar-view-separator';
-        this._elements.push(separator);
-        
-        // My code here
-        // console.log(node)
-        // console.log(this._node)
-        this._addButton('Delete');
-        this._addButton('DeleteWithChildren');
-        this._addButton('Recover');
-        this._addButton('Download');
-        this._addButton('RefreshGraph');
-        this._addButton('Reset');
+        separator.className = className;
+        this._elements.push(separator); 
+    }
 
-        // console.log(this._host._view._graph._nodes)
-        // console.log(node)
-
-        // console.log(this._host._view._graph._modelNodeName2ViewNode)
-        // console.log(this._host._view._graph._modelNodeName2ViewNode.get(node.name))
-        // this._host._view._graph._modelNodeName2ViewNode.get(node.name).element.style.opacity = 0.5;
-        
-
-        // this._host.view._graph._nodes[node.name]
+    add_span(className) {
+        const span = this._host.document.createElement('span');
+        span.className = className;
+        this._elements.push(span); 
     }
 
     render() {
@@ -271,19 +268,6 @@ sidebar.NodeSidebar = class {
         }
     }
 
-    
-    _strMapToObj(strMap){
-        let obj = Object.create(null);
-        for (let[k, v] of strMap) {
-            obj[k] = v;
-        }
-        return obj;
-    }
-
-    _mapToJson(map) {
-        return JSON.stringify(this._strMapToObj(map));
-    }
-
     // My code
     _addButton(title) {
         const buttonElement = this._host.document.createElement('button');
@@ -292,63 +276,20 @@ sidebar.NodeSidebar = class {
         this._elements.push(buttonElement);
         
         // console.log(title)
-        if (title === 'Delete') {
+        if (title === 'Delete Single Node') {
             buttonElement.addEventListener('click', () => {
                 this._host._view._graph.delete_node(this._modelNodeName)
             });
         }
-        if (title === 'DeleteWithChildren') {
+        if (title === 'Delete With Children') {
             buttonElement.addEventListener('click', () => {
                 this._host._view._graph.delete_node_with_children(this._modelNodeName)
             });
         }
-        if (title === 'Recover') {
+        if (title === 'Recover Node') {
             // console.log('pressed')
             buttonElement.addEventListener('click', () => {
                 this._host._view._graph.recover_node(this._modelNodeName)
-            });
-        }
-
-        if (title === 'Download') {
-            buttonElement.addEventListener('click', () => {
-                // console.log(this._host._view._graph._modelNodeName2State)
-                // https://healeycodes.com/talking-between-languages
-                fetch('/download', {
-                    // Declare what type of data we're sending
-                    headers: {
-                      'Content-Type': 'application/json'
-                    },
-                    // Specify the method
-                    method: 'POST',
-                    // https://blog.csdn.net/Crazy_SunShine/article/details/80624366
-                    // body:  this._mapToJson(
-                    //     this._host._view._graph._modelNodeName2State
-                    // )
-                    body: JSON.stringify(
-                        this._mapToJson(this._host._view._graph._modelNodeName2State)
-                    )
-                }).then(function (response) {
-                    return response.text();
-                }).then(function (text) {
-                    console.log('POST response: ');
-                    // Should be 'OK' if everything was successful
-                    console.log(text);
-                });
-            });
-        }
-
-        if (title === 'RefreshGraph') {
-            // console.log('pressed')
-            buttonElement.addEventListener('click', () => {
-                this._host._view._updateGraph();
-            });
-        }
-
-        if (title === 'Reset') {
-            // console.log('pressed')
-            buttonElement.addEventListener('click', () => {
-                this._host._view._graph.resetGraph();
-                this._host._view._updateGraph();
             });
         }
 
