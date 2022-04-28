@@ -899,9 +899,10 @@ view.Graph = class extends grapher.Graph {
     }
 
     createOutput(output) {
-        const value = new view.Output(this, output);
+        var modelNodeName = "out_" + output.name;  // in case the output has the same name with the last node
+        const value = new view.Output(this, output, modelNodeName);
         // value.name = (this._nodeKey++).toString();  
-        value.name = output.name;   // output nodes should have name
+        value.name = "out_" + output.name;   // output nodes should have name
         this.setNode(value);
         return value;
     }
@@ -1281,13 +1282,13 @@ view.Input = class extends grapher.Node {
 
 view.Output = class extends grapher.Node {
 
-    constructor(context, value) {
+    constructor(context, value, modelNodeName) {
         super();
         this.context = context;
         this.value = value;
         const types = value.arguments.map((argument) => argument.type || '').join('\n');
         let name = value.name || '';
-        this.modelNodeName = value.name
+        this.modelNodeName = modelNodeName
         if (name.length > 16) {
             name = name.split('/').pop();
         }
