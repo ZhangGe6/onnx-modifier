@@ -482,10 +482,14 @@ view.View = class {
         const graph = this.activeGraph;
         
         this.lastViewGraph = this._graph;
-        // if (lastViewGraph) {
-        //     console.log(this._graph)
-        //     this.lastModelNodeName2State = lastViewGraph._modelNodeName2State;
-        // }
+        // console.log("this.lastViewGraph")
+        // console.log(this.lastViewGraph)
+        if (this.lastViewGraph) {
+            // console.log(this._graph)
+            // this.lastModelNodeName2State = lastViewGraph._modelNodeName2State;
+            console.log('lastViewGraph _modelNodeName2State')
+            console.log(this.lastViewGraph._modelNodeName2State)
+        }
         
         // console.log("_updateGraph is called");
         return this._timeout(100).then(() => {
@@ -582,7 +586,7 @@ view.View = class {
                 const viewGraph = new view.Graph(this, model, groups, options);
                 // console.log(viewGraph)
                 if (this.lastViewGraph) {
-                    // console.log(this.lastViewGraph._modelNodeName2ViewNode)
+                    // console.log(this.lastViewGraph._modelNodeName2State)
                     // console.log('node state of lastViewGraph is loaded')
                     viewGraph._modelNodeName2State = this.lastViewGraph._modelNodeName2State;
                 }
@@ -792,13 +796,13 @@ view.View = class {
         }
     }
 
-    showNodeProperties(node, input) {
+    showNodeProperties(node, input, modelNodeName) {
         if (node) {
             try {
                 // console.log(node)   // 注意是onnx.Node, 不是grapher.Node，所以没有update()， 没有element元素
                 // console.log(node.element)  // undefined
                 // node.update()
-                const nodeSidebar = new sidebar.NodeSidebar(this._host, node);
+                const nodeSidebar = new sidebar.NodeSidebar(this._host, node, modelNodeName);
                 nodeSidebar.on('show-documentation', (/* sender, e */) => {
                     this.showDocumentation(node.type);
                 });
@@ -876,8 +880,9 @@ view.Graph = class extends grapher.Graph {
     }
 
     createNode(node) {
-        const value = new view.Node(this, node);
-        value.name = (this._nodeKey++).toString();
+        var node_id = (this._nodeKey++).toString();  // in case input (onnx) node has no name
+        const value = new view.Node(this, node, node_id);
+        value.name = node_id;
         // value.name = node.name;
         this.setNode(value);
         return value;
@@ -885,14 +890,16 @@ view.Graph = class extends grapher.Graph {
 
     createInput(input) {
         const value = new view.Input(this, input);
-        value.name = (this._nodeKey++).toString();
+        // value.name = (this._nodeKey++).toString();
+        value.name = input.name;       // input nodes should have name
         this.setNode(value);
         return value;
     }
 
     createOutput(output) {
         const value = new view.Output(this, output);
-        value.name = (this._nodeKey++).toString();
+        // value.name = (this._nodeKey++).toString();  
+        value.name = output.name;   // output nodes should have name
         this.setNode(value);
         return value;
     }
@@ -938,13 +945,16 @@ view.Graph = class extends grapher.Graph {
 
         for (const node of graph.nodes) {
             // console.log(node)
-            // My code
             if (this._modelNodeName2State.get(node.name) == 'Deleted') {
                 // console.log(this._modelNodeName2State.get(node.name))
                 continue;
             }
-
             const viewNode = this.createNode(node);
+            // My code
+            // if (this._modelNodeName2State.get(viewNode.modelNodeName) == 'Deleted') {
+            //     // console.log(this._modelNodeName2State.get(node.name))
+            //     continue;
+            // }
 
             const inputs = node.inputs;
             for (const input of inputs) {
@@ -1025,6 +1035,8 @@ view.Graph = class extends grapher.Graph {
                 this.createArgument(argument).to(viewOutput);
             }
         }
+
+        // console.log()
     }
 
     // My code
@@ -1041,9 +1053,13 @@ view.Graph = class extends grapher.Graph {
 
     delete_node_with_children(node_name) {
         this.delete_backtrack(node_name);
+        // console.log("after deleting")
+        // console.log(this._modelNodeName2State)
     }
 
     delete_backtrack(node_name) {
+        // console.log(this._modelNodeName2ViewNode)
+        // console.log(node_name)  // empty
         this._modelNodeName2State.set(node_name, 'Deleted');
         this._modelNodeName2ViewNode.get(node_name).element.style.opacity = 0.3;
 
@@ -1055,8 +1071,6 @@ view.Graph = class extends grapher.Graph {
             this.delete_backtrack(this._namedEdges.get(node_name)[i])
         }
     }
-
-
 
 
     build(document, origin) {
@@ -1071,12 +1085,13 @@ view.Node = class extends grapher.Node {
 
     // 这里的value是一个onnx.Node，这里正在构建的是view.Node
     // context 是指Graph
-    constructor(context, value) {    
+    constructor(context, value, node_id) {    
         super();
         this.context = context;
         this.value = value;
         view.Node.counter = view.Node.counter || 0;
         this.id = 'node-' + (value.name ? 'name-' + value.name : 'id-' + (view.Node.counter++).toString());
+        this.modelNodeName = value.name ? value.name : value.type.name + node_id
         this._add(this.value);
     }
 
@@ -1109,7 +1124,7 @@ view.Node = class extends grapher.Node {
         const content = this.context.view.options.names && (node.name || node.location) ? (node.name || node.location) : type.name.split('.').pop();
         const tooltip = this.context.view.options.names && (node.name || node.location) ? type.name : (node.name || node.location);
         const title = header.add(null, styles, content, tooltip);
-        title.on('click', () => this.context.view.showNodeProperties(node, null));
+        title.on('click', () => this.context.view.showNodeProperties(node, null, this.modelNodeName));
         if (node.type.nodes && node.type.nodes.length > 0) {
             const definition = header.add(null, styles, '\u0192', 'Show Function Definition');
             definition.on('click', () => this.context.view.pushGraph(node.type));
@@ -1145,7 +1160,7 @@ view.Node = class extends grapher.Node {
         });
         if (initializers.length > 0 || hiddenInitializers || sortedAttributes.length > 0) {
             const list = this.list();
-            list.on('click', () => this.context.view.showNodeProperties(node));
+            list.on('click', () => this.context.view.showNodeProperties(node, null, this.modelNodeName));
             for (const initializer of initializers) {
                 const argument = initializer.arguments[0];
                 const type = argument.type;
@@ -1228,6 +1243,7 @@ view.Input = class extends grapher.Node {
         view.Input.counter = view.Input.counter || 0;
         const types = value.arguments.map((argument) => argument.type || '').join('\n');
         let name = value.name || '';
+        this.modelNodeName = value.name
         if (name.length > 16) {
             name = name.split('/').pop();
         }
@@ -1258,6 +1274,7 @@ view.Output = class extends grapher.Node {
         this.value = value;
         const types = value.arguments.map((argument) => argument.type || '').join('\n');
         let name = value.name || '';
+        this.modelNodeName = value.name
         if (name.length > 16) {
             name = name.split('/').pop();
         }

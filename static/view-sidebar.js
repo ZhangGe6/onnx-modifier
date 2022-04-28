@@ -124,9 +124,10 @@ sidebar.Sidebar = class {
 
 sidebar.NodeSidebar = class {
 
-    constructor(host, node) {
+    constructor(host, node, modelNodeName) {
         this._host = host;
         this._node = node;
+        this._modelNodeName = modelNodeName;
         this._elements = [];
         this._attributes = [];
         this._inputs = [];
@@ -292,18 +293,18 @@ sidebar.NodeSidebar = class {
         // console.log(title)
         if (title === 'Delete') {
             buttonElement.addEventListener('click', () => {
-                this._host._view._graph.delete_node(this._node.name)
+                this._host._view._graph.delete_node(this._modelNodeName)
             });
         }
         if (title === 'DeleteWithChildren') {
             buttonElement.addEventListener('click', () => {
-                this._host._view._graph.delete_node_with_children(this._node.name)
+                this._host._view._graph.delete_node_with_children(this._modelNodeName)
             });
         }
         if (title === 'Recover') {
             // console.log('pressed')
             buttonElement.addEventListener('click', () => {
-                this._host._view._graph.recover_node(this._node.name)
+                this._host._view._graph.recover_node(this._modelNodeName)
             });
         }
 
