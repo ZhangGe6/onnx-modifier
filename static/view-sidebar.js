@@ -215,6 +215,7 @@ sidebar.NodeSidebar = class {
 
     add_span(className) {
         const span = this._host.document.createElement('span');
+        span.innerHTML = "&nbsp;"; // (if this doesn't work, try " ")
         span.className = className;
         this._elements.push(span); 
     }
