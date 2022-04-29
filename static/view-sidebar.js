@@ -137,7 +137,7 @@ sidebar.NodeSidebar = class {
         this.add_span('between-delete')
         this._addButton('Delete Single Node');
         this.add_separator('line_DR')
-        this._addButton('Recover Node');
+        this._addButton('Reset Node');
 
         if (node.type) {
             let showDocumentation = null;
@@ -287,7 +287,7 @@ sidebar.NodeSidebar = class {
                 this._host._view._graph.delete_node_with_children(this._modelNodeName)
             });
         }
-        if (title === 'Recover Node') {
+        if (title === 'Reset Node') {
             // console.log('pressed')
             buttonElement.addEventListener('click', () => {
                 this._host._view._graph.recover_node(this._modelNodeName)

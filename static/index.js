@@ -270,8 +270,8 @@ host.BrowserHost = class {
                 openFileDialog.click();
             });
             openFileDialog.addEventListener('change', (e) => {
-                console.log(e)
-                console.log(e.target.value)
+                // console.log(e)
+                // console.log(e.target.value)
                 if (e.target && e.target.files && e.target.files.length > 0) {
                     const files = Array.from(e.target.files);
                     const file = files.find((file) => this._view.accept(file.name));

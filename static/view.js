@@ -484,12 +484,12 @@ view.View = class {
         this.lastViewGraph = this._graph;
         // console.log("this.lastViewGraph")
         // console.log(this.lastViewGraph)
-        if (this.lastViewGraph) {
-            // console.log(this._graph)
-            // this.lastModelNodeName2State = lastViewGraph._modelNodeName2State;
-            console.log('lastViewGraph _modelNodeName2State')
-            console.log(this.lastViewGraph._modelNodeName2State)
-        }
+        // if (this.lastViewGraph) {
+        //     // console.log(this._graph)
+        //     // this.lastModelNodeName2State = lastViewGraph._modelNodeName2State;
+        //     console.log('lastViewGraph _modelNodeName2State')
+        //     console.log(this.lastViewGraph._modelNodeName2State)
+        // }
         
         // console.log("_updateGraph is called");
         return this._timeout(100).then(() => {
@@ -1048,7 +1048,7 @@ view.Graph = class extends grapher.Graph {
         this._modelNodeName2ViewNode.get(node_name).element.style.opacity = 0.3;
     }
 
-    recover_node(node_name) {
+    reset_node(node_name) {
         this._modelNodeName2State.set(node_name, 'Existed');
         this._modelNodeName2ViewNode.get(node_name).element.style.opacity = 1;
     }
@@ -1063,12 +1063,19 @@ view.Graph = class extends grapher.Graph {
     delete_backtrack(node_name) {
         // console.log(this._modelNodeName2ViewNode)
         // console.log(node_name)  // empty
+
+        if (this._modelNodeName2State.get(node_name)  == 'Deleted' ||
+            !this._namedEdges.has(node_name)   // for output node
+            ) 
+        {
+            return;
+        }
+
         this._modelNodeName2State.set(node_name, 'Deleted');
         this._modelNodeName2ViewNode.get(node_name).element.style.opacity = 0.3;
 
-        if (!this._namedEdges.has(node_name)) {
-            return;
-        }
+        // console.log('deleting')
+        // console.log(node_name)
 
         for (var i = 0; i < this._namedEdges.get(node_name).length; i++) {
             this.delete_backtrack(this._namedEdges.get(node_name)[i])
@@ -1078,11 +1085,11 @@ view.Graph = class extends grapher.Graph {
     resetGraph() {
         for (const nodeId of this.nodes.keys()) {
             const node = this.node(nodeId);
-            console.log(node.label.modelNodeName)
+            // console.log(node.label.modelNodeName)
             this._modelNodeName2State.set(node.label.modelNodeName, 'Exist')
         }
 
-        console.log(this._modelNodeName2State)
+        // console.log(this._modelNodeName2State)
 
     }
 
@@ -1091,6 +1098,7 @@ view.Graph = class extends grapher.Graph {
         for (const argument of this._arguments.values()) {
             argument.build();
         }
+        console.log(this._namedEdges)
         super.build(document, origin);
     }
 };

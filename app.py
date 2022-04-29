@@ -1,5 +1,5 @@
-from flask import Flask, render_template, request
 import json
+from flask import Flask, render_template, request
 from onnx_modifier import onnxModifier
 app = Flask(__name__)
 

@@ -176,7 +176,7 @@ grapher.Graph = class {
         edgePathGroupDefs.appendChild(marker("arrowhead-vee-select"));
         // <==== 显示 边上的箭头
         
-        console.log(this._modelNodeName2State)
+        // console.log(this._modelNodeName2State)
         // console.log(this.nodes)
         for (const nodeId of this.nodes.keys()) {
             const node = this.node(nodeId);
