@@ -37,14 +37,37 @@ Click `Open Model...` to upload the onnx model to edit. The model will be parsed
 
 # Edit
 
-On the left-top of the page, 
+<img src="./docs/buttons.png" style="zoom: 60%;" />
 
- 
+Graph-level-operation elements are placed on the left-top of the page. Currently, there are three buttons: `Preview`，`Reset` and `Download`. They can do:
+
+- `Preview`：Preview the result model graph with all current modifications applied ；
+- `Reset`：Reset the model graph to its initial state；
+- `Download`：save the modified model file.
+
+Node-level-operation elements are all in the side bar, which can be invoked by clicking a specific node. Let's take a look.
+
+## Delete node
+
+There are two modes (buttons) for deleting node: `Delete With Children` and `Delete Single Node`. `Delete Single Node` only deletes the clicked node, while `Delete With Children` also deletes all the node rooted on the clicked node, which is convenient and nature if we want to delete a long path of nodes. 
+
+> The implementation of `Delete With Children` is based on backtracking algorithm.
+
+The deleted nodes are in grey mode. The following figure shows a typical deleting process.
+
+<img src="./docs/onnx_modifier_delete.png" style="zoom: 60%;" />
+
+## Reset node
+
+ By `Reset Node` button, we can set the clicked node to it initial state. It can be helpful when we want to recover the node after deleting it, or we want to reset its attributes. 
+
+## Change the input/output name of node
+
+By changing the input/output name of nodes, we can change the model forward routine. It can also be helpful if we want to rename the model output(s).
+
+`onnx-modifier` is under active development. Welcome to use, create issues and pull requests.
 
 
 
+# Credits and referred materials
 
-
-
-
-All the editing 
