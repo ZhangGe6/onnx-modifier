@@ -17,6 +17,8 @@ grapher.Graph = class {
         this._modelNodeName2ViewNode = new Map();
         this._modelNodeName2State = new Map();
         this._namedEdges = new Map();
+
+        this._pathArgumentNames = new Set();  // the name of arguments which occurs in both sides of an edge 
     }
 
     get options() {
@@ -81,6 +83,7 @@ grapher.Graph = class {
         }
         this._namedEdges.get(from_node_name).push(to_node_name);
     }
+
 
     setParent(node, parent) {
         if (!this._isCompound) {

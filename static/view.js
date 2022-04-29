@@ -947,17 +947,7 @@ view.Graph = class extends grapher.Graph {
         }
 
         for (const node of graph.nodes) {
-            // console.log(node)
-            // if (this._modelNodeName2State.get(node.name) == 'Deleted') {
-            //     // console.log(this._modelNodeName2State.get(node.name))
-            //     continue;
-            // }
             const viewNode = this.createNode(node);
-            // My code
-            // if (this._modelNodeName2State.get(viewNode.modelNodeName) == 'Deleted') {
-            //     // console.log(this._modelNodeName2State.get(node.name))
-            //     continue;
-            // }
 
             const inputs = node.inputs;
             for (const input of inputs) {
@@ -1098,7 +1088,9 @@ view.Graph = class extends grapher.Graph {
         for (const argument of this._arguments.values()) {
             argument.build();
         }
-        console.log(this._namedEdges)
+        // console.log("this._pathArgumentNames");
+        // console.log(this._pathArgumentNames);
+        // console.log(this._namedEdges)
         super.build(document, origin);
     }
 };
@@ -1366,6 +1358,9 @@ view.Argument = class {
                 this.context.setEdge(edge);
                 this._edges.push(edge);
                 // console.log(this.context._namedEdges);
+                
+                // this argument occurs in both sides of the edge, so it is a `path` argument
+                this.context._pathArgumentNames.add(this._argument.name);
             }
         }
     }

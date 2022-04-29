@@ -129,15 +129,10 @@ sidebar.NodeSidebar = class {
         this._node = node;
         this._modelNodeName = modelNodeName;
         this._elements = [];
+        this._renameAuxelements = []   // auxilary elements for input/output renaming
         this._attributes = [];
         this._inputs = [];
         this._outputs = [];
-
-        this._addButton('Delete With Children');
-        this.add_span('between-delete')
-        this._addButton('Delete Single Node');
-        this.add_separator('line_DR')
-        this._addButton('Reset Node');
 
         if (node.type) {
             let showDocumentation = null;
@@ -188,22 +183,35 @@ sidebar.NodeSidebar = class {
         }
 
         const inputs = node.inputs;
+        // console.log(inputs)
         if (inputs && inputs.length > 0) {
             this._addHeader('Inputs');
             for (const input of inputs) {
-                this._addInput(input.name, input);
+                this._addInput(input.name, input);  // 这里的input.name是小白格前面的名称（不是方格内的）
+                this.add_rename_aux_element(input.arguments);
             }
         }
+        // console.log(this._renameAuxelements)
 
         const outputs = node.outputs;
         if (outputs && outputs.length > 0) {
             this._addHeader('Outputs');
             for (const output of outputs) {
                 this._addOutput(output.name, output);
+                this.add_rename_aux_element(output.arguments);
             }
         }
 
         this.add_separator('sidebar-view-separator')
+    
+        this._addButton('Delete With Children');
+        this.add_span()
+        this._addButton('Delete Single Node');
+        this.add_span()
+        this._addButton('Reset Node');
+
+        this.add_separator('sidebar-view-separator');
+        this._addHeader('Rename helper');
 
     }
 
@@ -215,13 +223,31 @@ sidebar.NodeSidebar = class {
 
     add_span(className) {
         const span = this._host.document.createElement('span');
-        span.innerHTML = "&nbsp;"; // (if this doesn't work, try " ")
+        span.innerHTML = "&nbsp;&nbsp;&nbsp;"; // (if this doesn't work, try " ")
         span.className = className;
         this._elements.push(span); 
     }
 
+    add_rename_aux_element (arguments_) {
+        if (arguments_.length > 0) {
+            for (const argument of arguments_) {
+                if (this._host._view._graph._pathArgumentNames.has(argument.name)) {
+                    const buttonElement = this._host.document.createElement('button');
+                    buttonElement.className = 'sidebar-view-button';
+                    buttonElement.innerText = argument.name;
+                    this._renameAuxelements.push(buttonElement);
+                }
+            }
+        }
+
+
+    }
+
     render() {
-        return this._elements;
+        console.log(this._elements)
+        console.log(this._renameAuxelements)
+        // return this._elements;
+        return this._elements.concat(this._renameAuxelements);
     }
 
     _addHeader(title) {
@@ -258,6 +284,7 @@ sidebar.NodeSidebar = class {
             const item = new sidebar.NameValueView(this._host, name, view);
             this._inputs.push(item);
             this._elements.push(item.render());
+    
         }
     }
 
@@ -290,7 +317,7 @@ sidebar.NodeSidebar = class {
         if (title === 'Reset Node') {
             // console.log('pressed')
             buttonElement.addEventListener('click', () => {
-                this._host._view._graph.recover_node(this._modelNodeName)
+                this._host._view._graph.reset_node(this._modelNodeName)
             });
         }
 
@@ -424,13 +451,16 @@ sidebar.NameValueView = class {
 
         const nameElement = this._host.document.createElement('div');
         nameElement.className = 'sidebar-view-item-name';
-
+        
+        // ===> 这一段是input框前的名称，如attributte的pad，（不包含后面的小白块！！！）太有误导性了。。。
+        // console.log(name)  
         const nameInputElement = this._host.document.createElement('input');
         nameInputElement.setAttribute('type', 'text');
         nameInputElement.setAttribute('value', name);
         nameInputElement.setAttribute('title', name);
-        nameInputElement.setAttribute('readonly', 'true');
+        nameInputElement.setAttribute('readonly', 'false');
         nameElement.appendChild(nameInputElement);
+        // <=== 这一段是input框前的名称，如attributte的pad
 
         const valueElement = this._host.document.createElement('div');
         valueElement.className = 'sidebar-view-item-value-list';
@@ -507,7 +537,7 @@ sidebar.ValueTextView = class {
         this._host = host;
         this._elements = [];
         const element = this._host.document.createElement('div');
-        element.className = 'sidebar-view-item-value';
+        element.className = 'sidebar-view-item-value';   // 这个渲染出后面一个长白格
         this._elements.push(element);
 
         if (action) {
@@ -532,6 +562,7 @@ sidebar.ValueTextView = class {
     }
 
     render() {
+        console.log(this._elements)
         return this._elements;
     }
 
@@ -665,10 +696,15 @@ class NodeAttributeView {
 sidebar.ParameterView = class {
 
     constructor(host, list) {
+        this._host = host;
         this._list = list;
         this._elements = [];
         this._items = [];
+        
+        // console.log('new ParameterView')
+        // console.log(list.arguments)   // Array(1)
         for (const argument of list.arguments) {
+            // console.log(argument)
             const item = new sidebar.ArgumentView(host, argument);
             item.on('export-tensor', (sender, tensor) => {
                 this._raise('export-tensor', tensor);
@@ -764,6 +800,10 @@ sidebar.ArgumentView = class {
 
     render() {
         return this._element;
+    }
+
+    render_rename_aux() {
+        return this._renameAuxelements;
     }
 
     toggle() {
