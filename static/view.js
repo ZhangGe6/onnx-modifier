@@ -589,6 +589,8 @@ view.View = class {
                     // console.log(this.lastViewGraph._modelNodeName2State)
                     // console.log('node state of lastViewGraph is loaded')
                     viewGraph._modelNodeName2State = this.lastViewGraph._modelNodeName2State;
+                    viewGraph._renameMap = this.lastViewGraph._renameMap;
+                    // console.log(viewGraph._renameMap);
                 }
                 // console.log(viewGraph._modelNodeName2State)
                 viewGraph.add(graph);
@@ -953,6 +955,15 @@ view.Graph = class extends grapher.Graph {
             for (const input of inputs) {
                 for (const argument of input.arguments) {
                     if (argument.name != '' && !argument.initializer) {
+                        // if this argument has been renamed
+                        if (
+                            this._renameMap.get(viewNode.modelNodeName) &&
+                            this._renameMap.get(viewNode.modelNodeName).get(argument.name)
+                        )
+                        {
+                            argument.name = this._renameMap.get(viewNode.modelNodeName).get(argument.name);
+                        }
+
                         this.createArgument(argument).to(viewNode);
                     }
                 }
@@ -970,6 +981,17 @@ view.Graph = class extends grapher.Graph {
                         throw new view.Error("Invalid null argument in '" + this.model.identifier + "'.");
                     }
                     if (argument.name != '') {
+                        // if this argument has been renamed
+                        if (
+                            this._renameMap.get(viewNode.modelNodeName) &&
+                            this._renameMap.get(viewNode.modelNodeName).get(argument.name)
+                        )
+                        {
+                            console.log(argument.name)
+                            console.log(this._renameMap.get(viewNode.modelNodeName).get(argument.name))
+                            argument.name = this._renameMap.get(viewNode.modelNodeName).get(argument.name);
+                        }
+
                         this.createArgument(argument).from(viewNode);
                     }
                 }

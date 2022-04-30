@@ -530,6 +530,11 @@ onnx.Argument = class {
         return this._name;
     }
 
+    // https://bobbyhadz.com/blog/javascript-cannot-set-property-which-has-only-getter
+    set name(name) {
+        this._name = name;
+    }
+
     get type() {
         return this._type;
     }

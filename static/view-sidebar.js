@@ -240,10 +240,16 @@ sidebar.NodeSidebar = class {
                     origNameElement.innerHTML = argument.name + " => ";
                     const newNameElement = this._host.document.createElement('input');
                     newNameElement.setAttribute('type', 'text');
+                    // reload the existed renamed value
+                    if (this._host._view._graph._renameMap.get(this._modelNodeName) &&
+                        this._host._view._graph._renameMap.get(this._modelNodeName).get(argument.name))
+                    {   
+                        newNameElement.setAttribute('value', this._host._view._graph._renameMap.get(this._modelNodeName).get(argument.name));
+                    }
                     newNameElement.addEventListener('input', (e) => {
                         // console.log(e.target.value);
                         this._host._view._graph.recordRenameInfo(this._modelNodeName, argument.name, e.target.value);
-                        console.log(this._host._view._graph._renameMap);
+                        // console.log(this._host._view._graph._renameMap);
                         
                     });
 
@@ -259,8 +265,8 @@ sidebar.NodeSidebar = class {
     }
 
     render() {
-        console.log(this._elements)
-        console.log(this._renameAuxelements)
+        // console.log(this._elements)
+        // console.log(this._renameAuxelements)
         // return this._elements;
         return this._elements.concat(this._renameAuxelements);
     }
@@ -577,7 +583,7 @@ sidebar.ValueTextView = class {
     }
 
     render() {
-        console.log(this._elements)
+        // console.log(this._elements)
         return this._elements;
     }
 
