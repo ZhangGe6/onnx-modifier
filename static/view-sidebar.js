@@ -247,7 +247,7 @@ sidebar.NodeSidebar = class {
                         newNameElement.setAttribute('value', this._host._view._graph._renameMap.get(this._modelNodeName).get(argument.name));
                     }
                     newNameElement.addEventListener('input', (e) => {
-                        // console.log(e.target.value);
+                        console.log(e.target.value);
                         this._host._view._graph.recordRenameInfo(this._modelNodeName, argument.name, e.target.value);
                         // console.log(this._host._view._graph._renameMap);
                         

@@ -214,7 +214,8 @@ host.BrowserHost = class {
 
         const downloadButton = this.document.getElementById('download-graph');
         downloadButton.addEventListener('click', () => {
-            // console.log(this._host._view._graph._modelNodeName2State)
+            console.log(this._view._graph._modelNodeName2State)
+            console.log(this._view._graph._renameMap)
             // https://healeycodes.com/talking-between-languages
             fetch('/download', {
                 // Declare what type of data we're sending
@@ -224,8 +225,13 @@ host.BrowserHost = class {
                 // Specify the method
                 method: 'POST',
                 // https://blog.csdn.net/Crazy_SunShine/article/details/80624366
-                body: JSON.stringify(
-                    this._mapToJson(this._view._graph._modelNodeName2State)
+                body: JSON.stringify({
+                    // 'node_states' : this._mapToJson(this._view._graph._modelNodeName2State),
+                    // 'node_renamed_io' : this._twoLevelMapToJson(this._view._graph._renameMap),
+                    'node_states' : this.mapToObjectRec(this._view._graph._modelNodeName2State),
+                    'node_renamed_io' : this.mapToObjectRec(this._view._graph._renameMap),
+                }
+                    
                 )
             }).then(function (response) {
                 return response.text();
@@ -605,15 +611,32 @@ host.BrowserHost = class {
 
     _strMapToObj(strMap){
         let obj = Object.create(null);
-        for (let[k, v] of strMap) {
+        for (let [k, v] of strMap) {
             obj[k] = v;
         }
         return obj;
     }
 
+    // {key1:val1, key2:val2, ...} => Json
     _mapToJson(map) {
         return JSON.stringify(this._strMapToObj(map));
     }
+
+    // https://www.xul.fr/javascript/map-and-object.php
+    mapToObjectRec(m) {
+        let lo = {}
+        for(let[k,v] of m) {
+            if(v instanceof Map) {
+                lo[k] = this.mapToObjectRec(v)
+            }
+            else {
+                lo[k] = v
+            }
+        }
+        return lo
+    }
+
+
 
 };
 

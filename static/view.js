@@ -958,7 +958,8 @@ view.Graph = class extends grapher.Graph {
                         // if this argument has been renamed
                         if (
                             this._renameMap.get(viewNode.modelNodeName) &&
-                            this._renameMap.get(viewNode.modelNodeName).get(argument.name)
+                            this._renameMap.get(viewNode.modelNodeName).get(argument.name) &&
+                            !this._renameMap.get(viewNode.modelNodeName).get(argument.name) == '' // in case user clear the input name 
                         )
                         {
                             // argument.name = this._renameMap.get(viewNode.modelNodeName).get(argument.name);
@@ -992,7 +993,8 @@ view.Graph = class extends grapher.Graph {
                         // if this argument has been renamed
                         if (
                             this._renameMap.get(viewNode.modelNodeName) &&
-                            this._renameMap.get(viewNode.modelNodeName).get(argument.name)
+                            this._renameMap.get(viewNode.modelNodeName).get(argument.name) && 
+                            !this._renameMap.get(viewNode.modelNodeName).get(argument.name) == ''
                         )
                         {
                             // console.log(argument.name)
