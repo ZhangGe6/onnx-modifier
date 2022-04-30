@@ -1078,10 +1078,17 @@ view.Graph = class extends grapher.Graph {
             // console.log(node.label.modelNodeName)
             this._modelNodeName2State.set(node.label.modelNodeName, 'Exist')
         }
-
         // console.log(this._modelNodeName2State)
-
     }
+
+    recordRenameInfo(modelNodeName, src_name, dst_name) {
+        if (!this._renameMap.get(modelNodeName)) {
+            this._renameMap.set(modelNodeName, new Map());
+        }
+        this._renameMap.get(modelNodeName).set(src_name, dst_name);
+    }
+
+
 
 
     build(document, origin) {

@@ -18,7 +18,8 @@ grapher.Graph = class {
         this._modelNodeName2State = new Map();
         this._namedEdges = new Map();
 
-        this._pathArgumentNames = new Set();  // the name of arguments which occurs in both sides of an edge 
+        this._pathArgumentNames = new Set();  // the name of arguments which occurs in both sides of an edge
+        this._renameMap = new Map();
     }
 
     get options() {

@@ -202,23 +202,26 @@ sidebar.NodeSidebar = class {
             }
         }
 
-        this.add_separator('sidebar-view-separator')
-    
+        this.add_separator(this._elements, 'sidebar-view-separator')
+        this._elements.push(this._host.document.createElement('hr'));
+        this.add_separator(this._elements, 'sidebar-view-separator')
+
         this._addButton('Delete With Children');
         this.add_span()
         this._addButton('Delete Single Node');
         this.add_span()
         this._addButton('Reset Node');
 
-        this.add_separator('sidebar-view-separator');
+        this.add_separator(this._elements, 'sidebar-view-separator');
         this._addHeader('Rename helper');
 
     }
 
-    add_separator(className) {
+    add_separator(elment, className) {
         const separator = this._host.document.createElement('div');
         separator.className = className;
-        this._elements.push(separator); 
+        // this._elements.push(separator); 
+        elment.push(separator);
     }
 
     add_span(className) {
@@ -228,14 +231,26 @@ sidebar.NodeSidebar = class {
         this._elements.push(span); 
     }
 
-    add_rename_aux_element (arguments_) {
+    add_rename_aux_element(arguments_) {
         if (arguments_.length > 0) {
             for (const argument of arguments_) {
                 if (this._host._view._graph._pathArgumentNames.has(argument.name)) {
-                    const buttonElement = this._host.document.createElement('button');
-                    buttonElement.className = 'sidebar-view-button';
-                    buttonElement.innerText = argument.name;
-                    this._renameAuxelements.push(buttonElement);
+
+                    const origNameElement =  this._host.document.createElement("div");
+                    origNameElement.innerHTML = argument.name + " => ";
+                    const newNameElement = this._host.document.createElement('input');
+                    newNameElement.setAttribute('type', 'text');
+                    newNameElement.addEventListener('input', (e) => {
+                        // console.log(e.target.value);
+                        this._host._view._graph.recordRenameInfo(this._modelNodeName, argument.name, e.target.value);
+                        console.log(this._host._view._graph._renameMap);
+                        
+                    });
+
+                    this._renameAuxelements.push(origNameElement);
+                    this._renameAuxelements.push(newNameElement)
+                    this.add_separator(this._renameAuxelements, 'sidebar-view-separator')  
+                    
                 }
             }
         }
@@ -458,7 +473,7 @@ sidebar.NameValueView = class {
         nameInputElement.setAttribute('type', 'text');
         nameInputElement.setAttribute('value', name);
         nameInputElement.setAttribute('title', name);
-        nameInputElement.setAttribute('readonly', 'false');
+        nameInputElement.setAttribute('readonly', 'true');
         nameElement.appendChild(nameInputElement);
         // <=== 这一段是input框前的名称，如attributte的pad
 
