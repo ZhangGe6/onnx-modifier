@@ -214,8 +214,9 @@ host.BrowserHost = class {
 
         const downloadButton = this.document.getElementById('download-graph');
         downloadButton.addEventListener('click', () => {
-            console.log(this._view._graph._modelNodeName2State)
-            console.log(this._view._graph._renameMap)
+            console.log(this)
+            // console.log(this._view._graph._modelNodeName2State)
+            // console.log(this._view._graph._renameMap)
             // https://healeycodes.com/talking-between-languages
             fetch('/download', {
                 // Declare what type of data we're sending
@@ -239,6 +240,15 @@ host.BrowserHost = class {
                 console.log('POST response: ');
                 // Should be 'OK' if everything was successful
                 console.log(text);
+                if (text == 'OK') {
+                    // alert("Modified model has been saved in ./modified_onnx/modified_" + this.upload_filename);
+                    // alert("Modified model has been successfuly saved in ./modified_onnx/");
+                    swal("Success!", "Modified model has been successfuly saved in ./modified_onnx/", "success");
+                }
+                else {
+                    swal("Error happens!", "You can find it out or create an issue on", "error");
+                    // alert('Error happens, you can find it out or create an issue on ')
+                }
             });
         });
 
@@ -281,6 +291,8 @@ host.BrowserHost = class {
                 if (e.target && e.target.files && e.target.files.length > 0) {
                     const files = Array.from(e.target.files);
                     const file = files.find((file) => this._view.accept(file.name));
+                    // console.log(file)
+                    this.upload_filename = file.name;
                     var form = new FormData();
                     // console.log(file)
                     form.append('file', file);

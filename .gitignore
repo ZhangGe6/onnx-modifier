@@ -1,4 +1,4 @@
 __pycache__/
 gym/
 
-res_onnx/*.onnx
+*.onnx

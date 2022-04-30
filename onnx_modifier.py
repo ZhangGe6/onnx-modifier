@@ -95,7 +95,7 @@ class onnxModifier:
                         node.output[i] = dst_name    
                 # print(node.input, node.output)
             
-    def check_and_save_model(self, save_dir='./res_onnx'):
+    def check_and_save_model(self, save_dir='./modified_onnx'):
         save_path = os.path.join(save_dir, 'modified_' + self.model_name)
         onnx.checker.check_model(self.model_proto)
         onnx.save(self.model_proto, save_path)  
