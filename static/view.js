@@ -1080,6 +1080,7 @@ view.Graph = class extends grapher.Graph {
     reset_node(node_name) {
         this._modelNodeName2State.set(node_name, 'Existed');
         this._modelNodeName2ViewNode.get(node_name).element.style.opacity = 1;
+        
     }
 
 

@@ -210,7 +210,7 @@ sidebar.NodeSidebar = class {
         this.add_span()
         this._addButton('Delete Single Node');
         this.add_span()
-        this._addButton('Reset Node');
+        this._addButton('Recover Node');
 
         this.add_separator(this._elements, 'sidebar-view-separator');
         this._addHeader('Rename helper');
@@ -335,7 +335,7 @@ sidebar.NodeSidebar = class {
                 this._host._view._graph.delete_node_with_children(this._modelNodeName)
             });
         }
-        if (title === 'Reset Node') {
+        if (title === 'Recover Node') {
             // console.log('pressed')
             buttonElement.addEventListener('click', () => {
                 this._host._view._graph.reset_node(this._modelNodeName)

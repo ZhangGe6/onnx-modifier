@@ -1,4 +1,5 @@
 # https://leimao.github.io/blog/ONNX-Python-API/
+# https://leimao.github.io/blog/ONNX-IO-Stream/
 # https://github.com/saurabh-shandilya/onnx-utils
 # https://stackoverflow.com/questions/52402448/how-to-read-individual-layers-weight-bias-values-from-onnx-model
 
