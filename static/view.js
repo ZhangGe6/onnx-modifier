@@ -961,8 +961,16 @@ view.Graph = class extends grapher.Graph {
                             this._renameMap.get(viewNode.modelNodeName).get(argument.name)
                         )
                         {
-                            argument.name = this._renameMap.get(viewNode.modelNodeName).get(argument.name);
+                            // argument.name = this._renameMap.get(viewNode.modelNodeName).get(argument.name);
+                            // create (deepcopy) a new argument rather than edit in-place
+                            // var renamed_argument = JSON.parse(JSON.stringify(argument));
+                            // renamed_argument.name = this._renameMap.get(viewNode.modelNodeName).get(argument.name);
+                            // this.createArgument(renamed_argument).to(viewNode);
+
+                            argument._new_name = this._renameMap.get(viewNode.modelNodeName).get(argument.name);
+                            argument._renamed = true;
                         }
+                        else { argument._renamed = false; }
 
                         this.createArgument(argument).to(viewNode);
                     }
@@ -987,10 +995,17 @@ view.Graph = class extends grapher.Graph {
                             this._renameMap.get(viewNode.modelNodeName).get(argument.name)
                         )
                         {
-                            console.log(argument.name)
-                            console.log(this._renameMap.get(viewNode.modelNodeName).get(argument.name))
-                            argument.name = this._renameMap.get(viewNode.modelNodeName).get(argument.name);
+                            // console.log(argument.name)
+                            // console.log(this._renameMap.get(viewNode.modelNodeName).get(argument.name))
+                            // argument.name = this._renameMap.get(viewNode.modelNodeName).get(argument.name);
+                            // var renamed_argument = JSON.parse(JSON.stringify(argument));
+                            // renamed_argument.name = this._renameMap.get(viewNode.modelNodeName).get(argument.name);
+                            // this.createArgument(renamed_argument).to(viewNode);
+
+                            argument._new_name = this._renameMap.get(viewNode.modelNodeName).get(argument.name);
+                            argument._renamed = true;
                         }
+                        else { argument._renamed = false; }
 
                         this.createArgument(argument).from(viewNode);
                     }
@@ -1074,11 +1089,11 @@ view.Graph = class extends grapher.Graph {
 
     delete_backtrack(node_name) {
         // console.log(this._modelNodeName2ViewNode)
-        // console.log(node_name)  // empty
+        // console.log(node_name)
+        // console.log(this._modelNodeName2State.get(node_name))
+        // console.log(this._namedEdges.has(node_name))
 
-        if (this._modelNodeName2State.get(node_name)  == 'Deleted' ||
-            !this._namedEdges.has(node_name)   // for output node
-            ) 
+        if (this._modelNodeName2State.get(node_name)  == 'Deleted') 
         {
             return;
         }
@@ -1088,6 +1103,9 @@ view.Graph = class extends grapher.Graph {
 
         // console.log('deleting')
         // console.log(node_name)
+        if (!this._namedEdges.has(node_name)){ // for leaf node
+            return;
+        }   
 
         for (var i = 0; i < this._namedEdges.get(node_name).length; i++) {
             this.delete_backtrack(this._namedEdges.get(node_name)[i])
@@ -1101,6 +1119,7 @@ view.Graph = class extends grapher.Graph {
             this._modelNodeName2State.set(node.label.modelNodeName, 'Exist')
         }
         // console.log(this._modelNodeName2State)
+        this._renameMap = new Map();
     }
 
     recordRenameInfo(modelNodeName, src_name, dst_name) {
@@ -1109,8 +1128,6 @@ view.Graph = class extends grapher.Graph {
         }
         this._renameMap.get(modelNodeName).set(src_name, dst_name);
     }
-
-
 
 
     build(document, origin) {

@@ -524,13 +524,21 @@ onnx.Argument = class {
         this._initializer = initializer || null;
         this._annotation = annotation;
         this._description = description || '';
+
+        this._renamed = false;
+        this._new_name = null;
+
     }
 
     get name() {
+        if (this._renamed) {
+            return this._new_name;
+        }
         return this._name;
     }
 
     // https://bobbyhadz.com/blog/javascript-cannot-set-property-which-has-only-getter
+    // It is unsafe
     set name(name) {
         this._name = name;
     }
