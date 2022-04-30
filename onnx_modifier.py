@@ -70,8 +70,7 @@ class onnxModifier:
                     # print('removing node {} ...'.format(node_name))
                     self.remove_node_by_name(node_name)
         
-        # remove node initializers (parameters)
-        # aka, keep and only keep the initializers of left nodes
+        # remove node initializers (parameters) aka, keep and only keep the initializers of left nodes
         left_node_inputs = []
         for left_node in self.graph.node:
             left_node_inputs += left_node.input
@@ -99,8 +98,7 @@ class onnxModifier:
     def check_and_save_model(self, save_dir='./res_onnx'):
         save_path = os.path.join(save_dir, 'modified_' + self.model_name)
         onnx.checker.check_model(self.model_proto)
-        onnx.save(self.model_proto, save_path)
-    
+        onnx.save(self.model_proto, save_path)  
     
     def inference(self):
         # model_proto_bytes = onnx._serialize(model_proto_from_stream)

@@ -1,4 +1,3 @@
-import json
 from flask import Flask, render_template, request
 from onnx_modifier import onnxModifier
 app = Flask(__name__)
@@ -27,7 +26,6 @@ def modify_and_download_model():
     onnx_modifier.remove_node_by_node_states(modify_info['node_states'])
     onnx_modifier.modify_node_io_name(modify_info['node_renamed_io'])
     onnx_modifier.check_and_save_model()
-    
     
     return 'OK', 200
 

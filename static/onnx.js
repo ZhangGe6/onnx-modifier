@@ -1353,7 +1353,8 @@ onnx.Metadata = class {
         if (onnx.Metadata._metadata) {
             return Promise.resolve(onnx.Metadata._metadata);
         }
-        return context.request('onnx-metadata.json', 'utf-8', null).then((data) => {
+        // return context.request('onnx-metadata.json', 'utf-8', null).then((data) => {
+        return context.request('../static/onnx-metadata.json', 'utf-8', null).then((data) => {
             onnx.Metadata._metadata = new onnx.Metadata(data);
             return onnx.Metadata._metadata;
         }).catch(() => {
