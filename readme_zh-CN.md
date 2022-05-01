@@ -1,15 +1,6 @@
----
-title: onnx-modifier-ONNX可视化编辑
-author: Zhang Ge
-date: 2022-04-29 09:09:00 +0800
-categories: [专业积累, 工具开发]
-tags: [onnx]
-math: true
----
+<img src="./docs/onnx_modifier_logo_1.png" style="zoom: 60%;" />
 
 简体中文 | [English](readme.md)
-
-<img src="./docs/onnx_modifier_logo_1.png" style="zoom: 60%;" />
 
 `ONNX `(Open Neural Network Exchange) 是一种针对机器学习所设计的开放式的文件格式，经常作为不同框架模型转化的中间文件。有时我们拿到ONNX文件，想将它进行一些修改，比如：
 

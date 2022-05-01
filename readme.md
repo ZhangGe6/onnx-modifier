@@ -1,8 +1,6 @@
 <img src="./docs/onnx_modifier_logo_1.png" style="zoom: 60%;" />
 
-
 English | [简体中文](readme_zh-CN.md)
-
 
 # Introduction
 
