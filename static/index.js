@@ -236,7 +236,6 @@ host.BrowserHost = class {
                 // Should be 'OK' if everything was successful
                 console.log(text);
                 if (text == 'OK') {
-                    // alert("Modified model has been saved in ./modified_onnx/modified_" + this.upload_filename);
                     // alert("Modified model has been successfuly saved in ./modified_onnx/");
                     swal("Success!", "Modified model has been successfuly saved in ./modified_onnx/", "success");
                 }
@@ -625,9 +624,6 @@ host.BrowserHost = class {
         }
         return lo
     }
-
-
-
 };
 
 host.Dropdown = class {

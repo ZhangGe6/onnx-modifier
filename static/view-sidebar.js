@@ -167,10 +167,8 @@ sidebar.NodeSidebar = class {
         }
 
         const attributes = node.attributes;
-        // console.log(attributes)
         if (attributes && attributes.length > 0) {
             const sortedAttributes = node.attributes.slice();
-            // console.log(sortedAttributes)
             sortedAttributes.sort((a, b) => {
                 const au = a.name.toUpperCase();
                 const bu = b.name.toUpperCase();
@@ -183,7 +181,6 @@ sidebar.NodeSidebar = class {
         }
 
         const inputs = node.inputs;
-        // console.log(inputs)
         if (inputs && inputs.length > 0) {
             this._addHeader('Inputs');
             for (const input of inputs) {
@@ -191,7 +188,6 @@ sidebar.NodeSidebar = class {
                 this.add_rename_aux_element(input.arguments);
             }
         }
-        // console.log(this._renameAuxelements)
 
         const outputs = node.outputs;
         if (outputs && outputs.length > 0) {
@@ -220,7 +216,6 @@ sidebar.NodeSidebar = class {
     add_separator(elment, className) {
         const separator = this._host.document.createElement('div');
         separator.className = className;
-        // this._elements.push(separator); 
         elment.push(separator);
     }
 
@@ -250,7 +245,6 @@ sidebar.NodeSidebar = class {
                         console.log(e.target.value);
                         this._host._view._graph.recordRenameInfo(this._modelNodeName, argument.name, e.target.value);
                         // console.log(this._host._view._graph._renameMap);
-                        
                     });
 
                     this._renameAuxelements.push(origNameElement);
@@ -324,7 +318,6 @@ sidebar.NodeSidebar = class {
         buttonElement.innerText = title;
         this._elements.push(buttonElement);
         
-        // console.log(title)
         if (title === 'Delete Single Node') {
             buttonElement.addEventListener('click', () => {
                 this._host._view._graph.delete_node(this._modelNodeName)
@@ -336,7 +329,6 @@ sidebar.NodeSidebar = class {
             });
         }
         if (title === 'Recover Node') {
-            // console.log('pressed')
             buttonElement.addEventListener('click', () => {
                 this._host._view._graph.reset_node(this._modelNodeName)
             });
@@ -473,7 +465,7 @@ sidebar.NameValueView = class {
         const nameElement = this._host.document.createElement('div');
         nameElement.className = 'sidebar-view-item-name';
         
-        // ===> 这一段是input框前的名称，如attributte的pad，（不包含后面的小白块！！！）太有误导性了。。。
+        // ===> 这一段是input框前的名称，如attributte的pad，（不包含后面的小白块！！！）
         // console.log(name)  
         const nameInputElement = this._host.document.createElement('input');
         nameInputElement.setAttribute('type', 'text');
@@ -558,7 +550,7 @@ sidebar.ValueTextView = class {
         this._host = host;
         this._elements = [];
         const element = this._host.document.createElement('div');
-        element.className = 'sidebar-view-item-value';   // 这个渲染出后面一个长白格
+        element.className = 'sidebar-view-item-value';  
         this._elements.push(element);
 
         if (action) {
@@ -583,7 +575,6 @@ sidebar.ValueTextView = class {
     }
 
     render() {
-        // console.log(this._elements)
         return this._elements;
     }
 
@@ -609,11 +600,7 @@ class NodeAttributeView {
             });
             this._element.appendChild(this._expander);
         }
-        // console.log(this._attribute)
-        // console.log(this._attribute.value)
         const value = this._attribute.value;
-        // console.log(value)
-        // console.log(type)
         switch (type) {
             case 'graph': {
                 const line = this._host.document.createElement('div');
@@ -637,7 +624,6 @@ class NodeAttributeView {
             }
             default: {
                 let content = sidebar.NodeSidebar.formatAttributeValue(value, type);
-                // console.log(content)
                 if (content && content.length > 1000) {
                     content = content.substring(0, 1000) + '\u2026';
                 }
@@ -722,10 +708,7 @@ sidebar.ParameterView = class {
         this._elements = [];
         this._items = [];
         
-        // console.log('new ParameterView')
-        // console.log(list.arguments)   // Array(1)
         for (const argument of list.arguments) {
-            // console.log(argument)
             const item = new sidebar.ArgumentView(host, argument);
             item.on('export-tensor', (sender, tensor) => {
                 this._raise('export-tensor', tensor);

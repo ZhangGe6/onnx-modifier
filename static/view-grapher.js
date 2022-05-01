@@ -41,13 +41,6 @@ grapher.Graph = class {
             }
         }
 
-        // My code
-        // var modelNodeName = node.value.name;
-        // if (modelNodeName == '') {  // in case that model node has no name 
-        //     modelNodeName = node.value.type.name + node.name
-        //     // console.log(node.value)
-        //     // console.log(modelNodeName)
-        // }
         const modelNodeName = node.modelNodeName
         this._modelNodeName2ViewNode.set(modelNodeName, node);
         
@@ -56,9 +49,6 @@ grapher.Graph = class {
         if (!this._modelNodeName2State.get(modelNodeName)) {
             this._modelNodeName2State.set(modelNodeName, 'Exist');
         }
-
-        // console.log(modelNodeName)
-        // console.log(node.modelNodeName)
     }
 
     setEdge(edge) {
@@ -75,8 +65,6 @@ grapher.Graph = class {
 
         // My code
         // _namedEdges: from : to
-        // var from_node_name = edge.from.value.name
-        // var to_node_name = edge.to.value.name
         var from_node_name = edge.from.modelNodeName
         var to_node_name = edge.to.modelNodeName
         if (!this._namedEdges.has(from_node_name)) {
@@ -180,15 +168,9 @@ grapher.Graph = class {
         edgePathGroupDefs.appendChild(marker("arrowhead-vee-select"));
         // <==== 显示 边上的箭头
         
-        // console.log(this._modelNodeName2State)
-        // console.log(this.nodes)
         for (const nodeId of this.nodes.keys()) {
             const node = this.node(nodeId);
             if (this.children(nodeId).length == 0) {
-                // console.log(node.label.modelNodeName)
-                // console.log(this._modelNodeName2State.get(node.label.modelNodeName))
-                // node
-                // type(node.label) == view.Node
                 if (this._modelNodeName2State.get(node.label.modelNodeName) == 'Exist') {
                     node.label.build(document, nodeGroup);  
                 }
@@ -213,8 +195,6 @@ grapher.Graph = class {
         for (const edge of this.edges.values()) {
             var node_from = this._nodes.get(edge.v).label;
             var node_to = this._nodes.get(edge.w).label;
-            // console.log(this._modelNodeName2State.get(node_from.modelNodeName))
-            // console.log(this._modelNodeName2State.get(node_to.modelNodeName))
             if (
                 this._modelNodeName2State.get(node_from.modelNodeName) == 'Exist' &&
                 this._modelNodeName2State.get(node_to.modelNodeName) == 'Exist'
@@ -236,7 +216,6 @@ grapher.Graph = class {
                     node.label.update();  // 让节点显示出来
                 }
             }
-            // ===> 这段没有操作
             else {
                 // cluster
                 const node = this.node(nodeId);
@@ -246,13 +225,10 @@ grapher.Graph = class {
                 node.label.rectangle.setAttribute('width', node.label.width);
                 node.label.rectangle.setAttribute('height', node.label.height);
             }
-            // <=== 这段没有操作
         }
-        // console.log(this.edges)
         for (const edge of this.edges.values()) {
             var node_from = this._nodes.get(edge.v).label;
             var node_to = this._nodes.get(edge.w).label;
-            // console.log(edge.label)
             if (
                 this._modelNodeName2State.get(node_from.modelNodeName) == 'Exist' &&
                 this._modelNodeName2State.get(node_to.modelNodeName) == 'Exist'
@@ -311,7 +287,7 @@ grapher.Node = class {
             block.build(document, this.element);
         }
 
-        this.layout();   // 这一行注释后，边和节点全部乱成一团，报错一堆
+        this.layout();  
     }
 
     layout() {

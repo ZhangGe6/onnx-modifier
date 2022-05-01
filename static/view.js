@@ -53,9 +53,7 @@ view.View = class {
             this._host.document.addEventListener('keydown', () => {
                 this.clearSelection();
             });
-            // console.log('before host start');
             this._host.start();
-            // console.log('host started!');
             const container = this._getElementById('graph');
             container.addEventListener('scroll', (e) => this._scrollHandler(e));
             container.addEventListener('wheel', (e) => this._wheelHandler(e), { passive: false });
@@ -134,7 +132,6 @@ view.View = class {
     }
 
     get model() {
-        // console.log('model() is called');
         return this._model;
     }
 
@@ -422,13 +419,10 @@ view.View = class {
     }
 
     open(context) {
-        // console.log("view open()");
-        // console.log(context);
         this._host.event('Model', 'Open', 'Size', context.stream ? context.stream.length : 0);
         this._sidebar.close();
         return this._timeout(2).then(() => {
             return this._modelFactoryService.open(context).then((model) => {
-                // console.log(model);
                 const format = [];
                 if (model.format) {
                     format.push(model.format);
@@ -450,7 +444,6 @@ view.View = class {
     _updateActiveGraph(graph) {
         this._sidebar.close();
         if (this._model) {
-            // console.log('_updateActiveGraph() is called');
             const model = this._model;
             this.show('welcome spinner');
             this._timeout(200).then(() => {
@@ -468,12 +461,8 @@ view.View = class {
     }
 
     _updateGraph(model, graphs) {
-        // console.log('view._updateGraph() is called')
-        // console.log(model);
-        // console.log(graphs);
         const lastModel = this._model;
         const lastGraphs = this._graphs;
-        // console.log(lastNodeState)
         // update graph if and only if `model` and `graphs` are provided
         if (model && graphs) {
             this._model = model;
@@ -481,16 +470,7 @@ view.View = class {
         }
         const graph = this.activeGraph;
         
-        this.lastViewGraph = this._graph;
-        // console.log("this.lastViewGraph")
-        // console.log(this.lastViewGraph)
-        // if (this.lastViewGraph) {
-        //     // console.log(this._graph)
-        //     // this.lastModelNodeName2State = lastViewGraph._modelNodeName2State;
-        //     console.log('lastViewGraph _modelNodeName2State')
-        //     console.log(this.lastViewGraph._modelNodeName2State)
-        // }
-        
+        this.lastViewGraph = this._graph;        
         // console.log("_updateGraph is called");
         return this._timeout(100).then(() => {
             if (graph && graph != lastGraphs[0]) {
@@ -567,7 +547,6 @@ view.View = class {
                 this._zoom = 1;
 
                 const groups = graph.groups;
-                // console.log(groups)  // undefined
                 const nodes = graph.nodes;
                 this._host.event('Graph', 'Render', 'Size', nodes.length);
 
@@ -584,18 +563,16 @@ view.View = class {
                 }
 
                 const viewGraph = new view.Graph(this, model, groups, options);
-                // console.log(viewGraph)
                 if (this.lastViewGraph) {
                     // console.log(this.lastViewGraph._modelNodeName2State)
                     // console.log('node state of lastViewGraph is loaded')
                     viewGraph._modelNodeName2State = this.lastViewGraph._modelNodeName2State;
                     viewGraph._renameMap = this.lastViewGraph._renameMap;
                     // console.log(viewGraph._renameMap);
+                    // console.log(viewGraph._modelNodeName2State)
                 }
-                // console.log(viewGraph._modelNodeName2State)
+                
                 viewGraph.add(graph);
-
-                // console.log(viewGraph._arguments)
 
                 // Workaround for Safari background drag/zoom issue:
                 // https://stackoverflow.com/questions/40887193/d3-js-zoom-is-not-working-with-mousewheel-in-safari
@@ -617,7 +594,6 @@ view.View = class {
 
                     viewGraph.update();
                     
-
                     // 让画面可拖动/缩放 =======>
                     const elements = Array.from(canvas.getElementsByClassName('graph-input') || []);
                     if (elements.length === 0) {
@@ -675,7 +651,6 @@ view.View = class {
                     }
 
                     // <======= 让画面可拖动/缩放
-
 
                     this._graph = viewGraph;
                     return;
@@ -802,8 +777,6 @@ view.View = class {
         if (node) {
             try {
                 // console.log(node)   // 注意是onnx.Node, 不是grapher.Node，所以没有update()， 没有element元素
-                // console.log(node.element)  // undefined
-                // node.update()
                 const nodeSidebar = new sidebar.NodeSidebar(this._host, node, modelNodeName);
                 nodeSidebar.on('show-documentation', (/* sender, e */) => {
                     this.showDocumentation(node.type);
@@ -872,8 +845,6 @@ view.View = class {
 view.Graph = class extends grapher.Graph {
 
     constructor(view, model, compound, options) {
-        // console.log('constructing view.Graph')
-        // console.log(compound)  // undefined
         super(compound, options);
         this.view = view;
         this.model = model;
@@ -887,7 +858,6 @@ view.Graph = class extends grapher.Graph {
 
         const value = new view.Node(this, node, modelNodeName);
         value.name = node_id;
-        // value.name = node.name;
         this.setNode(value);
         return value;
     }
@@ -926,7 +896,6 @@ view.Graph = class extends grapher.Graph {
         const clusters = new Set();
         const clusterParentMap = new Map();
         const groups = graph.groups;
-        // console.log(groups)  // undefined
         if (groups) {
             for (const node of graph.nodes) {
                 if (node.group) {
@@ -940,7 +909,6 @@ view.Graph = class extends grapher.Graph {
             }
         }
         
-        // console.log(graph)
         for (const input of graph.inputs) {
             const viewInput = this.createInput(input);
             for (const argument of input.arguments) {
@@ -962,12 +930,6 @@ view.Graph = class extends grapher.Graph {
                             !this._renameMap.get(viewNode.modelNodeName).get(argument.name) == '' // in case user clear the input name 
                         )
                         {
-                            // argument.name = this._renameMap.get(viewNode.modelNodeName).get(argument.name);
-                            // create (deepcopy) a new argument rather than edit in-place
-                            // var renamed_argument = JSON.parse(JSON.stringify(argument));
-                            // renamed_argument.name = this._renameMap.get(viewNode.modelNodeName).get(argument.name);
-                            // this.createArgument(renamed_argument).to(viewNode);
-
                             argument._new_name = this._renameMap.get(viewNode.modelNodeName).get(argument.name);
                             argument._renamed = true;
                         }
@@ -997,13 +959,6 @@ view.Graph = class extends grapher.Graph {
                             !this._renameMap.get(viewNode.modelNodeName).get(argument.name) == ''
                         )
                         {
-                            // console.log(argument.name)
-                            // console.log(this._renameMap.get(viewNode.modelNodeName).get(argument.name))
-                            // argument.name = this._renameMap.get(viewNode.modelNodeName).get(argument.name);
-                            // var renamed_argument = JSON.parse(JSON.stringify(argument));
-                            // renamed_argument.name = this._renameMap.get(viewNode.modelNodeName).get(argument.name);
-                            // this.createArgument(renamed_argument).to(viewNode);
-
                             argument._new_name = this._renameMap.get(viewNode.modelNodeName).get(argument.name);
                             argument._renamed = true;
                         }
@@ -1056,19 +1011,11 @@ view.Graph = class extends grapher.Graph {
         }
 
         for (const output of graph.outputs) {
-            // // My code
-            // if (this._modelNodeName2State.get(output.name) == 'Deleted') {
-            //     // console.log(this._modelNodeName2State.get(node.name))
-            //     continue;
-            // }
-
             const viewOutput = this.createOutput(output);
             for (const argument of output.arguments) {
                 this.createArgument(argument).to(viewOutput);
             }
         }
-
-        // console.log()
     }
 
     // My code
@@ -1083,11 +1030,8 @@ view.Graph = class extends grapher.Graph {
         
     }
 
-
     delete_node_with_children(node_name) {
         this.delete_backtrack(node_name);
-        // console.log("after deleting")
-        // console.log(this._modelNodeName2State)
     }
 
     delete_backtrack(node_name) {
@@ -1104,8 +1048,6 @@ view.Graph = class extends grapher.Graph {
         this._modelNodeName2State.set(node_name, 'Deleted');
         this._modelNodeName2ViewNode.get(node_name).element.style.opacity = 0.3;
 
-        // console.log('deleting')
-        // console.log(node_name)
         if (!this._namedEdges.has(node_name)){ // for leaf node
             return;
         }   
@@ -1118,10 +1060,8 @@ view.Graph = class extends grapher.Graph {
     resetGraph() {
         for (const nodeId of this.nodes.keys()) {
             const node = this.node(nodeId);
-            // console.log(node.label.modelNodeName)
             this._modelNodeName2State.set(node.label.modelNodeName, 'Exist')
         }
-        // console.log(this._modelNodeName2State)
         this._renameMap = new Map();
     }
 
@@ -1137,9 +1077,6 @@ view.Graph = class extends grapher.Graph {
         for (const argument of this._arguments.values()) {
             argument.build();
         }
-        // console.log("this._pathArgumentNames");
-        // console.log(this._pathArgumentNames);
-        // console.log(this._namedEdges)
         super.build(document, origin);
     }
 };
@@ -1197,7 +1134,6 @@ view.Node = class extends grapher.Node {
             // this._expand.on('click', () => this.toggle());
         }
 
-        // 节点在图上的显示信息 
         const initializers = [];
         let hiddenInitializers = false;
         if (this.context.view.options.initializers) {
@@ -1749,17 +1685,14 @@ view.ModelFactoryService = class {
     }
 
     open(context) {
-        // console.log(context)
         return this._openSignature(context).then((context) => {
             const containers = new Map();
             let stream = context.stream;
             const entries = context.entries;
-            // console.log(entries);  // undefined
             if (!stream && entries && entries.size > 0) {
                 containers.set('', entries);
             }
             else {
-                // console.log('here');
                 const identifier = context.identifier;
                 try {
                     const archive = gzip.Archive.open(stream);
@@ -1793,10 +1726,7 @@ view.ModelFactoryService = class {
                     throw new view.ArchiveError(message.replace(/\.$/, '') + " in '" + identifier + "'.");
                 }
             }
-            // console.log(containers);  // Map(0)
-            // console.log(context)
             const modelContext = new view.ModelContext(context, containers);
-            // console.log(modelContext);
             return this._openContext(modelContext).then((model) => {
                 if (model) {
                     return model;
@@ -2013,7 +1943,6 @@ view.ModelFactoryService = class {
     }
 
     _openContext(context) {
-        // console.log(context)
         const modules = this._filter(context).filter((module) => module && module.length > 0);
         // console.log(modules)  // ['./onnx', './tensorrt', './rknn', './om']
 
