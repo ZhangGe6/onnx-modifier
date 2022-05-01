@@ -56,9 +56,9 @@ Click `Open Model...` to upload the ONNX model to edit. The model will be parsed
 
 Graph-level-operation elements are placed on the left-top of the page. Currently, there are three buttons: `Preview`，`Reset` and `Download`. They can do:
 
-- `Preview`：Preview the result model graph with all current modifications applied ；
-- `Reset`：Reset the model graph to its initial state；
-- `Download`：Save the modified model into disk.
+- `Preview`: Preview the result model graph with all current modifications applied;
+- `Reset`: Reset the model graph to its initial state;
+- `Download`: Save the modified model into disk.
 
 Node-level-operation elements are all in the sidebar, which can be invoked by clicking a specific node. Let's take a closer look.
 
@@ -95,8 +95,10 @@ For example,  Now we want remove the preprocess operators (`Sub->Mul->Sub->Trans
 `onnx-modifier` is under active development :hammer_and_wrench:. Welcome to use, create issues and pull requests! 🥰
 
 # Credits and referred materials
+- [Netron](https://github.com/lutzroeder/netron)
+- [flask](https://github.com/pallets/flask)
 - ONNX Python API [Official doc](https://github.com/onnx/onnx/blob/main/docs/PythonAPIOverview.md), [Leimao's Blog](https://leimao.github.io/blog/ONNX-Python-API/)
 - ONNX IO Stream  [Leimao's Blog](https://leimao.github.io/blog/ONNX-IO-Stream/)
-- [Netron](https://github.com/lutzroeder/netron)
 - [onnx-utils](https://github.com/saurabh-shandilya/onnx-utils)
-- [flask](https://github.com/pallets/flask)
+- [sweetalert](https://github.com/t4t5/sweetalert)
+

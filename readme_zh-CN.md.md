@@ -95,9 +95,9 @@ math: true
 `onnx-modifer`正在活跃地更新中:hammer_and_wrench:。 欢迎使用，提issue，如果有帮助的话，感谢给个:star:~
 
 # 参考资料
-
+- [Netron](https://github.com/lutzroeder/netron)
+- [flask](https://github.com/pallets/flask)
 - ONNX Python API [Official doc](https://github.com/onnx/onnx/blob/main/docs/PythonAPIOverview.md), [Leimao's Blog](https://leimao.github.io/blog/ONNX-Python-API/)
 - ONNX IO Stream  [Leimao's Blog](https://leimao.github.io/blog/ONNX-IO-Stream/)
-- [Netron](https://github.com/lutzroeder/netron)
 - [onnx-utils](https://github.com/saurabh-shandilya/onnx-utils)
-- [flask](https://github.com/pallets/flask)
+- [sweetalert](https://github.com/t4t5/sweetalert)

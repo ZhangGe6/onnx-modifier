@@ -215,8 +215,6 @@ host.BrowserHost = class {
         const downloadButton = this.document.getElementById('download-graph');
         downloadButton.addEventListener('click', () => {
             console.log(this)
-            // console.log(this._view._graph._modelNodeName2State)
-            // console.log(this._view._graph._renameMap)
             // https://healeycodes.com/talking-between-languages
             fetch('/download', {
                 // Declare what type of data we're sending
@@ -225,10 +223,7 @@ host.BrowserHost = class {
                 },
                 // Specify the method
                 method: 'POST',
-                // https://blog.csdn.net/Crazy_SunShine/article/details/80624366
                 body: JSON.stringify({
-                    // 'node_states' : this._mapToJson(this._view._graph._modelNodeName2State),
-                    // 'node_renamed_io' : this._twoLevelMapToJson(this._view._graph._renameMap),
                     'node_states' : this.mapToObjectRec(this._view._graph._modelNodeName2State),
                     'node_renamed_io' : this.mapToObjectRec(this._view._graph._renameMap),
                 }
@@ -246,8 +241,8 @@ host.BrowserHost = class {
                     swal("Success!", "Modified model has been successfuly saved in ./modified_onnx/", "success");
                 }
                 else {
-                    swal("Error happens!", "You can find it out or create an issue on", "error");
-                    // alert('Error happens, you can find it out or create an issue on ')
+                    swal("Error happens!", "You can find it out or create an issue on https://github.com/ZhangGe6/onnx-modifier", "error");
+                    // alert('Error happens, you can find it out or create an issue on https://github.com/ZhangGe6/onnx-modifier')
                 }
             });
         });
@@ -286,19 +281,14 @@ host.BrowserHost = class {
                 openFileDialog.click();
             });
             openFileDialog.addEventListener('change', (e) => {
-                // console.log(e)
-                // console.log(e.target.value)
                 if (e.target && e.target.files && e.target.files.length > 0) {
                     const files = Array.from(e.target.files);
                     const file = files.find((file) => this._view.accept(file.name));
                     // console.log(file)
                     this.upload_filename = file.name;
                     var form = new FormData();
-                    // console.log(file)
                     form.append('file', file);
-                    // console.log(form)
-                    // console.log(form.get('file'))
-                    
+
                     // https://stackoverflow.com/questions/66039996/javascript-fetch-upload-files-to-python-flask-restful
                     fetch('/return_file', {
                         method: 'POST',
@@ -361,14 +351,10 @@ host.BrowserHost = class {
     require(id) {
         const url = this._url('../static/' + id + '.js');
         this.window.__modules__ = this.window.__modules__ || {};
-        // console.log(this.window.__modules__)
-        // console.log(url)  // file:///C:/Users/ZhangGe/Desktop/netron/source/./onnx.js
-        // console.log(this.window.__modules__[url])  // undefined
         if (this.window.__modules__[url]) {
             return Promise.resolve(this.window.__exports__[url]);
         }
         return new Promise((resolve, reject) => {
-            // console.log('here')
             this.window.module = { exports: {} };
             const script = document.createElement('script');
             script.setAttribute('id', id);
@@ -379,8 +365,6 @@ host.BrowserHost = class {
                     const exports = this.window.module.exports;
                     delete this.window.module;
                     this.window.__modules__[id] = exports;
-                    // console.log('here')
-                    // console.log(exports)
                     resolve(exports);
                 }
                 else {
@@ -410,7 +394,6 @@ host.BrowserHost = class {
 
     request(file, encoding, base) {
         const url = base ? (base + '/' + file) : this._url(file);
-        // console.log(url)
         return this._request(url, null, encoding);
     }
 
@@ -549,14 +532,8 @@ host.BrowserHost = class {
     _open(file, files) {
         this._view.show('welcome spinner');
         const context = new host.BrowserHost.BrowserFileContext(this, file, files);
-        // console.log(context);
-        // console.log(model);
         context.open().then(() => {
-            // console.log(context);
-            // console.log(model);   // model is not defined
             return this._view.open(context).then((model) => {
-                // console.log("_open() in index.js is called");
-                // console.log(model);
                 this._view.show(null);
                 this.document.title = files[0].name;
                 return model;
@@ -621,6 +598,7 @@ host.BrowserHost = class {
         this._view.show('about');
     }
 
+    // https://blog.csdn.net/Crazy_SunShine/article/details/80624366
     _strMapToObj(strMap){
         let obj = Object.create(null);
         for (let [k, v] of strMap) {
@@ -860,17 +838,10 @@ host.BrowserHost.BrowserFileContext = class {
     }
 
     request(file, encoding, base) {
-        // console.log(this)
-        // console.log(file);
-        // console.log(encoding);
-        // console.log(base);
-
         if (base !== undefined) {
             return this._host.request(file, encoding, base);
         }
-        const blob = this._blobs[file];
-        // console.log(blob);
-        
+        const blob = this._blobs[file];        
         if (!blob) {
             return Promise.reject(new Error("File not found '" + file + "'."));
         }
@@ -920,7 +891,6 @@ host.BrowserHost.BrowserFileContext = class {
 
         return this.request(this._file.name, null).then((stream) => {
             this._stream = stream;
-            // console.log(this)
         });
     }
 };
