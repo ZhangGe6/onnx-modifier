@@ -57,7 +57,7 @@
 
 删除节点有两种模式：`Delete With Children` 和 `Delete Single Node`. 后者只删除当前单个节点；而前者还会自动删除以这个节点为根节点的所有节点，就不用一个一个删除啦。
 
-> `Deletw With Children`方法基于回溯算法实现。
+> `Delete With Children`方法基于回溯算法实现。
 
 被删除的节点会变灰显示。删除节点的效果如下：
 
