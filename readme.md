@@ -6,7 +6,7 @@ English | [简体中文](readme_zh-CN.md)
 
 To edit an ONNX model, One common way is to visualize the model graph, and edit it using ONNX Python API. This works fine. However, we have to code to edit, then visualize to check. The two processes may iterate for many times, which is time-consuming. :wave: 
 
-What if we have a tool, which allow us **edit and preview the editing effect in a totally visualization fashion**? 
+What if we have a tool, which allow us to **edit and preview the editing effect in a totally visualization fashion**? 
 
 Then `onnx-modifier` comes. With it, we can focus on editing the model graph in the visualization pannel. All the editing information will be summarized and processed by Python ONNX automatically at last. Then our time can be saved! :rocket: 
 
@@ -50,7 +50,8 @@ Click `Open Model...` to upload the ONNX model to edit. The model will be parsed
         <td ><center><img src="./docs/top_left_buttons.png"> <b>top left buttons (Graph-level-operations)</b></center></td>
         <td ><center><img src="./docs/node_prop_buttos.png" ><b>sidebar buttons (Node-level-operations)</b></center></td>
     </tr>
-<table>
+</table>
+
 
 Graph-level-operation elements are placed on the left-top of the page. Currently, there are three buttons: `Preview`，`Reset` and `Download`. They can do:
 

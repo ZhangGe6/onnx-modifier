@@ -1,4 +1,6 @@
 __pycache__/
 gym/
+*ppt
+*pptx
 
 *.onnx
