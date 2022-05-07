@@ -6,8 +6,8 @@ app = Flask(__name__)
 def index():
     return render_template('index.html')
 
-@app.route('/return_file', methods=['POST'])
-def return_file():
+@app.route('/open_model', methods=['POST'])
+def open_model():
     # https://blog.miguelgrinberg.com/post/handling-file-uploads-with-flask
     onnx_file = request.files['file']
     

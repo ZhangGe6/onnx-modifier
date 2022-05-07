@@ -89,11 +89,21 @@ For example,  Now we want remove the preprocess operators (`Sub->Mul->Sub->Trans
 
 <img src="./docs/rename_node_io.png" alt="rename_node_io" style="zoom:60%;" />
 
+# Sample models
 
+For quick testing, some typical sample models are provided as following. Most of them are from [onnx model zoo](https://github.com/onnx/models)
+
+- squeezeNet [Link (4.72MB)](https://github.com/onnx/models/blob/main/vision/classification/squeezenet/model/squeezenet1.0-12.onnx)
+- MobileNet [Link (13.3MB)](https://github.com/onnx/models/blob/main/vision/classification/mobilenet/model/mobilenetv2-7.onnx)
+- ResNet50-int8 [Link (24.6MB)](https://github.com/onnx/models/blob/main/vision/classification/resnet/model/resnet50-v1-12-int8.onnx)
+- movenet-lightning [Link (9.01MB)](https://pan.baidu.com/s/1MVheshDu58o4AAgoR9awRQ?pwd=jub9)
+  - Converted from the pretrained [tflite model](https://tfhub.dev/google/movenet/singlepose/lightning/4) using [tensorflow-onnx](https://github.com/onnx/tensorflow-onnx);
+  - There are preprocess nodes and a big bunch of postprocessing nodes in the model.
 
 `onnx-modifier` is under active development :hammer_and_wrench:. Welcome to use, create issues and pull requests! 🥰
 
 # Credits and referred materials
+
 - [Netron](https://github.com/lutzroeder/netron)
 - [flask](https://github.com/pallets/flask)
 - ONNX Python API [Official doc](https://github.com/onnx/onnx/blob/main/docs/PythonAPIOverview.md), [Leimao's Blog](https://leimao.github.io/blog/ONNX-Python-API/)
@@ -101,3 +111,6 @@ For example,  Now we want remove the preprocess operators (`Sub->Mul->Sub->Trans
 - [onnx-utils](https://github.com/saurabh-shandilya/onnx-utils)
 - [sweetalert](https://github.com/t4t5/sweetalert)
 
+
+
+[https://github.com/onnx/models/blob/main/vision/classification/mobilenet/model/mobilenetv2-7.onnx]: 

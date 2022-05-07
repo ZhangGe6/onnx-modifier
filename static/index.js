@@ -289,7 +289,7 @@ host.BrowserHost = class {
                     form.append('file', file);
 
                     // https://stackoverflow.com/questions/66039996/javascript-fetch-upload-files-to-python-flask-restful
-                    fetch('/return_file', {
+                    fetch('/open_model', {
                         method: 'POST',
                         body: form
                     }).then(function (response) {

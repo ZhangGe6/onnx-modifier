@@ -85,10 +85,24 @@
 
 `onnx-modifer`正在活跃地更新中:hammer_and_wrench:。 欢迎使用，提issue，如果有帮助的话，感谢给个:star:~
 
+# 示例模型文件
+
+为方便测试，以下提供一些典型的样例模型文件，主要来自于[onnx model zoo](https://github.com/onnx/models)
+
+- squeezeNet [链接 (4.72MB)](https://github.com/onnx/models/blob/main/vision/classification/squeezenet/model/squeezenet1.0-12.onnx)
+- MobileNet [链接 (13.3MB)](https://github.com/onnx/models/blob/main/vision/classification/mobilenet/model/mobilenetv2-7.onnx)
+- ResNet50-int8 [链接 (24.6MB)](https://github.com/onnx/models/blob/main/vision/classification/resnet/model/resnet50-v1-12-int8.onnx)
+- movenet-lightning [链接 (9.01MB)](https://pan.baidu.com/s/1MVheshDu58o4AAgoR9awRQ?pwd=jub9)
+  - 将Google提供的预训练[tflite模型](https://tfhub.dev/google/movenet/singlepose/lightning/4)，使用[tensorflow-onnx](https://github.com/onnx/tensorflow-onnx)转换得到；
+  - 模型中包含前处理和一大块后处理节点。
+
 # 参考资料
+
 - [Netron](https://github.com/lutzroeder/netron)
 - [flask](https://github.com/pallets/flask)
 - ONNX Python API [Official doc](https://github.com/onnx/onnx/blob/main/docs/PythonAPIOverview.md), [Leimao's Blog](https://leimao.github.io/blog/ONNX-Python-API/)
 - ONNX IO Stream  [Leimao's Blog](https://leimao.github.io/blog/ONNX-IO-Stream/)
 - [onnx-utils](https://github.com/saurabh-shandilya/onnx-utils)
 - [sweetalert](https://github.com/t4t5/sweetalert)
+
+[https://github.com/onnx/models/blob/main/vision/classification/mobilenet/model/mobilenetv2-7.onnx]: 
