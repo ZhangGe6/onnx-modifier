@@ -8,7 +8,7 @@ To edit an ONNX model, One common way is to visualize the model graph, and edit 
 
 What if we have a tool, which allow us to **edit and preview the editing effect in a totally visualization fashion**? 
 
-Then `onnx-modifier` comes. With it, we can focus on editing the model graph in the visualization pannel. All the editing information will be summarized and processed by Python ONNX automatically at last. Then our time can be saved! :rocket: 
+Then `onnx-modifier` comes. With it, we can focus on editing the model graph in the visualization pannel. All the editing information will be summarized and processed by Python ONNX API automatically at last. Then our time can be saved! :rocket: 
 
 `onnx-modifier` is built based on the popular network viewer [Netron](https://github.com/lutzroeder/netron) and the lightweight web application framework [flask](https://github.com/pallets/flask). 
 
@@ -110,7 +110,3 @@ For quick testing, some typical sample models are provided as following. Most of
 - ONNX IO Stream  [Leimao's Blog](https://leimao.github.io/blog/ONNX-IO-Stream/)
 - [onnx-utils](https://github.com/saurabh-shandilya/onnx-utils)
 - [sweetalert](https://github.com/t4t5/sweetalert)
-
-
-
-[https://github.com/onnx/models/blob/main/vision/classification/mobilenet/model/mobilenetv2-7.onnx]: 

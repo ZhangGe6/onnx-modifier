@@ -23,7 +23,7 @@ class onnxModifier:
     def from_name_stream(cls, name, stream):
         # https://leimao.github.io/blog/ONNX-IO-Stream/
         stream.seek(0)
-        model_proto = onnx.load_model(stream, onnx.ModelProto)
+        model_proto = onnx.load_model(stream, onnx.ModelProto, load_external_data=False)
         return cls(name, model_proto)
 
     def reload(self):

@@ -104,5 +104,3 @@
 - ONNX IO Stream  [Leimao's Blog](https://leimao.github.io/blog/ONNX-IO-Stream/)
 - [onnx-utils](https://github.com/saurabh-shandilya/onnx-utils)
 - [sweetalert](https://github.com/t4t5/sweetalert)
-
-[https://github.com/onnx/models/blob/main/vision/classification/mobilenet/model/mobilenetv2-7.onnx]: 
