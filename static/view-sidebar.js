@@ -129,7 +129,6 @@ sidebar.NodeSidebar = class {
         this._node = node;
         this._modelNodeName = modelNodeName;
         this._elements = [];
-        this._renameAuxelements = []   // auxilary elements for input/output renaming
         this._attributes = [];
         this._inputs = [];
         this._outputs = [];
@@ -185,7 +184,6 @@ sidebar.NodeSidebar = class {
             this._addHeader('Inputs');
             for (const input of inputs) {
                 this._addInput(input.name, input);  // 这里的input.name是小白格前面的名称（不是方格内的）
-                this.add_rename_aux_element(input.arguments);
             }
         }
 
@@ -194,7 +192,6 @@ sidebar.NodeSidebar = class {
             this._addHeader('Outputs');
             for (const output of outputs) {
                 this._addOutput(output.name, output);
-                this.add_rename_aux_element(output.arguments);
             }
         }
 
@@ -210,6 +207,20 @@ sidebar.NodeSidebar = class {
 
         this.add_separator(this._elements, 'sidebar-view-separator');
         this._addHeader('Rename helper');
+        if (inputs && inputs.length > 0) {
+            for (const input of inputs) {
+                this.add_rename_aux_element(input.arguments);
+            }
+        }
+        if (outputs && outputs.length > 0) {
+            for (const output of outputs) {
+                this.add_rename_aux_element(output.arguments);
+            }
+        }
+
+        this.add_separator(this._elements, 'sidebar-view-separator');
+        this._addHeader('Add children node');
+        this._addDropdownSelector('AddChildrenNode');
 
     }
 
@@ -247,10 +258,9 @@ sidebar.NodeSidebar = class {
                         // console.log(this._host._view._graph._renameMap);
                     });
 
-                    this._renameAuxelements.push(origNameElement);
-                    this._renameAuxelements.push(newNameElement)
-                    this.add_separator(this._renameAuxelements, 'sidebar-view-separator')  
-                    
+                    this._elements.push(origNameElement);
+                    this._elements.push(newNameElement);
+
                 }
             }
         }
@@ -260,9 +270,7 @@ sidebar.NodeSidebar = class {
 
     render() {
         // console.log(this._elements)
-        // console.log(this._renameAuxelements)
-        // return this._elements;
-        return this._elements.concat(this._renameAuxelements);
+        return this._elements;
     }
 
     _addHeader(title) {
@@ -332,6 +340,16 @@ sidebar.NodeSidebar = class {
             buttonElement.addEventListener('click', () => {
                 this._host._view._graph.reset_node(this._modelNodeName)
             });
+        }
+    }
+
+    _addDropdownSelector() {
+        const selectorElement = this._host.document.createElement('SELECT');
+        this._elements.push(selectorElement);
+        // console.log(this._host._view._model.supported_ops)
+        for (const op of this._host._view._model.supported_ops) {
+            var option = new Option(op, op);
+            selectorElement.appendChild(option);
         }
 
     }

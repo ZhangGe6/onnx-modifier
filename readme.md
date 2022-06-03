@@ -23,7 +23,7 @@ Hope it helps!
 
 # Get started 
 
-Clone the repo and install the require Python packages by 
+Clone the repo and install the required Python packages by 
 
 ```bash
 git clone git@github.com:ZhangGe6/onnx-modifier.git
@@ -63,7 +63,7 @@ Node-level-operation elements are all in the sidebar, which can be invoked by cl
 
 ## Delete node
 
-There are two modes for deleting node: `Delete With Children` and `Delete Single Node`. `Delete Single Node` only deletes the clicked node, while `Delete With Children` also deletes all the node rooted on the clicked node, which is convenient and nature if we want to delete a long path of nodes. 
+There are two modes for deleting node: `Delete With Children` and `Delete Single Node`. `Delete Single Node` only deletes the clicked node, while `Delete With Children` also deletes all the node rooted on the clicked node, which is convenient and natural if we want to delete a long path of nodes. 
 
 > The implementation of `Delete With Children` is based on the backtracking algorithm.
 
