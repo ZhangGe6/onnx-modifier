@@ -221,6 +221,8 @@ sidebar.NodeSidebar = class {
         this.add_separator(this._elements, 'sidebar-view-separator');
         this._addHeader('Add children node');
         this._addDropdownSelector('AddChildrenNode');
+        this.add_span()
+        this._addButton('Add Node');
 
     }
 
@@ -341,17 +343,44 @@ sidebar.NodeSidebar = class {
                 this._host._view._graph.reset_node(this._modelNodeName)
             });
         }
+
+        if (title === 'Add Node') {
+            buttonElement.addEventListener('click', () => {
+                // console.log(this.add_op_type)
+                this._host._view._graph.add_node(this.add_op_domain, this.add_op_type)
+            });
+        }
     }
 
-    _addDropdownSelector() {
-        const selectorElement = this._host.document.createElement('SELECT');
-        this._elements.push(selectorElement);
-        // console.log(this._host._view._model.supported_ops)
-        for (const op of this._host._view._model.supported_ops) {
-            var option = new Option(op, op);
-            selectorElement.appendChild(option);
-        }
+    _addDropdownSelector(title) {
+        if (title === 'AddChildrenNode') {
+            const selectorElement = this._host.document.createElement('SELECT');
+            selectorElement.setAttribute('id', 'sidebar-AddChildrenNode');
+            this._elements.push(selectorElement);
+            // console.log(this._host._view._model.supported_nodes)
+            for (const node of this._host._view._model.supported_nodes) {
+                // node: [domain, op]
+                // console.log(node)
+                // console.log(node[0])
+                // console.log(node[1])
 
+                var option = new Option(node[1], node[0] + ':' + node[1]);
+                // console.log(option)
+                selectorElement.appendChild(option);
+            }
+            
+            var selected_val = selectorElement.options[selectorElement.selectedIndex].value
+            this.add_op_domain = selected_val.split(':')[0]
+            this.add_op_type = selected_val.split(':')[1]
+            // console.log(selectorElement.options[selectorElement.selectedIndex].text)
+            // console.log(selectorElement.options[selectorElement.selectedIndex].value)
+            selectorElement.addEventListener('change', () => {
+                var selected_val = selectorElement.options[selectorElement.selectedIndex].value
+                this.add_op_domain = selected_val.split(':')[0]
+                this.add_op_type = selected_val.split(':')[1]
+            });
+
+        }
     }
 
     toggleInput(name) {

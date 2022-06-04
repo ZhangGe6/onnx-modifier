@@ -20,6 +20,8 @@ grapher.Graph = class {
 
         this._pathArgumentNames = new Set();  // the name of arguments which occurs in both sides of an edge
         this._renameMap = new Map();
+
+        this._addedNode = [];
     }
 
     get options() {

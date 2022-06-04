@@ -457,7 +457,23 @@ view.View = class {
     }
 
     get activeGraph() {
-        return Array.isArray(this._graphs) && this._graphs.length > 0 ? this._graphs[0] : null;
+        // return Array.isArray(this._graphs) && this._graphs.length > 0 ? this._graphs[0] : null;
+        var active_graph = Array.isArray(this._graphs) && this._graphs.length > 0 ? this._graphs[0] : null;
+        // console.log(this._addedNode)
+        // console.log(active_graph)
+
+        if (this.lastViewGraph) {
+            // console.log(this.lastViewGraph._addedNode)
+            for (const node of this.lastViewGraph._addedNode) {
+                // console.log(node)
+                var empty_node = active_graph.make_empty_node(node)
+
+
+
+            }
+        }
+
+        return active_graph
     }
 
     _updateGraph(model, graphs) {
@@ -468,9 +484,10 @@ view.View = class {
             this._model = model;
             this._graphs = graphs;
         }
+        this.lastViewGraph = this._graph; 
+
         const graph = this.activeGraph;
-        
-        this.lastViewGraph = this._graph;        
+               
         // console.log("_updateGraph is called");
         return this._timeout(100).then(() => {
             if (graph && graph != lastGraphs[0]) {
@@ -568,6 +585,7 @@ view.View = class {
                     // console.log('node state of lastViewGraph is loaded')
                     viewGraph._modelNodeName2State = this.lastViewGraph._modelNodeName2State;
                     viewGraph._renameMap = this.lastViewGraph._renameMap;
+                    viewGraph._addedNode = this.lastViewGraph._addedNode;
                     // console.log(viewGraph._renameMap);
                     // console.log(viewGraph._modelNodeName2State)
                 }
@@ -850,6 +868,9 @@ view.Graph = class extends grapher.Graph {
         this.model = model;
         this._arguments = new Map();
         this._nodeKey = 0;
+        
+        // the node key of custom added node
+        this._add_nodeKey = 0;
     }
 
     createNode(node) {
@@ -1010,6 +1031,12 @@ view.Graph = class extends grapher.Graph {
             }
         }
 
+
+        // custom added node
+        for (const node of this._addedNode) {
+
+        }
+
         for (const output of graph.outputs) {
             const viewOutput = this.createOutput(output);
             for (const argument of output.arguments) {
@@ -1070,6 +1097,29 @@ view.Graph = class extends grapher.Graph {
             this._renameMap.set(modelNodeName, new Map());
         }
         this._renameMap.get(modelNodeName).set(src_name, dst_name);
+    }
+
+    add_node(op_domain, op_type) {
+        // node_name: the added op name
+        // parent_node_name: parent modelNodeName
+        // console.log(node_name)
+
+        var node_id = (this._add_nodeKey++).toString();  // in case input (onnx) node has no name
+        var modelNodeName = 'custom_added_' + op_type + node_id
+
+        // console.log(op_type)
+        // console.log(modelNodeName)
+
+        var properties = new Map()
+        properties.set('domain', op_domain)
+        properties.set('op_type', op_type)
+        properties.set('name', modelNodeName)
+
+        // console.log(properties)
+
+        this._addedNode.push(new view.LightNodeInfo(properties))
+        console.log(this._addedNode)
+
     }
 
 
@@ -1233,6 +1283,7 @@ view.Node = class extends grapher.Node {
     }
 };
 
+
 view.Input = class extends grapher.Node {
 
     constructor(context, value) {
@@ -1290,6 +1341,15 @@ view.Output = class extends grapher.Node {
         return [];
     }
 };
+
+view.LightNodeInfo = class {
+    constructor(properties, attributes, inputs, outputs) {
+        this.properties = properties
+        this.attributes = attributes || []
+        this.inputs = inputs || []
+        this.outputs = outputs || []
+    }
+}
 
 view.Argument = class {
 

@@ -334,7 +334,7 @@ onnx.Model = class {
             for (const func of model.functions || []) {
                 context.metadata.add(new onnx.Function(context, func));
             }
-            // var tmp = this.supported_ops
+            // var tmp = this.supported_nodes
             const graphs = [ model.graph ];
             while (graphs.length > 0) {
                 const graph = graphs.shift();
@@ -407,17 +407,17 @@ onnx.Model = class {
         return this._graphs;
     }
 
-    get supported_ops() {
-        console.log(this.graphMetadata);
-        var ops = []
+    get supported_nodes() {
+        // console.log(this.graphMetadata);
+        var nodes = []
         for (const domain of this.graphMetadata._metadata._map.keys()) {
             // console.log(domain)
             for (const op of this.graphMetadata._metadata._map.get(domain).keys()) {
                 // console.log(op)
-                ops.push(op)
+                nodes.push([domain, op])
             }
         }
-        return ops
+        return nodes
     }
 
 };
@@ -434,6 +434,7 @@ onnx.Graph = class {
         this._description = graph.doc_string || '';
 
         context = new onnx.GraphContext(context, graph.node);
+        this._context = context;
         
         // model parameter assignment here!
         // console.log(graph)
@@ -510,6 +511,15 @@ onnx.Graph = class {
     toString() {
         return 'graph(' + this.name + ')';
     }
+
+    make_empty_node (node_info) {
+        // type of node_info == LightNodeInfo
+        const schema = this._context.metadata.type(node_info.properties.get('op_type'), node_info.properties.get('domain'));
+        console.log(schema)
+
+
+    }
+
 };
 
 onnx.Parameter = class {
