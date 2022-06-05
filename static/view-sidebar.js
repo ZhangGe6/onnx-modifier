@@ -218,11 +218,11 @@ sidebar.NodeSidebar = class {
             }
         }
 
-        this.add_separator(this._elements, 'sidebar-view-separator');
-        this._addHeader('Add children node');
-        this._addDropdownSelector('AddChildrenNode');
-        this.add_span()
-        this._addButton('Add Node');
+        // this.add_separator(this._elements, 'sidebar-view-separator');
+        // this._addHeader('Add children node');
+        // this._addDropdownSelector('AddChildrenNode');
+        // this.add_span()
+        // this._addButton('Add Node');
 
     }
 
@@ -344,14 +344,9 @@ sidebar.NodeSidebar = class {
             });
         }
 
-        if (title === 'Add Node') {
-            buttonElement.addEventListener('click', () => {
-                // console.log(this.add_op_type)
-                this._host._view._graph.add_node(this.add_op_domain, this.add_op_type)
-            });
-        }
     }
 
+    // deprecated
     _addDropdownSelector(title) {
         if (title === 'AddChildrenNode') {
             const selectorElement = this._host.document.createElement('SELECT');

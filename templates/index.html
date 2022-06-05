@@ -83,6 +83,25 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
     top: 90px;
 }
 .graph-op-button-download:active {  background: #e7e7e7; }
+.graph-op-button-addNode {
+    cursor: pointer;
+    background-color: white;
+    border: 1px solid grey;
+    border-radius: 3px;
+    color: black;
+    font-family:"Oliviar Sans Light";
+    font-size: 16px;
+    position:absolute;
+    left: 2px;
+    top: 120px;
+}
+.graph-op-button-addNode:active {  background: #e7e7e7; }
+.graph-op-add-node-dropdown {
+
+    position:absolute;
+    left: 2px;
+    top: 150px;
+}
 .icon .border { stroke: #fff; }
 .icon .stroke { stroke: #808080; }
 .icon:hover .stroke { stroke: #000000; }
@@ -252,6 +271,9 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
     <button id="preview-graph" class="graph-op-button-preview">Preview</button>
     <button id="reset-graph" class="graph-op-button-reset">Reset</button>
     <button id="download-graph" class="graph-op-button-download">Download</button>
+    <button id="add-node" class="graph-op-button-addNode">Add node</button>
+    <select id="add-node-dropdown" class="graph-op-add-node-dropdown">
+    </select>
 
     <button id="back-button" class="toolbar-back-button" title="Back">
         &#x276E;

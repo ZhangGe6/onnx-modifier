@@ -467,6 +467,8 @@ view.View = class {
         if (model && graphs) {
             this._model = model;
             this._graphs = graphs;
+            
+            this.UpdateAddNodeDropDown();
         }
         this.lastViewGraph = this._graph; 
 
@@ -843,6 +845,18 @@ view.View = class {
             this._sidebar.push(documentationSidebar.render(), title);
         }
     }
+
+    UpdateAddNodeDropDown() {
+        // update dropdown supported node lost
+        var addNodeDropdown = this._host.document.getElementById('add-node-dropdown');
+        for (const node of this._model.supported_nodes) {
+            // node: [domain, op]
+            var option = new Option(node[1], node[0] + ':' + node[1]);
+            // console.log(option)
+            addNodeDropdown.appendChild(option);
+        }
+        
+    }
 };
 
 view.Graph = class extends grapher.Graph {
@@ -1110,7 +1124,6 @@ view.Graph = class extends grapher.Graph {
             this.view._graphs[0].make_custom_add_node(node_info)
         }
         // console.log(this.view._graphs[0].nodes)
-        this.view._updateGraph()
     }
 
 

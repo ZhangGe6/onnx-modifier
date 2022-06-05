@@ -246,6 +246,22 @@ host.BrowserHost = class {
             });
         });
 
+        const addNodeButton = this.document.getElementById('add-node');
+        addNodeButton.addEventListener('click', () => {
+            // this._view._graph.resetGraph();
+            // this._view._updateGraph();
+            var addNodeDropDown = this.document.getElementById('add-node-dropdown');
+            var selected_val = addNodeDropDown.options[addNodeDropDown.selectedIndex].value
+            var add_op_domain = selected_val.split(':')[0]
+            var add_op_type = selected_val.split(':')[1]
+            // console.log(selected_val)
+            this._view._graph.add_node(add_op_domain, add_op_type)
+            this._view._updateGraph();
+        })
+
+
+
+
         this.document.getElementById('version').innerText = this.version;
 
         if (this._meta.file) {
