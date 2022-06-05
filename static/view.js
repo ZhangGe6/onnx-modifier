@@ -457,23 +457,7 @@ view.View = class {
     }
 
     get activeGraph() {
-        // return Array.isArray(this._graphs) && this._graphs.length > 0 ? this._graphs[0] : null;
-        var active_graph = Array.isArray(this._graphs) && this._graphs.length > 0 ? this._graphs[0] : null;
-        // console.log(this._addedNode)
-        // console.log(active_graph)
-
-        if (this.lastViewGraph) {
-            // console.log(this.lastViewGraph._addedNode)
-            for (const node of this.lastViewGraph._addedNode) {
-                // console.log(node)
-                var empty_node = active_graph.make_empty_node(node)
-
-
-
-            }
-        }
-
-        return active_graph
+        return Array.isArray(this._graphs) && this._graphs.length > 0 ? this._graphs[0] : null;
     }
 
     _updateGraph(model, graphs) {
@@ -487,6 +471,7 @@ view.View = class {
         this.lastViewGraph = this._graph; 
 
         const graph = this.activeGraph;
+        // console.log(graph.nodes)
                
         // console.log("_updateGraph is called");
         return this._timeout(100).then(() => {
@@ -1114,12 +1099,18 @@ view.Graph = class extends grapher.Graph {
         properties.set('domain', op_domain)
         properties.set('op_type', op_type)
         properties.set('name', modelNodeName)
-
         // console.log(properties)
-
         this._addedNode.push(new view.LightNodeInfo(properties))
-        console.log(this._addedNode)
-
+        // console.log(this._addedNode)
+        
+        // refresh
+        this.view._graphs[0].reset_custom_added_node()
+        for (const node_info of this._addedNode) {
+            // console.log(node)
+            this.view._graphs[0].make_custom_add_node(node_info)
+        }
+        // console.log(this.view._graphs[0].nodes)
+        this.view._updateGraph()
     }
 
 
