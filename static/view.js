@@ -1031,11 +1031,6 @@ view.Graph = class extends grapher.Graph {
         }
 
 
-        // custom added node
-        for (const node of this._addedNode) {
-
-        }
-
         for (const output of graph.outputs) {
             const viewOutput = this.createOutput(output);
             for (const argument of output.arguments) {
@@ -1114,17 +1109,45 @@ view.Graph = class extends grapher.Graph {
         properties.set('op_type', op_type)
         properties.set('name', modelNodeName)
         // console.log(properties)
-        this._addedNode.push(new view.LightNodeInfo(properties))
-        // console.log(this._addedNode)
+        // this._addedNode.push(new view.LightNodeInfo(properties))
+        this._addedNode.set(modelNodeName, new view.LightNodeInfo(properties))
+        console.log(this._addedNode)
         
         // refresh
         this.view._graphs[0].reset_custom_added_node()
-        for (const node_info of this._addedNode) {
+        // for (const node_info of this._addedNode.values()) {
+        for (const [modelNodeName, node_info] of this._addedNode) {
             // console.log(node)
-            this.view._graphs[0].make_custom_add_node(node_info)
+            var node = this.view._graphs[0].make_custom_add_node(node_info)
+            
+            // padding empty array for LightNodeInfo.inputs/outputs
+            for (var input of node.inputs) {
+                var arg_len = input._arguments.length
+                this._addedNode.get(modelNodeName).inputs.set(input.name, new Array(arg_len))
+            }
+
         }
         // console.log(this.view._graphs[0].nodes)
+        console.log(this._addedNode)
+
+
     }
+
+    changeNodeAttribute(modelNodeName, attributeName, targetValue) {
+        if (this._addedNode.has(modelNodeName)) {
+            this._addedNode.get(modelNodeName).attributes.set(attributeName, targetValue)
+        }
+        // console.log(this._addedNode)
+    }
+
+    changeNodeInput(modelNodeName, parameterName, arg_index, targetValue) {
+        if (this._addedNode.has(modelNodeName)) {
+            this._addedNode.get(modelNodeName).inputs.get(parameterName)[arg_index] = targetValue
+
+        }
+        console.log(this._addedNode)
+    }
+
 
 
     build(document, origin) {
@@ -1349,8 +1372,8 @@ view.Output = class extends grapher.Node {
 view.LightNodeInfo = class {
     constructor(properties, attributes, inputs, outputs) {
         this.properties = properties
-        this.attributes = attributes || []
-        this.inputs = inputs || []
+        this.attributes = attributes || new Map()
+        this.inputs = inputs || new Map()
         this.outputs = outputs || []
     }
 }

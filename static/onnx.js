@@ -597,6 +597,8 @@ onnx.Graph = class {
             
         // console.log(custom_add_node)
         this._custom_added_node.push(custom_add_node)
+
+        return custom_add_node;
     }
 
 };

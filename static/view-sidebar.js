@@ -288,7 +288,7 @@ sidebar.NodeSidebar = class {
     }
 
     _addAttribute(name, attribute) {
-        const item = new NodeAttributeView(this._host, attribute);
+        const item = new NodeAttributeView(this._host, attribute, name, this._modelNodeName);
         item.on('show-graph', (sender, graph) => {
             this._raise('show-graph', graph);
         });
@@ -298,8 +298,9 @@ sidebar.NodeSidebar = class {
     }
 
     _addInput(name, input) {
+        // console.log(input)
         if (input.arguments.length > 0) {
-            const view = new sidebar.ParameterView(this._host, input);
+            const view = new sidebar.ParameterView(this._host, input, this._modelNodeName);
             view.on('export-tensor', (sender, tensor) => {
                 this._raise('export-tensor', tensor);
             });
@@ -315,7 +316,7 @@ sidebar.NodeSidebar = class {
 
     _addOutput(name, output) {
         if (output.arguments.length > 0) {
-            const item = new sidebar.NameValueView(this._host, name, new sidebar.ParameterView(this._host, output));
+            const item = new sidebar.NameValueView(this._host, name, new sidebar.ParameterView(this._host, output, this._modelNodeName));
             this._outputs.push(item);
             this._elements.push(item.render());
         }
@@ -626,9 +627,11 @@ sidebar.ValueTextView = class {
 
 class NodeAttributeView {
 
-    constructor(host, attribute) {
+    constructor(host, attribute, attributeName, modelNodeName) {
         this._host = host;
         this._attribute = attribute;
+        this._attributeName = attributeName
+        this._modelNodeName = modelNodeName
         this._element = this._host.document.createElement('div');
         this._element.className = 'sidebar-view-item-value';
 
@@ -672,10 +675,22 @@ class NodeAttributeView {
                 if (content && typeof content === 'string') {
                     content = content.split('<').join('&lt;').split('>').join('&gt;');
                 }
-                const line = this._host.document.createElement('div');
-                line.className = 'sidebar-view-item-value-line';
-                line.innerHTML = content ? content : '&nbsp;';
-                this._element.appendChild(line);
+                // const line = this._host.document.createElement('div');
+                // line.className = 'sidebar-view-item-value-line';
+                // line.innerHTML = content ? content : '&nbsp;';
+                // this._element.appendChild(line);
+
+                var attr_input = document.createElement("INPUT");
+                attr_input.setAttribute("type", "text");
+                attr_input.setAttribute("value", content ? content : '&nbsp;');
+                attr_input.addEventListener('input', (e) => {
+                    // console.log(e.target.value);
+                    this._host._view._graph.changeNodeAttribute(this._modelNodeName, this._attributeName,  e.target.value);
+                    // console.log(this._host._view._graph._renameMap);
+                });
+
+                this._element.appendChild(attr_input);
+
             }
         }
     }
@@ -744,14 +759,17 @@ class NodeAttributeView {
 
 sidebar.ParameterView = class {
 
-    constructor(host, list) {
+    constructor(host, list, modelNodeName) {
         this._host = host;
         this._list = list;
+        this._modelNodeName = modelNodeName
         this._elements = [];
         this._items = [];
-        
-        for (const argument of list.arguments) {
-            const item = new sidebar.ArgumentView(host, argument);
+
+        // console.log(list)
+        // for (const argument of list.arguments) {
+        for (const [index, argument] of list.arguments.entries()) {
+            const item = new sidebar.ArgumentView(host, argument, index, list._name, this._modelNodeName);
             item.on('export-tensor', (sender, tensor) => {
                 this._raise('export-tensor', tensor);
             });
@@ -790,9 +808,12 @@ sidebar.ParameterView = class {
 
 sidebar.ArgumentView = class {
 
-    constructor(host, argument) {
+    constructor(host, argument, arg_index, parameterName, modelNodeName) {
         this._host = host;
         this._argument = argument;
+        this._arg_index = arg_index
+        this._parameterName = parameterName
+        this._modelNodeName = modelNodeName
 
         this._element = this._host.document.createElement('div');
         this._element.className = 'sidebar-view-item-value';
@@ -820,15 +841,30 @@ sidebar.ArgumentView = class {
         this._hasKind = initializer && initializer.kind ? true : false;
         if (this._hasId || (!this._hasKind && !type)) {
             this._hasId = true;
-            const nameLine = this._host.document.createElement('div');
-            nameLine.className = 'sidebar-view-item-value-line';
+
             if (typeof name !== 'string') {
                 throw new Error("Invalid argument identifier '" + JSON.stringify(name) + "'.");
             }
             name = name.split('\n').shift(); // custom argument id
             name = name || ' ';
-            nameLine.innerHTML = '<span class=\'sidebar-view-item-value-line-content\'>name: <b>' + name + '</b></span>';
-            this._element.appendChild(nameLine);
+
+            // const nameLine = this._host.document.createElement('div');
+            // nameLine.className = 'sidebar-view-item-value-line';
+            // nameLine.innerHTML = '<span class=\'sidebar-view-item-value-line-content\'>name: <b>' + name + '</b></span>';
+            // this._element.appendChild(nameLine);
+
+            var arg_input = document.createElement("INPUT");
+            arg_input.setAttribute("type", "text");
+            arg_input.setAttribute("value", name);
+            arg_input.addEventListener('input', (e) => {
+                // console.log(this._argument)
+                // console.log(this._argument.name)
+                // console.log(e.target.value);
+                this._host._view._graph.changeNodeInput(this._modelNodeName, this._parameterName, this._arg_index, e.target.value);
+                // console.log(this._host._view._graph._renameMap);
+            });
+            this._element.appendChild(arg_input);
+
         }
         else if (this._hasKind) {
             const kindLine = this._host.document.createElement('div');
