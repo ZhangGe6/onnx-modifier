@@ -533,35 +533,86 @@ onnx.Graph = class {
         // var min_input = schema.max_input
         var max_custom_add_input_num = Math.min(schema.max_input, 5)  // set at most 5 custom_add inputs
         var max_custom_add_output_num = Math.min(schema.max_output, 5)  // set at most 5 custom_add outputs
-
+        
+        // console.log(node_info)
         var inputs = []
         for (let i = 0; i < schema.inputs.length; ++i) {
             const input = schema.inputs[i]
+            
+            var node_info_input = node_info.inputs.get(input.name)
+            console.log(node_info_input)
+
             var arg_list = []
             if (input.list) {
                 for (let j = 0; j < max_custom_add_input_num; ++j) {
-                    var arg_name = 'custom_input_' + (this.custom_add_node_io_idx++).toString()
+                    if (node_info_input && node_info_input[j]) {
+                        var arg_name = node_info_input[j]
+                    }
+                    else {
+                        var arg_name = 'custom_input_' + (this._custom_add_node_io_idx++).toString()
+                    }
                     arg_list.push(this._context.argument(arg_name))
                 }
             }
             else {
-                var arg_name = 'custom_input_' + (this.custom_add_node_io_idx++).toString()
+                // if (node_info_input) {
+                //     if (!node_info_input[0]) {
+                //         console.log('got empty')
+                //     }
+                //     else {
+                //         console.log(node_info_input[0])
+                //     } 
+                // }
+
+                if (node_info_input && node_info_input[0]) {
+                    var arg_name = node_info_input[0]
+                }
+                else {
+                    var arg_name = 'custom_input_' + (this._custom_add_node_io_idx++).toString()
+                }
                 arg_list = [this._context.argument(arg_name)]
             }
+
+            // var arg_list = []
+            // if (input.list) {
+            //     for (let j = 0; j < max_custom_add_input_num; ++j) {
+            //         var arg_name = 'custom_input_' + (this._custom_add_node_io_idx++).toString()
+            //         arg_list.push(this._context.argument(arg_name))
+            //     }
+            // }
+            // else {
+            //     var arg_name = 'custom_input_' + (this._custom_add_node_io_idx++).toString()
+            //     arg_list = [this._context.argument(arg_name)]
+            // }
+
             inputs.push(new onnx.Parameter(input.name, arg_list));
         }
+
         var outputs = []
         for (let i = 0; i < schema.outputs.length; ++i) {
             const output = schema.outputs[i]
+            var node_info_output = node_info.outputs.get(output.name)
+
             var arg_list = []
             if (output.list) {
                 for (let j = 0; j < max_custom_add_output_num; ++j) {
-                    var arg_name = 'custom_output_' + (this.custom_add_node_io_idx++).toString()
+                    if (node_info_output && node_info_output[j]) {
+                        var arg_name = node_info_output[j]
+                    }
+                    else {
+                        var arg_name = 'custom_output_' + (this._custom_add_node_io_idx++).toString()
+                    }
                     arg_list.push(this._context.argument(arg_name))
                 }
             }
             else {
-                var arg_name = 'custom_output_' + (this.custom_add_node_io_idx++).toString()
+                if (node_info_output && node_info_output[0]) {
+                    var arg_name = node_info_output[0]
+                }
+                else {
+                    var arg_name = 'custom_output_' + (this._custom_add_node_io_idx++).toString()
+                }
+                
                 arg_list = [this._context.argument(arg_name)]
             }
             outputs.push(new onnx.Parameter(output.name, arg_list));

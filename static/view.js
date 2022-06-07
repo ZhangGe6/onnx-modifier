@@ -875,14 +875,24 @@ view.View = class {
             var node = this._graphs[0].make_custom_add_node(node_info)
             // console.log(node)
             
-            // padding empty array for LightNodeInfo.inputs/outputs
-            for (var input of node.inputs) {
-                var arg_len = input._arguments.length
-                this.lastViewGraph._addedNode.get(modelNodeName).inputs.set(input.name, new Array(arg_len))
+            // padding empty array for LightNodeInfo.inputs/outputs (only when initializing)
+            if (this.lastViewGraph._addedNode.get(modelNodeName).inputs.size == 0) {
+
+                for (var input of node.inputs) {
+                    var arg_len = input._arguments.length
+                    this.lastViewGraph._addedNode.get(modelNodeName).inputs.set(input.name, new Array(arg_len))
+                }
+            }
+
+            if (this.lastViewGraph._addedNode.get(modelNodeName).outputs.size == 0) {
+
+                for (var output of node.outputs) {
+                    var arg_len = output._arguments.length
+                    this.lastViewGraph._addedNode.get(modelNodeName).outputs.set(output.name, new Array(arg_len))
+                }
             }
 
         }
-        // console.log(this.view._graphs[0].nodes)
         // console.log(this.lastViewGraph._addedNode)
     }
 
@@ -1140,7 +1150,7 @@ view.Graph = class extends grapher.Graph {
         // console.log(properties)
         // this._addedNode.push(new view.LightNodeInfo(properties))
         this._addedNode.set(modelNodeName, new view.LightNodeInfo(properties))
-        console.log(this._addedNode)
+        // console.log(this._addedNode)
         
         // refresh
         // this.refresh_added_node()
@@ -1173,10 +1183,16 @@ view.Graph = class extends grapher.Graph {
         // console.log(this._addedNode)
     }
 
-    changeNodeInput(modelNodeName, parameterName, arg_index, targetValue) {
-        if (this._addedNode.has(modelNodeName)) {
-            this._addedNode.get(modelNodeName).inputs.get(parameterName)[arg_index] = targetValue
 
+    changeNodeInputOutput(modelNodeName, parameterName, arg_index, targetValue) {
+        if (this._addedNode.has(modelNodeName)) {
+            if (this._addedNode.get(modelNodeName).inputs.has(parameterName)) {
+                this._addedNode.get(modelNodeName).inputs.get(parameterName)[arg_index] = targetValue
+            }
+
+            if (this._addedNode.get(modelNodeName).outputs.has(parameterName)) {
+                this._addedNode.get(modelNodeName).outputs.get(parameterName)[arg_index] = targetValue
+            }
         }
         // console.log(this._addedNode)
     }
@@ -1407,7 +1423,7 @@ view.LightNodeInfo = class {
         this.properties = properties
         this.attributes = attributes || new Map()
         this.inputs = inputs || new Map()
-        this.outputs = outputs || []
+        this.outputs = outputs || new Map()
     }
 }
 

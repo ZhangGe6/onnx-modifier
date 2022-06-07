@@ -682,7 +682,7 @@ class NodeAttributeView {
 
                 var attr_input = document.createElement("INPUT");
                 attr_input.setAttribute("type", "text");
-                attr_input.setAttribute("value", content ? content : '&nbsp;');
+                attr_input.setAttribute("value", content ? content : 'undefined');
                 attr_input.addEventListener('input', (e) => {
                     // console.log(e.target.value);
                     this._host._view._graph.changeNodeAttribute(this._modelNodeName, this._attributeName,  e.target.value);
@@ -860,7 +860,7 @@ sidebar.ArgumentView = class {
                 // console.log(this._argument)
                 // console.log(this._argument.name)
                 // console.log(e.target.value);
-                this._host._view._graph.changeNodeInput(this._modelNodeName, this._parameterName, this._arg_index, e.target.value);
+                this._host._view._graph.changeNodeInputOutput(this._modelNodeName, this._parameterName, this._arg_index, e.target.value);
                 // console.log(this._host._view._graph._renameMap);
             });
             this._element.appendChild(arg_input);
