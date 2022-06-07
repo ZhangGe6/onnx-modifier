@@ -524,7 +524,7 @@ onnx.Graph = class {
     make_custom_add_node(node_info) {
         // type of node_info == LightNodeInfo
         const schema = this._context.metadata.type(node_info.properties.get('op_type'), node_info.properties.get('domain'));
-        console.log(schema)
+        // console.log(schema)
         
         // console.log(node_info.attributes)
         // console.log(node_info.inputs)
@@ -532,7 +532,7 @@ onnx.Graph = class {
         // var max_input = schema.max_input
         // var min_input = schema.max_input
         var max_custom_add_input_num = Math.min(schema.max_input, 5)  // set at most 5 custom_add inputs
-        var max_custom_add_output_num = Math.min(schema.max_output, 5)  // set at most 5 custom_add inputs
+        var max_custom_add_output_num = Math.min(schema.max_output, 5)  // set at most 5 custom_add outputs
 
         var inputs = []
         for (let i = 0; i < schema.inputs.length; ++i) {
@@ -570,14 +570,19 @@ onnx.Graph = class {
         // console.log(inputs)
         // console.log(outputs)
         
+        // console.log(node_info)
         var attributes = []
         if (schema.attributes) {
             for (const attr of schema.attributes) {
+                // console.log(attr)
+                var value = node_info.attributes.get(attr.name)  // modified value or null
+                // console.log(value)
                 attributes.push(
                     new onnx.LightAttributeInfo(
                         attr.name, 
                         attr.description,
-                        attr.type
+                        attr.type,
+                        value
                         )
                     )
             }
@@ -594,8 +599,8 @@ onnx.Graph = class {
                 inputs, 
                 outputs
             );
-            
         // console.log(custom_add_node)
+
         this._custom_added_node.push(custom_add_node)
 
         return custom_add_node;
@@ -687,6 +692,7 @@ onnx.Node = class {
         this._description = description || '';
         this._inputs = inputs;
         this._outputs = outputs;
+        // console.log(attributes)
         this._attributes = attributes.map((attribute) => new onnx.Attribute(context, op_type, domain, attribute));
         // console.log(this._attributes)
         this._chain = [];
@@ -806,7 +812,7 @@ onnx.Attribute = class {
                 break;
             default:
                 // console.log(attribute)
-                this._value = null;
+                this._value = attribute.value;
                 this._type = attribute.type;
                 // TODO: I comment the Error message for the compatibility of onnx.Graph.make_custom_add_node. This is unsafe
                 // throw new onnx.Error("Unknown attribute type '" + attribute.type + "'.");

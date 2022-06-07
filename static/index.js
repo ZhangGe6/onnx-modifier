@@ -214,7 +214,7 @@ host.BrowserHost = class {
 
         const downloadButton = this.document.getElementById('download-graph');
         downloadButton.addEventListener('click', () => {
-            console.log(this)
+            // console.log(this)
             // https://healeycodes.com/talking-between-languages
             fetch('/download', {
                 // Declare what type of data we're sending

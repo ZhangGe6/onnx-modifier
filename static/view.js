@@ -457,7 +457,13 @@ view.View = class {
     }
 
     get activeGraph() {
-        return Array.isArray(this._graphs) && this._graphs.length > 0 ? this._graphs[0] : null;
+        // return Array.isArray(this._graphs) && this._graphs.length > 0 ? this._graphs[0] : null;
+        var active_graph = Array.isArray(this._graphs) && this._graphs.length > 0 ? this._graphs[0] : null;
+        if (active_graph && this.lastViewGraph) {
+            this.refreshAddedNode()
+        }
+
+        return active_graph
     }
 
     _updateGraph(model, graphs) {
@@ -471,10 +477,13 @@ view.View = class {
             this.UpdateAddNodeDropDown();
         }
         this.lastViewGraph = this._graph; 
-
+        // if (this.lastViewGraph) {
+        //     // console.log(this.lastViewGraph._addedNode)
+        // }
         const graph = this.activeGraph;
         // console.log(graph.nodes)
-               
+
+        
         // console.log("_updateGraph is called");
         return this._timeout(100).then(() => {
             if (graph && graph != lastGraphs[0]) {
@@ -857,6 +866,26 @@ view.View = class {
         }
         
     }
+
+    refreshAddedNode() {
+        this._graphs[0].reset_custom_added_node()
+        // for (const node_info of this._addedNode.values()) {
+        for (const [modelNodeName, node_info] of this.lastViewGraph._addedNode) {
+            // console.log(node_info)
+            var node = this._graphs[0].make_custom_add_node(node_info)
+            // console.log(node)
+            
+            // padding empty array for LightNodeInfo.inputs/outputs
+            for (var input of node.inputs) {
+                var arg_len = input._arguments.length
+                this.lastViewGraph._addedNode.get(modelNodeName).inputs.set(input.name, new Array(arg_len))
+            }
+
+        }
+        // console.log(this.view._graphs[0].nodes)
+        // console.log(this.lastViewGraph._addedNode)
+    }
+
 };
 
 view.Graph = class extends grapher.Graph {
@@ -1114,24 +1143,28 @@ view.Graph = class extends grapher.Graph {
         console.log(this._addedNode)
         
         // refresh
-        this.view._graphs[0].reset_custom_added_node()
-        // for (const node_info of this._addedNode.values()) {
-        for (const [modelNodeName, node_info] of this._addedNode) {
-            // console.log(node)
-            var node = this.view._graphs[0].make_custom_add_node(node_info)
-            
-            // padding empty array for LightNodeInfo.inputs/outputs
-            for (var input of node.inputs) {
-                var arg_len = input._arguments.length
-                this._addedNode.get(modelNodeName).inputs.set(input.name, new Array(arg_len))
-            }
-
-        }
-        // console.log(this.view._graphs[0].nodes)
-        console.log(this._addedNode)
+        // this.refresh_added_node()
 
 
     }
+
+    // refresh_added_node() {
+    //     this.view._graphs[0].reset_custom_added_node()
+    //     // for (const node_info of this._addedNode.values()) {
+    //     for (const [modelNodeName, node_info] of this._addedNode) {
+    //         // console.log(node)
+    //         var node = this.view._graphs[0].make_custom_add_node(node_info)
+            
+    //         // padding empty array for LightNodeInfo.inputs/outputs
+    //         for (var input of node.inputs) {
+    //             var arg_len = input._arguments.length
+    //             this._addedNode.get(modelNodeName).inputs.set(input.name, new Array(arg_len))
+    //         }
+
+    //     }
+    //     // console.log(this.view._graphs[0].nodes)
+    //     console.log(this._addedNode)
+    // }
 
     changeNodeAttribute(modelNodeName, attributeName, targetValue) {
         if (this._addedNode.has(modelNodeName)) {
@@ -1145,7 +1178,7 @@ view.Graph = class extends grapher.Graph {
             this._addedNode.get(modelNodeName).inputs.get(parameterName)[arg_index] = targetValue
 
         }
-        console.log(this._addedNode)
+        // console.log(this._addedNode)
     }
 
 
