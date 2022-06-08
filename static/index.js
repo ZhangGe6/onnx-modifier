@@ -243,7 +243,8 @@ host.BrowserHost = class {
                     swal("Success!", "Modified model has been successfuly saved in ./modified_onnx/", "success");
                 }
                 else {
-                    swal("Error happens!", "You are kindly to create an issue on https://github.com/ZhangGe6/onnx-modifier", "error");
+                    // swal("Error happens!", "You are kindly to create an issue on https://github.com/ZhangGe6/onnx-modifier", "error");
+                    swal("Error happens!", "You can check the log or kindly create an issue on https://github.com/ZhangGe6/onnx-modifier", "error");
                     // alert('Error happens, you can find it out or create an issue on https://github.com/ZhangGe6/onnx-modifier')
                 }
             });

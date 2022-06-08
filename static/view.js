@@ -893,6 +893,7 @@ view.View = class {
             }
 
         }
+        // console.log(this._graphs[0].nodes)
         // console.log(this.lastViewGraph._addedNode)
     }
 
@@ -1159,6 +1160,7 @@ view.Graph = class extends grapher.Graph {
             this._addedNode.get(modelNodeName).attributes.set(attributeName, targetValue)
         }
         // console.log(this._addedNode)
+        this.view._updateGraph()
     }
 
 
@@ -1171,6 +1173,7 @@ view.Graph = class extends grapher.Graph {
             if (this._addedNode.get(modelNodeName).outputs.has(parameterName)) {
                 this._addedNode.get(modelNodeName).outputs.get(parameterName)[arg_index] = targetValue
             }
+            this.view._updateGraph() // otherwise the changes can not be updated without manully update graph
         }
         // console.log(this._addedNode)
     }
