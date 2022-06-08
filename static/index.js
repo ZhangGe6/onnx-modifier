@@ -214,7 +214,9 @@ host.BrowserHost = class {
 
         const downloadButton = this.document.getElementById('download-graph');
         downloadButton.addEventListener('click', () => {
-            // console.log(this)
+
+            console.log(this._view._graph._addedNode)
+            console.log(this._view._graph._renameMap)
             // https://healeycodes.com/talking-between-languages
             fetch('/download', {
                 // Declare what type of data we're sending
@@ -226,6 +228,7 @@ host.BrowserHost = class {
                 body: JSON.stringify({
                     'node_states' : this.mapToObjectRec(this._view._graph._modelNodeName2State),
                     'node_renamed_io' : this.mapToObjectRec(this._view._graph._renameMap),
+                    'added_node_info' : this.mapToObjectRec(this.parseLightNodeInfo2Map(this._view._graph._addedNode))
                 }
                     
                 )
@@ -639,6 +642,22 @@ host.BrowserHost = class {
             }
         }
         return lo
+    }
+
+    // convert view.LightNodeInfo to Map object for easier transmission to Python backend
+    parseLightNodeInfo2Map(nodes_info) {
+        var res_map = new Map()
+        for (const [modelNodeName, node_info] of nodes_info) {
+            var node_info_map = new Map()
+            node_info_map.set('properties', node_info.properties)
+            node_info_map.set('attributes', node_info.attributes)
+            node_info_map.set('inputs', node_info.inputs)
+            node_info_map.set('outputs', node_info.outputs)
+
+            res_map.set(modelNodeName, node_info_map)
+        }
+
+        return res_map
     }
 };
 

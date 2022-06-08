@@ -94,8 +94,38 @@ class onnxModifier:
                 for i in range(len(node.output)):
                     if node.output[i] == src_name:
                         node.output[i] = dst_name    
-                # print(node.input, node.output)
+    
+    
+    def add_node(self, nodes_info):
+        for node_info in nodes_info.values():
+            name = node_info['properties']['name']
+            op_type = node_info['properties']['op_type']
+            attributes = node_info['attributes']
             
+            inputs = []
+            for key in node_info['inputs'].keys():
+                inputs += node_info['inputs'][key]
+            outputs = []
+            for key in node_info['outputs'].keys():
+                outputs += node_info['outputs'][key]
+            
+            node = onnx.helper.make_node(
+                op_type=op_type,
+                inputs=inputs,
+                outputs=outputs,
+                name=name,
+                **attributes
+            )
+            # print(node)
+            
+            self.graph.node.append(node)
+
+    
+    def modify(self, modify_info):
+        self.remove_node_by_node_states(modify_info['node_states'])
+        self.modify_node_io_name(modify_info['node_renamed_io'])  
+        self.add_node(modify_info['added_node_info'])    
+    
     def check_and_save_model(self, save_dir='./modified_onnx'):
         if not os.path.exists(save_dir):
             os.mkdir(save_dir)
@@ -111,9 +141,10 @@ class onnxModifier:
         
         
 if __name__ == "__main__":
-    model_path = "C:\\Users\\ZhangGe\\Desktop\\squeezenet1.0-3.onnx"
+    # model_path = "C:\\Users\\ZhangGe\\Desktop\\squeezenet1.0-3.onnx"
     # model_path = "C:\\Users\\ZhangGe\\Desktop\\squeezenet1.0-12-int8.onnx"
     # model_path = "C:\\Users\\ZhangGe\\Desktop\\tflite_sim.onnx"
+    model_path = "C:\\Users\\ZhangGe\\Desktop\\modified_modified_squeezenet1.0-12.onnx"
     onnx_modifier = onnxModifier.from_model_path(model_path)
         
     def remove_node_by_node_states():
@@ -167,11 +198,21 @@ if __name__ == "__main__":
         # for initializer in onnx_modifier.model_proto.graph.initializer:
         #     print(initializer.name)
         # print(onnx_modifier.model_proto.graph.initializer['fire9/concat_1_scale'])
+        pass
     # explore_basic()
     
     def test_modify_node_io_name():
         node_rename_io = {'Conv3': {'pool1_1': 'conv1_1'}}
         onnx_modifier.modify_node_io_name(node_rename_io)
         onnx_modifier.check_and_save_model()      
-    test_modify_node_io_name()
+    # test_modify_node_io_name()
+
+    def test_add_node():
+        node_info = {'properties': {'domain': 'ai.onnx', 'op_type': 'Abs', 'name': 'custom_added_Abs0'}, 'attributes': {}, 'inputs': {'X': ['custom_input_0']}, 'outputs': {'Y': ['custom_output_1']}}
+    
+        onnx_modifier.add_node(node_info)
+        onnx_modifier.check_and_save_model()  
+        
+    test_add_node()
+        
         

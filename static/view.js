@@ -875,21 +875,21 @@ view.View = class {
             var node = this._graphs[0].make_custom_add_node(node_info)
             // console.log(node)
             
-            // padding empty array for LightNodeInfo.inputs/outputs (only when initializing)
-            if (this.lastViewGraph._addedNode.get(modelNodeName).inputs.size == 0) {
-
-                for (var input of node.inputs) {
-                    var arg_len = input._arguments.length
-                    this.lastViewGraph._addedNode.get(modelNodeName).inputs.set(input.name, new Array(arg_len))
+            for (const input of node.inputs) {
+                var input_list_names = []
+                for (const arg of input._arguments) {
+                    input_list_names.push(arg.name)
                 }
+                this.lastViewGraph._addedNode.get(modelNodeName).inputs.set(input.name, input_list_names)
+                
             }
 
-            if (this.lastViewGraph._addedNode.get(modelNodeName).outputs.size == 0) {
-
-                for (var output of node.outputs) {
-                    var arg_len = output._arguments.length
-                    this.lastViewGraph._addedNode.get(modelNodeName).outputs.set(output.name, new Array(arg_len))
+            for (const output of node.outputs) {
+                var output_list_names = []
+                for (const arg of output._arguments) {
+                    output_list_names.push(arg.name)
                 }
+                this.lastViewGraph._addedNode.get(modelNodeName).outputs.set(output.name, output_list_names)
             }
 
         }
@@ -1151,30 +1151,8 @@ view.Graph = class extends grapher.Graph {
         // this._addedNode.push(new view.LightNodeInfo(properties))
         this._addedNode.set(modelNodeName, new view.LightNodeInfo(properties))
         // console.log(this._addedNode)
-        
-        // refresh
-        // this.refresh_added_node()
-
 
     }
-
-    // refresh_added_node() {
-    //     this.view._graphs[0].reset_custom_added_node()
-    //     // for (const node_info of this._addedNode.values()) {
-    //     for (const [modelNodeName, node_info] of this._addedNode) {
-    //         // console.log(node)
-    //         var node = this.view._graphs[0].make_custom_add_node(node_info)
-            
-    //         // padding empty array for LightNodeInfo.inputs/outputs
-    //         for (var input of node.inputs) {
-    //             var arg_len = input._arguments.length
-    //             this._addedNode.get(modelNodeName).inputs.set(input.name, new Array(arg_len))
-    //         }
-
-    //     }
-    //     // console.log(this.view._graphs[0].nodes)
-    //     console.log(this._addedNode)
-    // }
 
     changeNodeAttribute(modelNodeName, attributeName, targetValue) {
         if (this._addedNode.has(modelNodeName)) {

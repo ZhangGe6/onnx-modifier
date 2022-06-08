@@ -22,9 +22,9 @@ def modify_and_download_model():
     modify_info = request.get_json()
     # print(modify_info)
     
-    onnx_modifier.reload()   # allow for downloading for multiple times
-    onnx_modifier.remove_node_by_node_states(modify_info['node_states'])
-    onnx_modifier.modify_node_io_name(modify_info['node_renamed_io'])
+    onnx_modifier.reload()   # allow downloading for multiple times
+    
+    onnx_modifier.modify(modify_info)
     onnx_modifier.check_and_save_model()
     
     return 'OK', 200

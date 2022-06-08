@@ -682,6 +682,7 @@ class NodeAttributeView {
 
                 var attr_input = document.createElement("INPUT");
                 attr_input.setAttribute("type", "text");
+                attr_input.setAttribute("size", "42");
                 attr_input.setAttribute("value", content ? content : 'undefined');
                 attr_input.addEventListener('input', (e) => {
                     // console.log(e.target.value);
@@ -855,6 +856,7 @@ sidebar.ArgumentView = class {
 
             var arg_input = document.createElement("INPUT");
             arg_input.setAttribute("type", "text");
+            arg_input.setAttribute("size", "42");
             arg_input.setAttribute("value", name);
             arg_input.addEventListener('input', (e) => {
                 // console.log(this._argument)

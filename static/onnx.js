@@ -540,7 +540,7 @@ onnx.Graph = class {
             const input = schema.inputs[i]
             
             var node_info_input = node_info.inputs.get(input.name)
-            console.log(node_info_input)
+            // console.log(node_info_input)
 
             var arg_list = []
             if (input.list) {
