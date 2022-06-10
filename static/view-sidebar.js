@@ -862,7 +862,7 @@ sidebar.ArgumentView = class {
                 // console.log(this._argument)
                 // console.log(this._argument.name)
                 // console.log(e.target.value);
-                this._host._view._graph.changeNodeInputOutput(this._modelNodeName, this._parameterName, this._arg_index, e.target.value);
+                this._host._view._graph.changeNodeInputOutput(this._modelNodeName, this._parameterName, this._arg_index, e.target.value, this._argument._name);
                 // console.log(this._host._view._graph._renameMap);
             });
             this._element.appendChild(arg_input);

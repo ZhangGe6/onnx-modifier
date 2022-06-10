@@ -521,7 +521,7 @@ onnx.Graph = class {
         return 'graph(' + this.name + ')';
     }
 
-    make_custom_add_node(node_info) {
+    make_custom_added_node(node_info) {
         // type of node_info == LightNodeInfo
         const schema = this._context.metadata.type(node_info.properties.get('op_type'), node_info.properties.get('domain'));
         // console.log(schema)
@@ -865,7 +865,7 @@ onnx.Attribute = class {
                 // console.log(attribute)
                 this._value = attribute.value;
                 this._type = attribute.type;
-                // TODO: I comment the Error message for the compatibility of onnx.Graph.make_custom_add_node. This is unsafe
+                // TODO: I comment the Error message for the compatibility of onnx.Graph.make_custom_added_node. This is unsafe
                 // throw new onnx.Error("Unknown attribute type '" + attribute.type + "'.");
         }
         // console.log(attribute.type)
