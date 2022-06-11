@@ -43,7 +43,7 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
 .toolbar-back-button:hover { background: #000000; border-color: #000000; }
 .toolbar-name-button { float: left; background: rgba(255, 255, 255, 0.95); border-top-right-radius: 6px; border-bottom-right-radius: 6px; border: 1px solid #777; color: #777; border-left: 1px; border-left-color: #ffffff; margin: 2px 0 2px 0; padding: 0 12px 0 6px; cursor: pointer; width: auto; height: 20px; font-size: 11px; line-height: 0; transition: 0.1s; }
 .toolbar-name-button:hover { color: #000000; }
-.graph-op-button-preview {
+.graph-op-button-refresh {
     cursor: pointer;
     background-color: white;
     border: 1px solid grey;
@@ -55,7 +55,7 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
     left: 2px;
     top: 30px;
 }
-.graph-op-button-preview:active {  background: #e7e7e7; }
+.graph-op-button-refresh:active {  background: #e7e7e7; }
 .graph-op-button-reset {
     cursor: pointer;
     background-color: white;
@@ -267,7 +267,7 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
         </svg>
     </button>
 
-    <button id="preview-graph" class="graph-op-button-preview">Preview</button>
+    <button id="refresh-graph" class="graph-op-button-refresh">Refresh</button>
     <button id="reset-graph" class="graph-op-button-reset">Reset</button>
     <button id="download-graph" class="graph-op-button-download">Download</button>
     <button id="add-node" class="graph-op-button-addNode">Add node</button>

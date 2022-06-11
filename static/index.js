@@ -201,8 +201,8 @@ host.BrowserHost = class {
             click: () => this._about()
         });
 
-        const previewButton = this.document.getElementById('preview-graph');
-        previewButton.addEventListener('click', () => {
+        const refreshButton = this.document.getElementById('refresh-graph');
+        refreshButton.addEventListener('click', () => {
             this._view._updateGraph();
         })
 

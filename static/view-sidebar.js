@@ -207,6 +207,8 @@ sidebar.NodeSidebar = class {
         this._addButton('Delete Single Node');
         this.add_span()
         this._addButton('Recover Node');
+        this.add_separator(this._elements, 'sidebar-view-separator')
+        this._addButton('Enter');
         
         // deprecated
         // this.add_separator(this._elements, 'sidebar-view-separator');
@@ -330,6 +332,7 @@ sidebar.NodeSidebar = class {
     _addButton(title) {
         const buttonElement = this._host.document.createElement('button');
         buttonElement.className = 'sidebar-view-button';
+        if (title == "Enter") {buttonElement.className = "sidebar-view-button-bold"}
         buttonElement.innerText = title;
         this._elements.push(buttonElement);
         
@@ -346,6 +349,11 @@ sidebar.NodeSidebar = class {
         if (title === 'Recover Node') {
             buttonElement.addEventListener('click', () => {
                 this._host._view._graph.reset_node(this._modelNodeName)
+            });
+        }
+        if (title === 'Enter') {
+            buttonElement.addEventListener('click', () => {
+                this._host._view._updateGraph()
             });
         }
 
