@@ -201,24 +201,26 @@ sidebar.NodeSidebar = class {
         this._elements.push(this._host.document.createElement('hr'));
         this.add_separator(this._elements, 'sidebar-view-separator')
 
+        this._addHeader('Node deleting helper');
         this._addButton('Delete With Children');
         this.add_span()
         this._addButton('Delete Single Node');
         this.add_span()
         this._addButton('Recover Node');
-
-        this.add_separator(this._elements, 'sidebar-view-separator');
-        this._addHeader('Rename helper');
-        if (inputs && inputs.length > 0) {
-            for (const input of inputs) {
-                this.add_rename_aux_element(input.arguments);
-            }
-        }
-        if (outputs && outputs.length > 0) {
-            for (const output of outputs) {
-                this.add_rename_aux_element(output.arguments);
-            }
-        }
+        
+        // deprecated
+        // this.add_separator(this._elements, 'sidebar-view-separator');
+        // this._addHeader('Rename helper');
+        // if (inputs && inputs.length > 0) {
+        //     for (const input of inputs) {
+        //         this.add_rename_aux_element(input.arguments);
+        //     }
+        // }
+        // if (outputs && outputs.length > 0) {
+        //     for (const output of outputs) {
+        //         this.add_rename_aux_element(output.arguments);
+        //     }
+        // }
 
         // this.add_separator(this._elements, 'sidebar-view-separator');
         // this._addHeader('Add children node');
@@ -648,6 +650,7 @@ class NodeAttributeView {
             this._element.appendChild(this._expander);
         }
         const value = this._attribute.value;
+        console.log(this._attribute.name, value, type)
         switch (type) {
             case 'graph': {
                 const line = this._host.document.createElement('div');
@@ -687,8 +690,8 @@ class NodeAttributeView {
                 attr_input.setAttribute("size", "42");
                 attr_input.setAttribute("value", content ? content : 'undefined');
                 attr_input.addEventListener('input', (e) => {
-                    // console.log(e.target.value);
-                    this._host._view._graph.changeNodeAttribute(this._modelNodeName, this._attributeName,  e.target.value);
+                    console.log(e.target.value);
+                    this._host._view._graph.changeNodeAttribute(this._modelNodeName, this._attributeName, this.parse_value(e.target.value, type));
                     // console.log(this._host._view._graph._renameMap);
                 });
 
@@ -756,6 +759,34 @@ class NodeAttributeView {
             for (const callback of this._events[event]) {
                 callback(this, data);
             }
+        }
+    }
+
+    parse_value(value, type) {
+        if (value == 'undefined') {
+            // alert("");
+            return value
+        }
+
+        switch (type) {
+            case "int64":
+                return parseInt(value)
+            // case ""
+            case "int64[]":
+                var val = []
+                for (var v of value.split(",")) {
+                    val.push(parseInt(v))
+                }
+                return val
+            
+            case "float32":
+                return parseFloat(value)
+            case "float32[]":
+                var val = []
+                for (var v of value.split(",")) {
+                    val.push(parseFloat(v))
+                }
+                return val
         }
     }
 }

@@ -514,7 +514,7 @@ onnx.Graph = class {
 
     reset_custom_added_node() {
         this._custom_added_node = []
-        this._custom_add_node_io_idx = 0
+        // this._custom_add_node_io_idx = 0
     }
 
     toString() {
@@ -645,7 +645,7 @@ onnx.Graph = class {
                 node_info.properties.get('op_type'), 
                 node_info.properties.get('domain'), 
                 node_info.properties.get('name'), 
-                schema.description, 
+                null, // schema.description, // omit it to save sidebar space. The node description can also be seen in the node `type` expander 
                 attributes, 
                 inputs, 
                 outputs
@@ -693,9 +693,9 @@ onnx.Argument = class {
 
         // this._renamed = false;
         // this._new_name = null;
-        console.log(original_name)
+        // console.log(original_name)
         this.original_name = original_name || name
-        console.log(this.original_name)
+        // console.log(this.original_name)
 
     }
 
