@@ -102,8 +102,10 @@ class onnxModifier:
                         node.output[i] = dst_name    
     
     
-    def add_node(self, nodes_info):
+    def add_node(self, nodes_info, node_states):
         for node_info in nodes_info.values():
+            if node_states[node_info['properties']['name']] == "Deleted":
+                continue
             node = make_node(node_info)
             # print(node)
             
@@ -115,7 +117,7 @@ class onnxModifier:
         print(modify_info['added_node_info'])
         self.remove_node_by_node_states(modify_info['node_states'])
         self.modify_node_io_name(modify_info['node_renamed_io'])  
-        self.add_node(modify_info['added_node_info'])    
+        self.add_node(modify_info['added_node_info'], modify_info['node_states'])    
     
     def check_and_save_model(self, save_dir='./modified_onnx'):
         if not os.path.exists(save_dir):
