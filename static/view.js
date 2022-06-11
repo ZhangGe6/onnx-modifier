@@ -901,9 +901,9 @@ view.View = class {
 
     // re-fresh node arguments in case the node inputs/outputs are changed
     refreshNodeArguments() {
-        console.log(this.lastViewGraph._renameMap)
+        // console.log(this.lastViewGraph._renameMap)
         // console.log(this._graphs[0])
-        console.log(this._graphs[0]._nodes)
+        // console.log(this._graphs[0]._nodes)
 
         // for (const node_name of this.lastViewGraph._renameMap.keys()) {
         //     var rename_map = this.lastViewGraph._renameMap.get(node_name)
@@ -931,12 +931,13 @@ view.View = class {
                         if (this.lastViewGraph._renameMap.get(node.modelNodeName).get(element.original_name)) {
                             // console.log(element.name)
                             var new_name = this.lastViewGraph._renameMap.get(node.modelNodeName).get(element.original_name)
+                            console.log(element.original_name)
                             console.log(new_name)
                             var arg_with_new_name = this._graphs[0]._context.argument(new_name, element.original_name)
 
                             input.arguments[index] = arg_with_new_name
 
-                            // console.log(arg_with_new_name)
+                            console.log(arg_with_new_name)
                             console.log(node)
                         }
                     }
@@ -1263,11 +1264,38 @@ view.Graph = class extends grapher.Graph {
     }
 
     resetGraph() {
+        // reset node states
         for (const nodeId of this.nodes.keys()) {
             const node = this.node(nodeId);
             this._modelNodeName2State.set(node.label.modelNodeName, 'Exist')
         }
+        
+        console.log(this._renameMap)
+        // reset node inputs/outputs
+        for (const changed_node_name of this._renameMap.keys()) {
+            var node = this._modelNodeName2ModelNode.get(changed_node_name)
+            console.log(node)
+            //reset inputs
+            for (var input of node.inputs) {
+                for (var i = 0; i < input.arguments.length; ++i) {
+                    console.log(input.arguments[i].original_name)
+                    if (this._renameMap.get(node.modelNodeName).get(input.arguments[i].original_name)) {
+                        input.arguments[i] = this.view._graphs[0]._context.argument(input.arguments[i].original_name)
+                    }
+                }
+            }
+            
+            // reset outputs
+            // for (var output of node.outputs) {
+            //     for (var i = 0; i < output.arguments.length; ++i) {
+            //         if (this._renameMap.get(node.modelNodeName).get(output.arguments[i].original_name)) {
+            //             output.arguments[index] = this._graphs[0]._context.argument(output.arguments[i].original_name)
+            //         }
+            //     }
+            // }
+        }
         this._renameMap = new Map();
+
     }
 
     recordRenameInfo(modelNodeName, src_name, dst_name) {

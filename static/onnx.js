@@ -693,7 +693,9 @@ onnx.Argument = class {
 
         // this._renamed = false;
         // this._new_name = null;
+        console.log(original_name)
         this.original_name = original_name || name
+        console.log(this.original_name)
 
     }
 
@@ -1787,14 +1789,24 @@ onnx.GraphContext = class {
     }
 
     argument(name, original_name) {
-        if (!this._arguments.has(name)) {
-            const tensor = this.tensor(name);
-            // console.log(name)
-            // console.log(tensor)
-            const type = tensor.initializer ? tensor.initializer.type : tensor.type || null;
-            this._arguments.set(name, new onnx.Argument(name, type, tensor.initializer, tensor.annotation, tensor.description, original_name));
-        }
-        return this._arguments.get(name);
+        const tensor = this.tensor(name);
+        // console.log(name)
+        // console.log(tensor)
+        const type = tensor.initializer ? tensor.initializer.type : tensor.type || null;
+        return new onnx.Argument(name, type, tensor.initializer, tensor.annotation, tensor.description, original_name);
+
+
+        // // if (!this._arguments.has(name)) {
+        // if ((!this._arguments.has(name)) || 
+        //     (this._arguments.has(name) && !this._arguments.get(name).original_name == original_name) 
+        // ) {
+        //     const tensor = this.tensor(name);
+        //     // console.log(name)
+        //     // console.log(tensor)
+        //     const type = tensor.initializer ? tensor.initializer.type : tensor.type || null;
+        //     this._arguments.set(name, new onnx.Argument(name, type, tensor.initializer, tensor.annotation, tensor.description, original_name));
+        // }
+        // return this._arguments.get(name);
     }
 
     mayChangedArgument(name, rename_map) {
