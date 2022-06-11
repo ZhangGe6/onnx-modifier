@@ -182,16 +182,18 @@ sidebar.NodeSidebar = class {
         const inputs = node.inputs;
         if (inputs && inputs.length > 0) {
             this._addHeader('Inputs');
-            for (const input of inputs) {
-                this._addInput(input.name, input);  // 这里的input.name是小白格前面的名称（不是方格内的）
+            for (const [index, input] of inputs.entries()){
+            // for (const input of inputs) {
+                this._addInput(input.name, input, index);  // 这里的input.name是小白格前面的名称（不是方格内的）
             }
         }
 
         const outputs = node.outputs;
         if (outputs && outputs.length > 0) {
             this._addHeader('Outputs');
-            for (const output of outputs) {
-                this._addOutput(output.name, output);
+            for (const [index, output] of outputs.entries()){
+            // for (const output of outputs) {
+                this._addOutput(output.name, output, index);
             }
         }
 
@@ -297,10 +299,10 @@ sidebar.NodeSidebar = class {
         this._elements.push(view.render());
     }
 
-    _addInput(name, input) {
+    _addInput(name, input, param_idx) {
         // console.log(input)
         if (input.arguments.length > 0) {
-            const view = new sidebar.ParameterView(this._host, input, this._modelNodeName);
+            const view = new sidebar.ParameterView(this._host, input, 'input', param_idx, this._modelNodeName);
             view.on('export-tensor', (sender, tensor) => {
                 this._raise('export-tensor', tensor);
             });
@@ -314,9 +316,9 @@ sidebar.NodeSidebar = class {
         }
     }
 
-    _addOutput(name, output) {
+    _addOutput(name, output, param_idx) {
         if (output.arguments.length > 0) {
-            const item = new sidebar.NameValueView(this._host, name, new sidebar.ParameterView(this._host, output, this._modelNodeName));
+            const item = new sidebar.NameValueView(this._host, name, new sidebar.ParameterView(this._host, output, 'output', param_idx, this._modelNodeName));
             this._outputs.push(item);
             this._elements.push(item.render());
         }
@@ -760,7 +762,7 @@ class NodeAttributeView {
 
 sidebar.ParameterView = class {
 
-    constructor(host, list, modelNodeName) {
+    constructor(host, list, inp_or_out, param_idx, modelNodeName) {
         this._host = host;
         this._list = list;
         this._modelNodeName = modelNodeName
@@ -769,8 +771,8 @@ sidebar.ParameterView = class {
 
         // console.log(list)
         // for (const argument of list.arguments) {
-        for (const [index, argument] of list.arguments.entries()) {
-            const item = new sidebar.ArgumentView(host, argument, index, list._name, this._modelNodeName);
+        for (const [arg_idx, argument] of list.arguments.entries()) {
+            const item = new sidebar.ArgumentView(host, argument, inp_or_out, param_idx, arg_idx, list._name, this._modelNodeName);
             item.on('export-tensor', (sender, tensor) => {
                 this._raise('export-tensor', tensor);
             });
@@ -809,9 +811,11 @@ sidebar.ParameterView = class {
 
 sidebar.ArgumentView = class {
 
-    constructor(host, argument, arg_index, parameterName, modelNodeName) {
+    constructor(host, argument, inp_or_out, param_index, arg_index, parameterName, modelNodeName) {
         this._host = host;
         this._argument = argument;
+        this._inp_or_out = inp_or_out
+        this._param_index = param_index
         this._arg_index = arg_index
         this._parameterName = parameterName
         this._modelNodeName = modelNodeName
@@ -862,7 +866,9 @@ sidebar.ArgumentView = class {
                 // console.log(this._argument)
                 // console.log(this._argument.name)
                 // console.log(e.target.value);
-                this._host._view._graph.changeNodeInputOutput(this._modelNodeName, this._parameterName, this._arg_index, e.target.value, this._argument._name);
+                // this._host._view._graph.changeNodeInputOutput(this._modelNodeName, this._parameterName, this._arg_index, e.target.value, this._argument._name);
+                // this._host._view._graph.changeNodeInputOutput(this._modelNodeName, this._parameterName, this._arg_index, e.target.value);
+                this._host._view._graph.changeNodeInputOutput(this._modelNodeName, this._parameterName, this._inp_or_out, this._param_index, this._arg_index, e.target.value);
                 // console.log(this._host._view._graph._renameMap);
             });
             this._element.appendChild(arg_input);

@@ -15,6 +15,7 @@ grapher.Graph = class {
 
         // My code
         this._modelNodeName2ViewNode = new Map();
+        this._modelNodeName2ModelNode = new Map();
         this._modelNodeName2State = new Map();
         this._namedEdges = new Map();
 
@@ -45,6 +46,7 @@ grapher.Graph = class {
 
         const modelNodeName = node.modelNodeName
         this._modelNodeName2ViewNode.set(modelNodeName, node);
+        this._modelNodeName2ModelNode.set(modelNodeName, node.value)
         
         // _modelNodeName2State save our modifications, and wil be initilized at the first graph construction only
         // otherwise the modfications will lost

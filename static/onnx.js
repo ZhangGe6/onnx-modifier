@@ -681,7 +681,7 @@ onnx.Parameter = class {
 
 onnx.Argument = class {
 
-    constructor(name, type, initializer, annotation, description) {
+    constructor(name, type, initializer, annotation, description, original_name) {
         if (typeof name !== 'string') {
             throw new onnx.Error("Invalid argument identifier '" + JSON.stringify(name) + "'.");
         }
@@ -691,15 +691,16 @@ onnx.Argument = class {
         this._annotation = annotation;
         this._description = description || '';
 
-        this._renamed = false;
-        this._new_name = null;
+        // this._renamed = false;
+        // this._new_name = null;
+        this.original_name = original_name || name
 
     }
 
     get name() {
-        if (this._renamed) {
-            return this._new_name;
-        }
+        // if (this._renamed) {
+        //     return this._new_name;
+        // }
         return this._name;
     }
 
@@ -1785,15 +1786,31 @@ onnx.GraphContext = class {
         return this._groups.get(name);
     }
 
-    argument(name) {
+    argument(name, original_name) {
         if (!this._arguments.has(name)) {
             const tensor = this.tensor(name);
             // console.log(name)
             // console.log(tensor)
             const type = tensor.initializer ? tensor.initializer.type : tensor.type || null;
-            this._arguments.set(name, new onnx.Argument(name, type, tensor.initializer, tensor.annotation, tensor.description));
+            this._arguments.set(name, new onnx.Argument(name, type, tensor.initializer, tensor.annotation, tensor.description, original_name));
         }
         return this._arguments.get(name);
+    }
+
+    mayChangedArgument(name, rename_map) {
+        // console.log(name, rename_map)
+        if (rename_map.get(name)) {
+            var arg_name = rename_map.get(name)
+        }
+        else {
+            var arg_name = name
+        }
+        // console.log(arg_name)
+
+        // console.log(this._arguments)
+
+        return this.argument(arg_name)
+
     }
 
     createType(type) {
