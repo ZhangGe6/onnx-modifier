@@ -215,9 +215,9 @@ host.BrowserHost = class {
         const downloadButton = this.document.getElementById('download-graph');
         downloadButton.addEventListener('click', () => {
 
-            console.log(this._view._graph._addedNode)
-            console.log(this._view._graph._renameMap)
-            // https://healeycodes.com/talking-between-languages
+            // console.log(this._view._graph._addedNode)
+            // console.log(this._view._graph._renameMap)
+            // // https://healeycodes.com/talking-between-languages
             fetch('/download', {
                 // Declare what type of data we're sending
                 headers: {
@@ -228,6 +228,7 @@ host.BrowserHost = class {
                 body: JSON.stringify({
                     'node_states' : this.mapToObjectRec(this._view._graph._modelNodeName2State),
                     'node_renamed_io' : this.mapToObjectRec(this._view._graph._renameMap),
+                    'node_changed_attr' : this.mapToObjectRec(this._view._graph._changedAttributes),
                     'added_node_info' : this.mapToObjectRec(this.parseLightNodeInfo2Map(this._view._graph._addedNode))
                 }
                     

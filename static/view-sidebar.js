@@ -658,7 +658,7 @@ class NodeAttributeView {
             this._element.appendChild(this._expander);
         }
         const value = this._attribute.value;
-        // console.log(this._attribute.name, value, type)
+        console.log(this._attribute.name, value, type)
         switch (type) {
             case 'graph': {
                 const line = this._host.document.createElement('div');
@@ -699,6 +699,7 @@ class NodeAttributeView {
                 attr_input.setAttribute("value", content ? content : 'undefined');
                 attr_input.addEventListener('input', (e) => {
                     // console.log(e.target.value);
+                    // console.log(this.parse_value(e.target.value, type))
                     this._host._view._graph.changeNodeAttribute(this._modelNodeName, this._attributeName, this.parse_value(e.target.value, type));
                     // console.log(this._host._view._graph._renameMap);
                 });

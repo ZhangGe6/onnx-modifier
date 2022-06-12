@@ -462,6 +462,7 @@ view.View = class {
         if (active_graph && this.lastViewGraph) {
             this.refreshAddedNode()
             this.refreshNodeArguments()
+
         }
 
         return active_graph
@@ -582,6 +583,7 @@ view.View = class {
                     // console.log('node state of lastViewGraph is loaded')
                     viewGraph._modelNodeName2State = this.lastViewGraph._modelNodeName2State;
                     viewGraph._renameMap = this.lastViewGraph._renameMap;
+                    viewGraph._changedAttributes = this.lastViewGraph._changedAttributes;
                     viewGraph._addedNode = this.lastViewGraph._addedNode;
                     viewGraph._add_nodeKey = this.lastViewGraph._add_nodeKey
                     // console.log(viewGraph._renameMap);
@@ -904,16 +906,7 @@ view.View = class {
     refreshNodeArguments() {
         // console.log(this.lastViewGraph._renameMap)
         // console.log(this._graphs[0])
-        // console.log(this._graphs[0]._nodes)
-
-        // for (const node_name of this.lastViewGraph._renameMap.keys()) {
-        //     var rename_map = this.lastViewGraph._renameMap.get(node_name)
-        //     var node = this.lastViewGraph._modelNodeName2ModelNode.get(node_name)
-        //     console.log(node)
-        //     console.log(rename_map)
-        // }
-
-        
+        // console.log(this._graphs[0]._nodes)        
 
         for (var node of this._graphs[0]._nodes) {
             // this node has some changed arguments
@@ -978,8 +971,20 @@ view.View = class {
 
         // console.log(this._graphs[0]._context._arguments)
 
+        for (const node_name of this.lastViewGraph._changedAttributes.keys()) {
+            var attr_change_map = this.lastViewGraph._changedAttributes.get(node_name)
+            var node = this.lastViewGraph._modelNodeName2ModelNode.get(node_name)
+            // console.log(node)
+            // console.log(attr_change_map)
 
+            // for (const attr of node._attributes) {
+            for (var i = 0; i < node._attributes.length; ++i) {
+                if (attr_change_map.get(node._attributes[i].name)) {
+                    node._attributes[i]._value = attr_change_map.get(node._attributes[i].name)
+                }
+            }
 
+        }
 
     }
 
@@ -1330,6 +1335,16 @@ view.Graph = class extends grapher.Graph {
             this._addedNode.get(modelNodeName).attributes.set(attributeName, targetValue)
         }
         // console.log(this._addedNode)
+
+        else {    // for the nodes in the original model
+            if (!this._changedAttributes.get(modelNodeName)) {
+                this._changedAttributes.set(modelNodeName, new Map());
+            }
+            this._changedAttributes.get(modelNodeName).set(attributeName, targetValue)
+            // console.log(this._changedAttributes)
+
+        }
+
         this.view._updateGraph()
     }
 
@@ -1348,7 +1363,7 @@ view.Graph = class extends grapher.Graph {
         }
         // console.log(this._addedNode)
         
-        // else {    // for the nodes in the original model
+        // else {    
         //     if (!this._renameMap.get(modelNodeName)) {
         //         this._renameMap.set(modelNodeName, new Map());
         //     }
@@ -1356,7 +1371,7 @@ view.Graph = class extends grapher.Graph {
         //     // console.log(this._renameMap)
         // }
 
-        else {
+        else {    // for the nodes in the original model
             if (!this._renameMap.get(modelNodeName)) {
                 this._renameMap.set(modelNodeName, new Map());
             }
