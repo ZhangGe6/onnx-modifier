@@ -139,8 +139,8 @@ class onnxModifier:
     
     def modify(self, modify_info):
         # print(modify_info['node_states'])
-        # print(modify_info['node_renamed_io'])
-        print(modify_info['node_changed_attr'])
+        print(modify_info['node_renamed_io'])
+        # print(modify_info['node_changed_attr'])
         # print(modify_info['added_node_info'])
         self.remove_node_by_node_states(modify_info['node_states'])
         self.modify_node_io_name(modify_info['node_renamed_io'])
