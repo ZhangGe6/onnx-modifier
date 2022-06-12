@@ -1,4 +1,4 @@
-<img src="./docs/onnx_modifier_logo_1.png" style="zoom: 60%;" />
+<img src="./docs/onnx_modifier_logo.png" style="zoom: 60%;" />
 
 English | [简体中文](readme_zh-CN.md)
 
@@ -12,7 +12,7 @@ Then `onnx-modifier` comes. With it, we can focus on editing the model graph in 
 
 `onnx-modifier` is built based on the popular network viewer [Netron](https://github.com/lutzroeder/netron) and the lightweight web application framework [flask](https://github.com/pallets/flask).
 
-The update log of `onnx-modifier` can be seen [here](./docs/update_log.md). Currently, the following editing operations are supported:
+Currently, the following editing operations are supported:
 
 - Delete/recover nodes
   - Delete a single node.

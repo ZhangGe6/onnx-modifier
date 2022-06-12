@@ -555,15 +555,6 @@ onnx.Graph = class {
                 }
             }
             else {
-                // if (node_info_input) {
-                //     if (!node_info_input[0]) {
-                //         console.log('got empty')
-                //     }
-                //     else {
-                //         console.log(node_info_input[0])
-                //     } 
-                // }
-
                 if (node_info_input && node_info_input[0]) {
                     var arg_name = node_info_input[0]
                 }
@@ -572,18 +563,6 @@ onnx.Graph = class {
                 }
                 arg_list = [this._context.argument(arg_name)]
             }
-
-            // var arg_list = []
-            // if (input.list) {
-            //     for (let j = 0; j < max_custom_add_input_num; ++j) {
-            //         var arg_name = 'custom_input_' + (this._custom_add_node_io_idx++).toString()
-            //         arg_list.push(this._context.argument(arg_name))
-            //     }
-            // }
-            // else {
-            //     var arg_name = 'custom_input_' + (this._custom_add_node_io_idx++).toString()
-            //     arg_list = [this._context.argument(arg_name)]
-            // }
 
             inputs.push(new onnx.Parameter(input.name, arg_list));
         }
@@ -621,13 +600,11 @@ onnx.Graph = class {
         // console.log(inputs)
         // console.log(outputs)
         
-        console.log(node_info)
+        // console.log(node_info)
         var attributes = []
         if (schema.attributes) {
             for (const attr of schema.attributes) {
-                console.log(attr)
                 var value = node_info.attributes.get(attr.name)  // modified value or null
-                console.log(value)
                 attributes.push(
                     new onnx.LightAttributeInfo(
                         attr.name, 
@@ -638,8 +615,6 @@ onnx.Graph = class {
                     )
             }
         }
-        console.log(attributes[0].value)
-
         var custom_add_node = new onnx.Node(
                 this._context, 
                 node_info.properties.get('op_type'), 
@@ -691,18 +666,11 @@ onnx.Argument = class {
         this._annotation = annotation;
         this._description = description || '';
 
-        // this._renamed = false;
-        // this._new_name = null;
-        // console.log(original_name)
         this.original_name = original_name || name
-        // console.log(this.original_name)
 
     }
 
     get name() {
-        // if (this._renamed) {
-        //     return this._new_name;
-        // }
         return this._name;
     }
 
@@ -868,19 +836,14 @@ onnx.Attribute = class {
                 // console.log(attribute)
                 this._value = attribute.value;
                 this._type = attribute.type;
-                // TODO: I comment the Error message for the compatibility of onnx.Graph.make_custom_added_node. This is unsafe
+                // TODO: I comment the Error message for the compatibility of onnx.Graph.make_custom_added_node. This is may be unsafe
                 // throw new onnx.Error("Unknown attribute type '" + attribute.type + "'.");
         }
-        // console.log(attribute.type)
-        // console.log(this._value)
-        // console.log(this._type)
 
         // see #L1294 GraphMetadata
         const metadata = context.metadata.attribute(op_type, domain, attribute.name);
         // console.log(metadata)
         if (metadata) {
-            // console.log(Object.prototype.hasOwnProperty.call(metadata, 'default') && this._value == metadata.default)  // false
-            // console.log(metadata.type === 'DataType')  // false
             if (Object.prototype.hasOwnProperty.call(metadata, 'default') && this._value == metadata.default) {
                 this._visible = false;
             }
@@ -1768,13 +1731,9 @@ onnx.GraphContext = class {
     }
 
     tensor(name) {
-        // console.log(this._tensors)
-        // console.log(name)
-
         if (!this._tensors.has(name)) {
             this._tensors.set(name, { name: name });
         }
-        // console.log(this._tensors)
         return this._tensors.get(name);
     }
 
@@ -1792,11 +1751,8 @@ onnx.GraphContext = class {
 
     argument(name, original_name) {
         const tensor = this.tensor(name);
-        // console.log(name)
-        // console.log(tensor)
         const type = tensor.initializer ? tensor.initializer.type : tensor.type || null;
         return new onnx.Argument(name, type, tensor.initializer, tensor.annotation, tensor.description, original_name);
-
 
         // // if (!this._arguments.has(name)) {
         // if ((!this._arguments.has(name)) || 
@@ -1809,22 +1765,6 @@ onnx.GraphContext = class {
         //     this._arguments.set(name, new onnx.Argument(name, type, tensor.initializer, tensor.annotation, tensor.description, original_name));
         // }
         // return this._arguments.get(name);
-    }
-
-    mayChangedArgument(name, rename_map) {
-        // console.log(name, rename_map)
-        if (rename_map.get(name)) {
-            var arg_name = rename_map.get(name)
-        }
-        else {
-            var arg_name = name
-        }
-        // console.log(arg_name)
-
-        // console.log(this._arguments)
-
-        return this.argument(arg_name)
-
     }
 
     createType(type) {
@@ -1921,9 +1861,6 @@ onnx.GraphContext = class {
                 node.input.length === 0 &&
                 node.output.length === 1 && node.output[0] && inputMap.get(node.output[0].name) === 1 && outputMap.get(node.output[0].name) === 1;
             const attribute = constant ? node.attribute[0] : null;
-            // console.log(node)
-            // console.log(constant)  // false
-            // console.log(attribute)  // null
             if (attribute && attribute.name === 'value' && attribute.type === onnx.AttributeType.TENSOR && attribute.t) {
                 const tensor = this.tensor(node.output[0].name);
                 tensor.initializer = new onnx.Tensor(this, attribute.t, 'Constant');

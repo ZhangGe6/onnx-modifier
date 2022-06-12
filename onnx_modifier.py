@@ -139,7 +139,7 @@ class onnxModifier:
     
     def modify(self, modify_info):
         # print(modify_info['node_states'])
-        print(modify_info['node_renamed_io'])
+        # print(modify_info['node_renamed_io'])
         # print(modify_info['node_changed_attr'])
         # print(modify_info['added_node_info'])
         self.remove_node_by_node_states(modify_info['node_states'])
@@ -174,12 +174,9 @@ class onnxModifier:
         
         input_name = inference_session.get_inputs()[0].name
         output_name = inference_session.get_outputs()[0].name        
-        # print(input_name)
-        # print(output_name)
-        
+
         # This issue may be encountered: https://github.com/microsoft/onnxruntime/issues/7506
         out = inference_session.run(None, {input_name: x})[0]
-
         # print(out)
 
         
@@ -281,7 +278,6 @@ if __name__ == "__main__":
         onnx_modifier.modify_node_attr(changed_attr)
         
         onnx_modifier.check_and_save_model()
-    
     test_change_node_attr()
         
         

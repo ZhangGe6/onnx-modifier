@@ -1,4 +1,4 @@
-<img src="./docs/onnx_modifier_logo_1.png" style="zoom: 60%;" />
+<img src="./docs/onnx_modifier_logo.png" style="zoom: 60%;" />
 
 简体中文 | [English](readme.md)
 

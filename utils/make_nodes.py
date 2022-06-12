@@ -67,10 +67,7 @@ def make_attr_changed_node(node, attr_change_info):
             # https://github.com/onnx/onnx/blob/4e24b635c940801555bee574b4eb3a34cab9acd5/onnx/helper.py#L548
             new_attr[attr.name] = onnx.helper.get_attribute_value(attr)
     # print(new_attr)
-    # print(node.input, node.output)
-    
-    # print(node)
-    
+        
     node = onnx.helper.make_node(
         op_type=node.op_type,
         inputs=node.input,
