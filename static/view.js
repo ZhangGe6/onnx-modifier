@@ -480,6 +480,7 @@ view.View = class {
         this.lastViewGraph = this._graph; 
         // if (this.lastViewGraph) {
         //     // console.log(this.lastViewGraph._addedNode)
+        //     // console.log(this.lastViewGraph._modelNodeName2State)
         // }
         const graph = this.activeGraph;
         // console.log(graph.nodes)
@@ -1230,10 +1231,10 @@ view.Graph = class extends grapher.Graph {
         this._modelNodeName2ViewNode.get(node_name).element.style.opacity = 0.3;
     }
 
-    reset_node(node_name) {
-        this._modelNodeName2State.set(node_name, 'Existed');
+    recover_node(node_name) {
+        this._modelNodeName2State.set(node_name, 'Exist');
         this._modelNodeName2ViewNode.get(node_name).element.style.opacity = 1;
-        
+        // console.log(this._modelNodeName2State)
     }
 
     delete_node_with_children(node_name) {
@@ -1270,7 +1271,7 @@ view.Graph = class extends grapher.Graph {
             this._modelNodeName2State.set(node.label.modelNodeName, 'Exist')
         }
         
-        console.log(this._renameMap)
+        // console.log(this._renameMap)
         // reset node inputs/outputs
         for (const changed_node_name of this._renameMap.keys()) {
             var node = this._modelNodeName2ModelNode.get(changed_node_name)

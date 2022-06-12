@@ -348,7 +348,7 @@ sidebar.NodeSidebar = class {
         }
         if (title === 'Recover Node') {
             buttonElement.addEventListener('click', () => {
-                this._host._view._graph.reset_node(this._modelNodeName)
+                this._host._view._graph.recover_node(this._modelNodeName)
             });
         }
         if (title === 'Enter') {
@@ -658,7 +658,7 @@ class NodeAttributeView {
             this._element.appendChild(this._expander);
         }
         const value = this._attribute.value;
-        console.log(this._attribute.name, value, type)
+        // console.log(this._attribute.name, value, type)
         switch (type) {
             case 'graph': {
                 const line = this._host.document.createElement('div');

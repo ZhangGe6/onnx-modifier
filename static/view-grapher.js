@@ -172,10 +172,12 @@ grapher.Graph = class {
         edgePathGroupDefs.appendChild(marker("arrowhead-vee-select"));
         // <==== 显示 边上的箭头
         
+        // console.log(this._modelNodeName2State)
         for (const nodeId of this.nodes.keys()) {
             const node = this.node(nodeId);
             if (this.children(nodeId).length == 0) {
                 if (this._modelNodeName2State.get(node.label.modelNodeName) == 'Exist') {
+                    // console.log("build", node.label.modelNodeName)
                     node.label.build(document, nodeGroup);  
                 }
             }
