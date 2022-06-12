@@ -108,15 +108,19 @@ Note there is an `Add node` button, following with a selector elements on the to
 
 The following are some notes for this feature:
 
-1. Click the selector and type the first letter for the new node type (`f` for `Flatten` node for example), we can be quickly navigated to the node type.
+1. :warning: Currently, adding nodes with initializer (such as weight parameters) are not supported (such as `Conv`, `BatchNormalization`). Adding nodes without initializer are tested and work as expected in my tested case (such as `Flatten`, `ArgMax`, `Concat`).
 
-2. By clicking the `?` in the `NODE PROPERTIES -> type` element, or the `+` in each `Attribute` element, we can get some reference to help us fill the node information.
+2. Click the selector and type the first letter for the new node type (`f` for `Flatten` node for example), we can be quickly navigated to the node type.
 
-3. It is suggested to fill all of the `Attribute`, without leaving them as `undefined`.  The default value may not be supported well in the current version.
+3. By clicking the `?` in the `NODE PROPERTIES -> type` element, or the `+` in each `Attribute` element, we can get some reference to help us fill the node information.
 
-4. For the `Attribute` with type `list`, items are split with '`,`' (comma)
+4. It is suggested to fill all of the `Attribute`, without leaving them as `undefined`.  The default value may not be supported well in the current version.
 
-5. This feature is experimentally supported now and may be not very rebust. So any issues are warmly welcomed if some unexpected result is encountered.
+5. For the `Attribute` with type `list`, items are split with '`,`' (comma)
+
+6. For the `Inputs/Outputs` with type `list`, it is forced to be at most 8 elements in the current version. If the actual inputs/outputs number is less than 8, we can leave the unused items with the name starting with `list_custom`, and they will be automatically omitted.
+
+7. This feature is experimentally supported now and may be not very rebust. So any issues are warmly welcomed if some unexpected result is encountered.
 
 # Sample models
 

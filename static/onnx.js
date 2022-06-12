@@ -531,8 +531,8 @@ onnx.Graph = class {
         // console.log(node_info.outputs)
         // var max_input = schema.max_input
         // var min_input = schema.max_input
-        var max_custom_add_input_num = Math.min(schema.max_input, 5)  // set at most 5 custom_add inputs
-        var max_custom_add_output_num = Math.min(schema.max_output, 5)  // set at most 5 custom_add outputs
+        var max_custom_add_input_num = Math.min(schema.max_input, 8)  // set at most 8 custom_add inputs
+        var max_custom_add_output_num = Math.min(schema.max_output, 8)  // set at most 8 custom_add outputs
         
         // console.log(node_info)
         var inputs = []
@@ -549,7 +549,7 @@ onnx.Graph = class {
                         var arg_name = node_info_input[j]
                     }
                     else {
-                        var arg_name = 'custom_input_' + (this._custom_add_node_io_idx++).toString()
+                        var arg_name = 'list_custom_input_' + (this._custom_add_node_io_idx++).toString()
                     }
                     arg_list.push(this._context.argument(arg_name))
                 }
@@ -600,7 +600,7 @@ onnx.Graph = class {
                         var arg_name = node_info_output[j]
                     }
                     else {
-                        var arg_name = 'custom_output_' + (this._custom_add_node_io_idx++).toString()
+                        var arg_name = 'list_custom_output_' + (this._custom_add_node_io_idx++).toString()
                     }
                     arg_list.push(this._context.argument(arg_name))
                 }

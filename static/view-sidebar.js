@@ -698,7 +698,7 @@ class NodeAttributeView {
                 attr_input.setAttribute("size", "42");
                 attr_input.setAttribute("value", content ? content : 'undefined');
                 attr_input.addEventListener('input', (e) => {
-                    console.log(e.target.value);
+                    // console.log(e.target.value);
                     this._host._view._graph.changeNodeAttribute(this._modelNodeName, this._attributeName, this.parse_value(e.target.value, type));
                     // console.log(this._host._view._graph._renameMap);
                 });
@@ -771,11 +771,6 @@ class NodeAttributeView {
     }
 
     parse_value(value, type) {
-        if (value == 'undefined') {
-            // alert("");
-            return value
-        }
-
         switch (type) {
             case "int64":
                 return parseInt(value)
@@ -795,6 +790,10 @@ class NodeAttributeView {
                     val.push(parseFloat(v))
                 }
                 return val
+            
+            default:
+                return value
+
         }
     }
 }
