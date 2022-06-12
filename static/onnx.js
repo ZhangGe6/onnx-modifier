@@ -621,13 +621,13 @@ onnx.Graph = class {
         // console.log(inputs)
         // console.log(outputs)
         
-        // console.log(node_info)
+        console.log(node_info)
         var attributes = []
         if (schema.attributes) {
             for (const attr of schema.attributes) {
-                // console.log(attr)
+                console.log(attr)
                 var value = node_info.attributes.get(attr.name)  // modified value or null
-                // console.log(value)
+                console.log(value)
                 attributes.push(
                     new onnx.LightAttributeInfo(
                         attr.name, 
@@ -638,7 +638,7 @@ onnx.Graph = class {
                     )
             }
         }
-        // console.log(attributes)
+        console.log(attributes[0].value)
 
         var custom_add_node = new onnx.Node(
                 this._context, 
@@ -918,7 +918,9 @@ onnx.LightAttributeInfo = class {
         this.name = name;
         this.description = description;
         this.type = type;
-        this.value = value || null;
+        // this.value = value || null;
+        // console.log(value, value || null) // TODO: amazing output: 0, null
+        this.value = value
     }
 }
 

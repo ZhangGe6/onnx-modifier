@@ -19,6 +19,7 @@ The update log of `onnx-modifier` can be seen [here](./docs/update_log.md). Curr
   - Delete a node and all the nodes rooted on it.
   - Recover a deleted node.
 - Rename the name of node inputs/outputs
+- Edit the attribute of nodes
 - Add new nodes (experimental)
 
 
@@ -86,7 +87,6 @@ By changing the input/output name of nodes, we can change the model forward path
 
 Using `onnx-modifier`, we can achieve this by simply enter a new name for node inputs/outputs in its corresponding input placeholder. The graph topology is updated automatically and instantly, according to the new names.
 
-
 For example,  Now we want remove the preprocess operators (`Sub->Mul->Sub->Transpose`) shown in the following figure. We can
 
 1. Click on the 1st `Conv` node, rename its input (X) as *serving_default_input:0* (the output of node `data_0`).
@@ -96,6 +96,12 @@ For example,  Now we want remove the preprocess operators (`Sub->Mul->Sub->Trans
 > Note: To link node $A$ (`data_0` in the above example) to node $B$ (the 1st `Conv` in the above example), **it is suggested to edit the input of node $B$ to the output of node `A`, rather than edit the output of node $A$ to the input of node `B`.** Because the input of $B$ can also be other node's output and unexpected result will happen.
 
 <img src="./docs/rename_node_io.png" alt="rename_node_io" style="zoom:60%;" />
+
+## Edit the attribute of nodes
+
+Change the original attribute to a new value, then we are done.
+
+
 
 ## Add new node
 Sometimes we want to add new nodes into the exsited model. `onnx-modifier` supports this feature experimentally now. 

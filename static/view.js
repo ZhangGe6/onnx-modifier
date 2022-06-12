@@ -1284,7 +1284,7 @@ view.Graph = class extends grapher.Graph {
             //reset inputs
             for (var input of node.inputs) {
                 for (var i = 0; i < input.arguments.length; ++i) {
-                    console.log(input.arguments[i].original_name)
+                    // console.log(input.arguments[i].original_name)
                     if (this._renameMap.get(node.modelNodeName).get(input.arguments[i].original_name)) {
                         input.arguments[i] = this.view._graphs[0]._context.argument(input.arguments[i].original_name)
                     }
@@ -1292,16 +1292,19 @@ view.Graph = class extends grapher.Graph {
             }
             
             // reset outputs
-            // for (var output of node.outputs) {
-            //     for (var i = 0; i < output.arguments.length; ++i) {
-            //         if (this._renameMap.get(node.modelNodeName).get(output.arguments[i].original_name)) {
-            //             output.arguments[index] = this._graphs[0]._context.argument(output.arguments[i].original_name)
-            //         }
-            //     }
-            // }
+            for (var output of node.outputs) {
+                for (var i = 0; i < output.arguments.length; ++i) {
+                    if (this._renameMap.get(node.modelNodeName).get(output.arguments[i].original_name)) {
+                        output.arguments[i] = this.view._graphs[0]._context.argument(output.arguments[i].original_name)
+                    }
+                }
+            }
         }
         this._renameMap = new Map();
 
+        // clear custom added nodes
+        this._addedNode = new Map()
+        this.view._graphs[0].reset_custom_added_node()
     }
 
     recordRenameInfo(modelNodeName, src_name, dst_name) {

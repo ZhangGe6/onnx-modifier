@@ -98,8 +98,6 @@ class onnxModifier:
                 if len(const_node_left_output) == 0:
                     self.graph.node.remove(self.node_name2module[left_node.name]) 
                     # self.initializer.remove(self.initializer_name2module[init_name])
-                else:
-                    left_node.output = const_node_left_output
             
     
     def modify_node_io_name(self, node_renamed_io):
