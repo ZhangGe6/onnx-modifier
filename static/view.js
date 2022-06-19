@@ -66,6 +66,9 @@ view.View = class {
                     container.addEventListener('touchstart', (e) => this._touchStartHandler(e), { passive: true });
                     break;
             }
+
+            
+
         }).catch((err) => {
             this.error(err, null, null);
         });
