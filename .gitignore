@@ -1,8 +1,16 @@
+# tmp files
 */__pycache__/
-gym/
-*ppt
-*pptx
+build/
+dist/
+*.spec
 
+
+# onnx files
 *.onnx
 /test_onnx/
 /modified_onnx/
+
+# self maintained files
+gym/
+*ppt
+*pptx
