@@ -126,7 +126,7 @@ The following are some notes for this feature:
 
 6. For the `Inputs/Outputs` with type `list`, it is forced to be at most 8 elements in the current version. If the actual inputs/outputs number is less than 8, we can leave the unused items with the name starting with `list_custom`, and they will be automatically omitted.
 
-7. This feature is experimentally supported now and may be not very robust. So any issues are warmly welcomed if some unexpected result is encountered.
+7. This feature is experimentally supported now and may be not very robust. So any issues are warmly welcomed if some unexpected results are encountered.
 
 # Sample models
 
@@ -140,6 +140,13 @@ For quick testing, some typical sample models are provided as following. Most of
   - There are preprocess nodes and a big bunch of postprocessing nodes in the model.
 
 `onnx-modifier` is under active development 🛠. Welcome to use, create issues and pull requests! 🥰
+
+# TODO
+
+- [ ] Create executable file for easier launching for the following platforms:
+  - [ ] Linux
+  - [ ] Windows
+- [ ] Add `merge models` feature
 
 # Credits and referred materials
 
