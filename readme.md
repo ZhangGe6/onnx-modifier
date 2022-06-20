@@ -62,17 +62,24 @@ Click `Open Model...` to upload the ONNX model to edit. The model will be parsed
 We create a docker container like this:
 
 ```bash
+git clone git@github.com:ZhangGe6/onnx-modifier.git
+cd onnx-modifier
 docker build --file Dockerfile . -t onnx-modifier
 ```
 
-After building the container, we run onnx-modifier from it by mapping docker port 5000 to host port 5000
+After building the container, we run onnx-modifier by mapping docker port and a local folder `modified_onnx`
 
 ```bash
-docker run -d -t --name onnx-modifier -p 5000:5000 onnx-modifier
+mkdir -p modified_onnx
+docker run -d -t \
+  --name onnx-modifier \
+  -u $(id -u ${USER}):$(id -g ${USER}) \
+  -v $(pwd)/modified_onnx:/modified_onnx \
+  -p 5000:5000 \
+  onnx-modifier
 ```
 
-Then we have access to onnx-modifer from URL <http://127.0.0.1:5000>.
-
+Then we have access to onnx-modifer from URL <http://127.0.0.1:5000>. The modified ONNX models are expected to be found inside the local folder `modified_onnx`.
 
 
 # Usage
