@@ -22,18 +22,16 @@
 
     - add node (add preprocess nodes): https://zhuanlan.zhihu.com/p/394395167
 
-combine models (not supported): 
+- combine models (not supported): 
 
-    - https://stackoverflow.com/questions/66178085/can-i-combine-two-onnx-graphs-together-passing-the-output-from-one-as-input-to
+  - https://stackoverflow.com/questions/66178085/can-i-combine-two-onnx-graphs-together-passing-the-output-from-one-as-input-to
 
-    - https://www.zhihu.com/people/kai-xin-zui-zhong-yao-76/posts
+  - https://www.zhihu.com/people/kai-xin-zui-zhong-yao-76/posts
 
 - modify attribute of nodes (supported)
 
     - topk: https://github.com/onnx/onnx/issues/2921
-
 - remove layer (supported): https://github.com/onnx/onnx/issues/2638
-
 
 
 

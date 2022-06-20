@@ -26,6 +26,9 @@
 `onnx-modifier`基于流行的模型可视化工具 [Netron](https://github.com/lutzroeder/netron) 和轻量级Web应用框架 [flask](https://github.com/pallets/flask) 开发。希望它能给社区带来一些贡献~
 
 # 安装与运行
+目前支持两种方法运行`onnx-modifier`：
+
+## 源码+命令行启动
 
 - 拉取`onnx-modifier`，安装所需要的Python库 
 
@@ -43,7 +46,12 @@
   python app.py
   ```
 
-  点击输出中的url（如`http://127.0.0.1:5000/`），即可在浏览器中进入onnx-modifier界面。点击`Open Model...`，上传所需要编辑的模型文件，上传完毕后，网络可视化结构会自动显示。
+## 从可执行文件启动
+- Windows: 下载可执行文件[onnx-modifier.exe (27.6MB)](https://drive.google.com/file/d/1y7mYlvF0G5iiNDgOFh1ESXlTs8I2ipVQ/view?usp=sharing)，双击即可启动。
+  - 默认使用Edge浏览器作为运行环境。
+> 生成可执行文件的步骤记录在`app_desktop.py`文件中。未来会为其他平台生成可执行文件。
+
+点击输出中的url（如`http://127.0.0.1:5000/`），即可在浏览器中进入onnx-modifier界面。点击`Open Model...`，上传所需要编辑的模型文件，上传完毕后，网络可视化结构会自动显示。
 
 # 用法
 

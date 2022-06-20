@@ -1,6 +1,11 @@
 # onnx-modifier update log
 
+## 20220620
+
+add Windows executable file.
+
 ## 20220612
+
 - update graph automatically as soon as a modification is invoked.
 - fix `shared arguments` issue.
 - support editing the attributes and the name of inputs/outputs directly in the placeholders in the sidebar.
