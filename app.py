@@ -1,6 +1,5 @@
 #!/usr/bin/env python3.8
 
-
 from flask import Flask, render_template, request
 from onnx_modifier import onnxModifier
 app = Flask(__name__)

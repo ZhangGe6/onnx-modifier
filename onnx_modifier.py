@@ -7,7 +7,6 @@ import os
 import copy
 import numpy as np
 import onnx
-import onnxruntime as rt
 from utils import make_new_node, make_attr_changed_node
 
 class onnxModifier:
@@ -159,7 +158,8 @@ class onnxModifier:
         # onnx.checker.check_model(self.model_proto)
         onnx.save(self.model_proto, save_path)  
     
-    def inference(self, x=None, output_names=None):        
+    def inference(self, x=None, output_names=None):
+        import onnxruntime as rt     
         if not x:
             input_shape = [1, 3, 224, 224]
             x = np.random.randn(*input_shape).astype(np.float32)
