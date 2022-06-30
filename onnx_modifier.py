@@ -44,6 +44,10 @@ class onnxModifier:
                 node.name = str(node.op_type) + str(node_idx)
             node_idx += 1
             self.node_name2module[node.name] = node
+        
+        for inp in self.graph.input:
+            self.node_name2module[inp.name] = inp
+        self.graph_input_names = [inp.name for inp in self.graph.input]
             
         for out in self.graph.output:
             self.node_name2module["out_" + out.name] = out  # add `out_` in case the output has the same name with the last node
@@ -76,7 +80,7 @@ class onnxModifier:
                     # print('removing node {} ...'.format(node_name))
                     self.remove_node_by_name(node_name)
         
-        # remove node initializers (parameters) aka, keep and only keep the initializers of left nodes
+        # remove node initializers (parameters), aka, keep and only keep the initializers of left nodes
         left_node_inputs = []
         for left_node in self.graph.node:
             left_node_inputs += left_node.input
@@ -106,14 +110,20 @@ class onnxModifier:
             for src_name, dst_name in renamed_ios.items():
                 # print(src_name, dst_name)
                 node = self.node_name2module[node_name]
-                # print(node.input, node.output)
-                for i in range(len(node.input)):
-                    if node.input[i] == src_name:
-                        node.input[i] = dst_name
-                for i in range(len(node.output)):
-                    if node.output[i] == src_name:
-                        node.output[i] = dst_name   
-    
+                if node_name in self.graph_input_names:
+                    node.name = dst_name
+                    # print(node.name)
+                    # print(node)
+                    pass
+                else:
+                    # print(node.input, node.output)
+                    for i in range(len(node.input)):
+                        if node.input[i] == src_name:
+                            node.input[i] = dst_name
+                    for i in range(len(node.output)):
+                        if node.output[i] == src_name:
+                            node.output[i] = dst_name   
+        
     def modify_node_attr(self, node_changed_attr):
         # we achieve it by deleting the original node and make a (copied) new node
         # print(node_changed_attr)
@@ -257,10 +267,10 @@ if __name__ == "__main__":
     
 
     def test_modify_node_io_name():
-        node_rename_io = {'Conv3': {'pool1_1': 'conv1_1'}}
+        node_rename_io = {'input': {'input': 'inputd'}, 'Conv_0': {'input': 'inputd'}}
         onnx_modifier.modify_node_io_name(node_rename_io)
         onnx_modifier.check_and_save_model()      
-    # test_modify_node_io_name()
+    test_modify_node_io_name()
 
     def test_add_node():
         node_info = {'custom_added_AveragePool0': {'properties': {'domain': 'ai.onnx', 'op_type': 'AveragePool', 'name': 'custom_added_AveragePool0'}, 'attributes': {'kernel_shape': [2, 2]}, 'inputs': {'X': ['fire2/squeeze1x1_1']}, 'outputs': {'Y': ['out']}}}
@@ -278,7 +288,7 @@ if __name__ == "__main__":
         onnx_modifier.modify_node_attr(changed_attr)
         
         onnx_modifier.check_and_save_model()
-    test_change_node_attr()
+    # test_change_node_attr()
         
         
         

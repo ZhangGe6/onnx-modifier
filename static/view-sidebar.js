@@ -801,7 +801,7 @@ class NodeAttributeView {
 
 sidebar.ParameterView = class {
 
-    constructor(host, list, inp_or_out, param_idx, modelNodeName) {
+    constructor(host, list, param_type, param_idx, modelNodeName) {
         this._host = host;
         this._list = list;
         this._modelNodeName = modelNodeName
@@ -811,7 +811,7 @@ sidebar.ParameterView = class {
         // console.log(list)
         // for (const argument of list.arguments) {
         for (const [arg_idx, argument] of list.arguments.entries()) {
-            const item = new sidebar.ArgumentView(host, argument, inp_or_out, param_idx, arg_idx, list._name, this._modelNodeName);
+            const item = new sidebar.ArgumentView(host, argument, param_type, param_idx, arg_idx, list._name, this._modelNodeName);
             item.on('export-tensor', (sender, tensor) => {
                 this._raise('export-tensor', tensor);
             });
@@ -850,10 +850,10 @@ sidebar.ParameterView = class {
 
 sidebar.ArgumentView = class {
 
-    constructor(host, argument, inp_or_out, param_index, arg_index, parameterName, modelNodeName) {
+    constructor(host, argument, param_type, param_index, arg_index, parameterName, modelNodeName) {
         this._host = host;
         this._argument = argument;
-        this._inp_or_out = inp_or_out
+        this._param_type = param_type
         this._param_index = param_index
         this._arg_index = arg_index
         this._parameterName = parameterName
@@ -907,7 +907,7 @@ sidebar.ArgumentView = class {
                 // console.log(e.target.value);
                 // this._host._view._graph.changeNodeInputOutput(this._modelNodeName, this._parameterName, this._arg_index, e.target.value, this._argument._name);
                 // this._host._view._graph.changeNodeInputOutput(this._modelNodeName, this._parameterName, this._arg_index, e.target.value);
-                this._host._view._graph.changeNodeInputOutput(this._modelNodeName, this._parameterName, this._inp_or_out, this._param_index, this._arg_index, e.target.value);
+                this._host._view._graph.changeNodeInputOutput(this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, e.target.value);
                 // console.log(this._host._view._graph._renameMap);
             });
             this._element.appendChild(arg_input);
@@ -1117,8 +1117,9 @@ sidebar.ModelSidebar = class {
             }
             if (Array.isArray(graph.inputs) && graph.inputs.length > 0) {
                 this._addHeader('Inputs');
-                for (const input of graph.inputs) {
-                    this.addArgument(input.name, input);
+                // for (const input of graph.inputs) {
+                for (const [index, input] of graph.inputs.entries()){
+                    this.addArgument(input.name, input, index);
                 }
             }
             if (Array.isArray(graph.outputs) && graph.outputs.length > 0) {
@@ -1150,8 +1151,9 @@ sidebar.ModelSidebar = class {
         this._elements.push(item.render());
     }
 
-    addArgument(name, argument) {
-        const view = new sidebar.ParameterView(this._host, argument);
+    addArgument(name, argument, index) {
+        // const view = new sidebar.ParameterView(this._host, argument);
+        const view = new sidebar.ParameterView(this._host, argument, 'model_input', index, name);
         view.toggle();
         const item = new sidebar.NameValueView(this._host, name, view);
         this._elements.push(item.render());
