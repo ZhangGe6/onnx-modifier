@@ -658,7 +658,7 @@ class NodeAttributeView {
             this._element.appendChild(this._expander);
         }
         const value = this._attribute.value;
-        console.log(this._attribute.name, value, type)
+        // console.log(this._attribute.name, value, type)
         switch (type) {
             case 'graph': {
                 const line = this._host.document.createElement('div');

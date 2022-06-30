@@ -898,25 +898,16 @@ view.View = class {
     // re-fresh node arguments in case the node inputs/outputs are changed
     refreshNodeArguments() {  
         for (var node of this._graphs[0]._nodes) {
-            // this node has some changed arguments
-            // console.log(node)
-            // console.log(node.modelNodeName)
             if (this.lastViewGraph._renameMap.get(node.modelNodeName)) {
 
                 // check inputs
                 for (var input of node.inputs) {
                     for (const [index, element] of input.arguments.entries()) {
                         if (this.lastViewGraph._renameMap.get(node.modelNodeName).get(element.original_name)) {
-                            // console.log(element.name)
                             var new_name = this.lastViewGraph._renameMap.get(node.modelNodeName).get(element.original_name)
-                            // console.log(element.original_name)
-                            // console.log(new_name)
                             var arg_with_new_name = this._graphs[0]._context.argument(new_name, element.original_name)
 
                             input.arguments[index] = arg_with_new_name
-
-                            // console.log(arg_with_new_name)
-                            // console.log(node)
                         }
                     }
                 }
@@ -925,15 +916,11 @@ view.View = class {
                 for (var output of node.outputs) {
                     for (const [index, element] of output.arguments.entries()) {
                         if (this.lastViewGraph._renameMap.get(node.modelNodeName).get(element.original_name)) {
-                            // console.log(element.name)
                             var new_name = this.lastViewGraph._renameMap.get(node.modelNodeName).get(element.original_name)
-                            console.log(new_name)
+                            // console.log(new_name)
                             var arg_with_new_name = this._graphs[0]._context.argument(new_name, element.original_name)
 
                             output.arguments[index] = arg_with_new_name
-
-                            // console.log(arg_with_new_name)
-                            console.log(node)
                         }
                     }
                 }
@@ -958,113 +945,72 @@ view.View = class {
     }
 
     refreshModelInputOutput() {
-        // console.log("refreshModelInputOutput", this._graphs[0])
         // console.log(this.lastViewGraph._renameMap)
         for (var input of this._graphs[0]._inputs) {
-            // console.log(input)
-            // console.log(input.modelNodeName)
             var input_orig_name = input.arguments[0].original_name
             if (this.lastViewGraph._renameMap.get(input_orig_name)) {
-                // for model input and output, node.modelNodeName == element.original_name
                 var new_name = this.lastViewGraph._renameMap.get(input_orig_name).get(input_orig_name)
-                // console.log(new_name)
                 var arg_with_new_name = this._graphs[0]._context.argument(new_name, input_orig_name)
 
                 input.arguments[0] = arg_with_new_name
 
                 // change all the name of node input linked with model input meanwhile
                 for (var node of this._graphs[0]._nodes) {
-                    // this node has some changed arguments
-                    // console.log(node)
-                    // console.log(node.modelNodeName)
-                    // if (this.lastViewGraph._renameMap.get(node.modelNodeName)) {
-                        for (var node_input of node.inputs) {
-                            for (const [index, element] of node_input.arguments.entries()) {
-                                // console.log(element.name, input.modelNodeName)
-                                // if (element.name == input.modelNodeName) {
-                                if (element.original_name == input_orig_name) {
-                                    // console.log(element.name)
-                                    // var new_name = this.lastViewGraph._renameMap.get(node.modelNodeName).get(element.original_name)
-                                    // console.log(element.original_name)
-                                    // console.log(new_name)
-                                    var arg_with_new_name = this._graphs[0]._context.argument(new_name, element.original_name)
-        
-                                    node_input.arguments[index] = arg_with_new_name
+                    for (var node_input of node.inputs) {
+                        for (const [index, element] of node_input.arguments.entries()) {
+                            if (element.original_name == input_orig_name) {
+                                var arg_with_new_name = this._graphs[0]._context.argument(new_name, element.original_name)
+    
+                                node_input.arguments[index] = arg_with_new_name
 
-                                    // save the changed name into _renameMap
-                                    // as this modified _renamedMap, so refreshModelInputOutput() shoulf be called before refreshNodeArguments()
-                                    if (!this.lastViewGraph._renameMap.get(node.modelNodeName)) {
-                                        this.lastViewGraph._renameMap.set(node.modelNodeName, new Map());
-                                    }
-                        
-                                    var orig_arg_name = element.original_name
-                                    this.lastViewGraph._renameMap.get(node.modelNodeName).set(orig_arg_name, new_name);
-        
-                                    // console.log(arg_with_new_name)
-                                    // console.log(node)
+                                // save the changed name into _renameMap
+                                // as this modified _renamedMap, so refreshModelInputOutput() shoulf be called before refreshNodeArguments()
+                                if (!this.lastViewGraph._renameMap.get(node.modelNodeName)) {
+                                    this.lastViewGraph._renameMap.set(node.modelNodeName, new Map());
                                 }
+                    
+                                var orig_arg_name = element.original_name
+                                this.lastViewGraph._renameMap.get(node.modelNodeName).set(orig_arg_name, new_name);
+    
                             }
                         }
-                    // }
+                    }
                 }
-
-
             }
         }
 
         for (var output of this._graphs[0]._outputs) {
-            // console.log(output)
-            // console.log(this.lastViewGraph._renameMap)
-            // console.log(input.modelNodeName)
-
-            // if (this.lastViewGraph._renameMap.get(output.modelNodeName)) {
             var output_orig_name = output.arguments[0].original_name
             if (this.lastViewGraph._renameMap.get('out_' + output_orig_name)) {
                 // for model input and output, node.modelNodeName == element.original_name
                 var new_name = this.lastViewGraph._renameMap.get('out_' + output_orig_name).get(output_orig_name)
-                console.log(new_name)
+                // console.log(new_name)
                 var arg_with_new_name = this._graphs[0]._context.argument(new_name, output_orig_name)
 
                 output.arguments[0] = arg_with_new_name
 
                 // change all the name of node input linked with model input meanwhile
                 for (var node of this._graphs[0]._nodes) {
-                    // this node has some changed arguments
-                    // console.log(node)
-                    // console.log(node.modelNodeName)
-                    // if (this.lastViewGraph._renameMap.get(node.modelNodeName)) {
-                        for (var node_output of node.outputs) {
-                            for (const [index, element] of node_output.arguments.entries()) {
-                                // console.log(element.name, input.modelNodeName)
-                                // if (element.name == input.modelNodeName) {
-                                // console.log(element.original_name, output.modelNodeName)
-                                if (element.original_name == output_orig_name) {
-                                    console.log(element.original_name)
-                                    // var new_name = this.lastViewGraph._renameMap.get(node.modelNodeName).get(element.original_name)
-                                    // console.log(element.original_name)
-                                    // console.log(new_name)
-                                    var arg_with_new_name = this._graphs[0]._context.argument(new_name, element.original_name)
-        
-                                    node_output.arguments[index] = arg_with_new_name
+                    for (var node_output of node.outputs) {
+                        for (const [index, element] of node_output.arguments.entries()) {
+                            if (element.original_name == output_orig_name) {
+                                // console.log(element.original_name)
+                                var arg_with_new_name = this._graphs[0]._context.argument(new_name, element.original_name)
+    
+                                node_output.arguments[index] = arg_with_new_name
 
-                                    // save the changed name into _renameMap
-                                    // as this modified _renamedMap, so refreshModelInputOutput() shoulf be called before refreshNodeArguments()
-                                    if (!this.lastViewGraph._renameMap.get(node.modelNodeName)) {
-                                        this.lastViewGraph._renameMap.set(node.modelNodeName, new Map());
-                                    }
-                        
-                                    var orig_arg_name = element.original_name
-                                    this.lastViewGraph._renameMap.get(node.modelNodeName).set(orig_arg_name, new_name);
-        
-                                    // console.log(arg_with_new_name)
-                                    // console.log(node)
+                                // save the changed name into _renameMap
+                                // as this modified _renamedMap, so refreshModelInputOutput() shoulf be called before refreshNodeArguments()
+                                if (!this.lastViewGraph._renameMap.get(node.modelNodeName)) {
+                                    this.lastViewGraph._renameMap.set(node.modelNodeName, new Map());
                                 }
+                    
+                                var orig_arg_name = element.original_name
+                                this.lastViewGraph._renameMap.get(node.modelNodeName).set(orig_arg_name, new_name);
                             }
                         }
-                    // }
+                    }
                 }
-
-
             }
         }
     }
@@ -1303,7 +1249,7 @@ view.Graph = class extends grapher.Graph {
         // reset node inputs/outputs
         for (const changed_node_name of this._renameMap.keys()) {
             var node = this._modelNodeName2ModelNode.get(changed_node_name)
-            console.log(node)
+            // console.log(node)
             // console.log(typeof node)
             // console.log(node.constructor.name)
             if (node.arguments) {   // model input or model output. Because they are purely onnx.Parameter
@@ -1398,27 +1344,14 @@ view.Graph = class extends grapher.Graph {
         else {    // for the nodes in the original model
 
             if (param_type == 'model_input') {
-                // var orig_arg_name = this._modelNodeName2ModelNode.get(modelNodeName).arguments[arg_index].orig_arg_name
-                // console.log(this._modelNodeName2ModelNode.get(modelNodeName).arguments)
-                // console.log(this._modelNodeName2ModelNode.get(modelNodeName).arguments[0])
-                // console.log(this._modelNodeName2ModelNode.get(modelNodeName).arguments[0].orig_arg_name)
-                // console.log("changing model_input", orig_arg_name)
-
-                // var orig_arg_name = modelNodeName
                 var orig_arg_name = this._modelNodeName2ModelNode.get(modelNodeName).arguments[0].original_name
-                // console.log("changing model_input", orig_arg_name)
-                // console.log(param_type, orig_arg_name)
             }
 
             if (param_type == 'model_output') {
-                // console.log(this._modelNodeName2ModelNode.get('out_' + modelNodeName))
-                // console.log(this._modelNodeName2ModelNode.get('out_' + modelNodeName).arguments[0].original_name)
                 modelNodeName = 'out_' + modelNodeName
-                console.log(modelNodeName)
+                // console.log(modelNodeName)
                 var orig_arg_name = this._modelNodeName2ModelNode.get(modelNodeName).arguments[0].original_name
-                console.log(orig_arg_name)
-                // console.log("changing model_input", orig_arg_name)
-                // console.log(param_type, orig_arg_name)
+                // console.log(orig_arg_name)
             }
 
             if (param_type == 'input') {
@@ -1434,7 +1367,7 @@ view.Graph = class extends grapher.Graph {
                 this._renameMap.set(modelNodeName, new Map());
             }
             this._renameMap.get(modelNodeName).set(orig_arg_name, targetValue);
-            console.log(this._renameMap)
+            // console.log(this._renameMap)
         }
 
         this.view._updateGraph()

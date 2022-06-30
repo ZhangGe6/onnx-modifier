@@ -112,9 +112,6 @@ class onnxModifier:
                 node = self.node_name2module[node_name]
                 if node_name in self.graph_input_names:
                     node.name = dst_name
-                    # print(node.name)
-                    # print(node)
-                    # pass
                 elif node_name in self.graph_output_names:
                     node.name = dst_name
                 else:
