@@ -114,7 +114,9 @@ class onnxModifier:
                     node.name = dst_name
                     # print(node.name)
                     # print(node)
-                    pass
+                    # pass
+                elif node_name in self.graph_output_names:
+                    node.name = dst_name
                 else:
                     # print(node.input, node.output)
                     for i in range(len(node.input)):

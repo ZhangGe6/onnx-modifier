@@ -1119,13 +1119,16 @@ sidebar.ModelSidebar = class {
                 this._addHeader('Inputs');
                 // for (const input of graph.inputs) {
                 for (const [index, input] of graph.inputs.entries()){
-                    this.addArgument(input.name, input, index);
+                    this.addArgument(input.name, input, index, 'model_input');
+                    // this.addArgument(input.modelNodeName, input, index, 'model_input');
                 }
             }
             if (Array.isArray(graph.outputs) && graph.outputs.length > 0) {
                 this._addHeader('Outputs');
-                for (const output of graph.outputs) {
-                    this.addArgument(output.name, output);
+                // for (const output of graph.outputs) {
+                for (const [index, output] of graph.outputs.entries()){
+                    this.addArgument(output.name, output, index, 'model_output');
+                    // this.addArgument(output.modelNodeName, output, index, 'model_output');
                 }
             }
         }
@@ -1151,9 +1154,9 @@ sidebar.ModelSidebar = class {
         this._elements.push(item.render());
     }
 
-    addArgument(name, argument, index) {
+    addArgument(name, argument, index, arg_type) {
         // const view = new sidebar.ParameterView(this._host, argument);
-        const view = new sidebar.ParameterView(this._host, argument, 'model_input', index, name);
+        const view = new sidebar.ParameterView(this._host, argument, arg_type, index, name);
         view.toggle();
         const item = new sidebar.NameValueView(this._host, name, view);
         this._elements.push(item.render());
