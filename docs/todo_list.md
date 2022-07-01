@@ -4,7 +4,8 @@
 - support more flexible downloading schema
     - As this [request](https://github.com/ZhangGe6/onnx-modifier/pull/5) notes, the current downloading schema prevents `onnx-modifier ` from being deployed remotely as a service.
 
-- support adding more complicated nodes (which has some simple parameters).
+- support adding more complicated nodes (which has some simple parameters like `reshape`).
+- support adding model input/output node.
 - support combine models.
 - support user-defined input/output number when the type of node's input/output is list.
 - slim the codes.

@@ -1,5 +1,12 @@
 # onnx-modifier update log
 
+## 20220701
+support renaming model input/output
+
+## 20220621
+add Dockerfile
+    - thanks to [fengwang](https://github.com/fengwang)
+
 ## 20220620
 
 add Windows executable file.
