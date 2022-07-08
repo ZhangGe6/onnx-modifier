@@ -1077,11 +1077,13 @@ onnx.Tensor = class {
 
     toString() {
         const context = this._context();
+        // console.log(context)
         if (context.state) {
             return '';
         }
         context.limit = 10000;
         const value = this._decode(context, 0);
+        console.log(value)
         return onnx.Tensor._stringify(value, '', '    ');
     }
 
@@ -1260,6 +1262,7 @@ onnx.Tensor = class {
     }
 
     static _stringify(value, indentation, indent) {
+        // console.log(value, Array.isArray(value))  // ..., false
         if (Array.isArray(value)) {
             const result = [];
             result.push(indentation + '[');

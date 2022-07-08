@@ -883,6 +883,7 @@ sidebar.ArgumentView = class {
         let name = this._argument.name || '';
         this._hasId = name ? true : false;
         this._hasKind = initializer && initializer.kind ? true : false;
+        // console.log(this._hasId, this._hasKind, type)  // true true ...
         if (this._hasId || (!this._hasKind && !type)) {
             this._hasId = true;
 
@@ -914,12 +915,14 @@ sidebar.ArgumentView = class {
 
         }
         else if (this._hasKind) {
+            console.log("this._hasKind is called")
             const kindLine = this._host.document.createElement('div');
             kindLine.className = 'sidebar-view-item-value-line';
             kindLine.innerHTML = 'kind: <b>' + initializer.kind + '</b>';
             this._element.appendChild(kindLine);
         }
         else if (type) {
+            console.log("type is called")
             const typeLine = this._host.document.createElement('div');
             typeLine.className = 'sidebar-view-item-value-line-border';
             typeLine.innerHTML = 'type: <code><b>' + type.toString().split('<').join('&lt;').split('>').join('&gt;') + '</b></code>';
@@ -1009,6 +1012,8 @@ sidebar.ArgumentView = class {
 
                         valueLine.className = 'sidebar-view-item-value-line-border';
                         contentLine.innerHTML = state || initializer.toString();
+                        console.log(initializer)
+                        console.log(state, initializer.toString())
                     }
                     catch (err) {
                         contentLine.innerHTML = err.toString();

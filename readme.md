@@ -18,7 +18,7 @@ Currently, the following editing operations are supported:
   - Delete a single node.
   - Delete a node and all the nodes rooted on it.
   - Recover a deleted node.
-- [x] Rename the name of node inputs/outputs
+- [x] Rename the node inputs/outputs
 - [x] Rename the model inputs/outputs
 - [x] Edit the attribute of nodes
 - [x] Add new nodes (experimental)
@@ -136,8 +136,8 @@ The process is shown in the following figure:
 
 <img src="./docs/rename_io.gif" style="zoom:75%;" />
 
-## Rename the name of node inputs/outputs
-Click the model input/output node, type a new name for it in the sidebar, then we are done.
+## Rename the model inputs/outputs
+Click the model input/output node, type a new name in the sidebar, then we are done.
 
 ## Edit the attribute of nodes
 
