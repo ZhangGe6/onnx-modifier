@@ -229,10 +229,10 @@ host.BrowserHost = class {
                     'node_states' : this.mapToObjectRec(this._view._graph._modelNodeName2State),
                     'node_renamed_io' : this.mapToObjectRec(this._view._graph._renameMap),
                     'node_changed_attr' : this.mapToObjectRec(this._view._graph._changedAttributes),
-                    'added_node_info' : this.mapToObjectRec(this.parseLightNodeInfo2Map(this._view._graph._addedNode))
-                }
-                    
-                )
+                    'added_node_info' : this.mapToObjectRec(this.parseLightNodeInfo2Map(this._view._graph._addedNode)),
+                    'added_outputs' : this.arrayToObject(this.process_added_outputs(this._view._graph._addedOutputs, 
+                                                                this._view._graph._renameMap, this._view._graph._modelNodeName2State))
+                })
             }).then(function (response) {
                 return response.text();
             }).then(function (text) {
@@ -263,9 +263,6 @@ host.BrowserHost = class {
             this._view._graph.add_node(add_op_domain, add_op_type)
             this._view._updateGraph();
         })
-
-
-
 
         this.document.getElementById('version').innerText = this.version;
 
@@ -676,6 +673,33 @@ host.BrowserHost = class {
             }
         }
         return lo
+    }
+    
+    // this function does 2 things:
+    // 1. rename the addedOutputs with their new names using renameMap. Because addedOutputs are stored in lists,
+    //    it may be not easy to rename them while editing. (Of course there may be a better way to do this)
+    // 2. filter out the custom output which is added, but deleted later 
+    process_added_outputs(addedOutputs, renameMap, modelNodeName2State) {
+        var processed = []
+        for (let i = 0; i < addedOutputs.length; ++i) {
+            if (modelNodeName2State.get("out_" + addedOutputs[i]) == "Exist") {
+                processed.push(addedOutputs[i]);
+            }
+        }
+        for (let i = 0; i < processed.length; ++i) {
+            if (renameMap.get("out_" + processed[i])) {
+                processed[i] = renameMap.get("out_" + processed[i]).get(processed[i]);
+            }
+        }
+        return processed;
+    }
+
+    // https://stackoverflow.com/a/4215753/10096987
+    arrayToObject(arr) {
+        var rv = {};
+        for (var i = 0; i < arr.length; ++i)
+          if (arr[i] !== undefined) rv[i] = arr[i];
+        return rv;
     }
 
     // convert view.LightNodeInfo to Map object for easier transmission to Python backend

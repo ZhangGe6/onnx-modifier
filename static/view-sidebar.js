@@ -209,6 +209,9 @@ sidebar.NodeSidebar = class {
         this._addButton('Recover Node');
         this.add_separator(this._elements, 'sidebar-view-separator')
         this._addButton('Enter');
+    
+        this._addHeader('Output adding helper');
+        this._addButton('Add Output');
         
         // deprecated
         // this.add_separator(this._elements, 'sidebar-view-separator');
@@ -272,8 +275,6 @@ sidebar.NodeSidebar = class {
                 }
             }
         }
-
-
     }
 
     render() {
@@ -356,7 +357,11 @@ sidebar.NodeSidebar = class {
                 this._host._view._updateGraph()
             });
         }
-
+        if (title === 'Add Output') {
+            buttonElement.addEventListener('click', () => {
+                this._host._view._graph.add_output(this._modelNodeName)
+            });   
+        }
     }
 
     // deprecated

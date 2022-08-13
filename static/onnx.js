@@ -438,6 +438,7 @@ onnx.Graph = class {
 
         this._custom_add_node_io_idx = 0
         this._custom_added_node = []
+        this._custom_added_outputs = []
         
         // model parameter assignment here!
         // console.log(graph)
@@ -504,7 +505,8 @@ onnx.Graph = class {
     }
 
     get outputs() {
-        return this._outputs;
+        // return this._outputs;
+        return this._outputs.concat(this._custom_added_outputs);
     }
 
     get nodes() {
@@ -630,6 +632,15 @@ onnx.Graph = class {
         this._custom_added_node.push(custom_add_node)
 
         return custom_add_node;
+    }
+
+    reset_custom_added_outputs() {
+        this._custom_added_outputs = [];
+    }
+
+    add_output(name) {
+        const argument = this._context.argument(name);
+        this._custom_added_outputs.push(new onnx.Parameter(name, [ argument ]));
     }
 
 };

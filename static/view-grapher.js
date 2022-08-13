@@ -24,6 +24,7 @@ grapher.Graph = class {
         this._changedAttributes = new Map();
 
         this._addedNode = new Map();
+        this._addedOutputs = [];
     }
 
     get options() {

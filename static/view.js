@@ -464,7 +464,6 @@ view.View = class {
             this.refreshModelInputOutput()
             this.refreshNodeArguments()
             this.refreshNodeAttributes()
-            
         }
 
         return active_graph
@@ -580,7 +579,8 @@ view.View = class {
                     viewGraph._renameMap = this.lastViewGraph._renameMap;
                     viewGraph._changedAttributes = this.lastViewGraph._changedAttributes;
                     viewGraph._addedNode = this.lastViewGraph._addedNode;
-                    viewGraph._add_nodeKey = this.lastViewGraph._add_nodeKey
+                    viewGraph._add_nodeKey = this.lastViewGraph._add_nodeKey;
+                    viewGraph._addedOutputs = this.lastViewGraph._addedOutputs;
                     // console.log(viewGraph._renameMap);
                     // console.log(viewGraph._modelNodeName2State)
                 }
@@ -866,7 +866,7 @@ view.View = class {
         
     }
 
-    // re-generate the added node according to _addedNode
+    // re-generate the added node according to _addedNode according to the latest _addedNode
     refreshAddedNode() {
         this._graphs[0].reset_custom_added_node()
         // for (const node_info of this._addedNode.values()) {
@@ -880,8 +880,7 @@ view.View = class {
                 for (const arg of input._arguments) {
                     input_list_names.push(arg.name)
                 }
-                this.lastViewGraph._addedNode.get(modelNodeName).inputs.set(input.name, input_list_names)
-                
+                this.lastViewGraph._addedNode.get(modelNodeName).inputs.set(input.name, input_list_names) 
             }
 
             for (const output of node.outputs) {
@@ -896,7 +895,7 @@ view.View = class {
     }
 
     // re-fresh node arguments in case the node inputs/outputs are changed
-    refreshNodeArguments() {  
+    refreshNodeArguments() {
         for (var node of this._graphs[0]._nodes) {
             if (this.lastViewGraph._renameMap.get(node.modelNodeName)) {
 
@@ -979,7 +978,13 @@ view.View = class {
             }
         }
 
-        for (var output of this._graphs[0]._outputs) {
+        // create and add new output to graph
+        this._graphs[0].reset_custom_added_outputs();
+        for (var output_name of this.lastViewGraph._addedOutputs) {
+            this._graphs[0].add_output(output_name);
+        }
+        // console.log(this._graphs[0].outputs)
+        for (var output of this._graphs[0].outputs) {
             var output_orig_name = output.arguments[0].original_name
             if (this.lastViewGraph._renameMap.get('out_' + output_orig_name)) {
                 // for model input and output, node.modelNodeName == element.original_name
@@ -1011,6 +1016,7 @@ view.View = class {
                         }
                     }
                 }
+                // console.log(this.lastViewGraph._renameMap)
             }
         }
     }
@@ -1190,7 +1196,6 @@ view.Graph = class extends grapher.Graph {
             }
         }
 
-
         for (const output of graph.outputs) {
             const viewOutput = this.createOutput(output);
             for (const argument of output.arguments) {
@@ -1238,6 +1243,17 @@ view.Graph = class extends grapher.Graph {
         }
     }
 
+    add_output(node_name) {
+        var model_node = this._modelNodeName2ModelNode.get(node_name);
+        for (var output of model_node.outputs) {
+            for (var argument of output.arguments) {
+                this._addedOutputs.push(argument.name);
+            }
+        }
+        // console.log(this._addedOutputs);
+        this.view._updateGraph();
+    }
+
     resetGraph() {
         // reset node states
         for (const nodeId of this.nodes.keys()) {
@@ -1277,14 +1293,14 @@ view.Graph = class extends grapher.Graph {
                 }
 
             }
-
-
         }
         this._renameMap = new Map();
 
         // clear custom added nodes
         this._addedNode = new Map()
         this.view._graphs[0].reset_custom_added_node()
+        this._addedOutputs = []
+        this.view._graphs[0].reset_custom_added_outputs()
     }
 
     recordRenameInfo(modelNodeName, src_name, dst_name) {
