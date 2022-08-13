@@ -299,7 +299,7 @@ if __name__ == "__main__":
         
     def test_inference():
         onnx_modifier.inference()
-    test_inference()
+    # test_inference()
     
     def test_add_output():
         # print(onnx_modifier.graph.output)
@@ -307,4 +307,3 @@ if __name__ == "__main__":
         # print(onnx_modifier.graph.output)
         onnx_modifier.check_and_save_model()
     # test_add_output()
-        

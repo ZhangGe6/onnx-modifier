@@ -20,6 +20,8 @@
   - 删除一个节点及所有以该节点为根节点的子节点
   - 恢复误删的节点
 - [x] 修改节点输入输出名
+- [x] 修改模型输入输出名
+- [x] 增加模型输出节点
 - [x] 编辑节点属性值
 - [x] 增加新节点（beta）
 
@@ -47,7 +49,7 @@
   ```
 
 ## 从可执行文件启动
-- Windows: 下载可执行文件[onnx-modifier.exe (27.6MB)](https://drive.google.com/file/d/1y7mYlvF0G5iiNDgOFh1ESXlTs8I2ipVQ/view?usp=sharing)，双击即可启动。
+- Windows: 下载可执行文件[onnx-modifier.exe (27.6MB)](https://drive.google.com/file/d/1LRXgZauQ5BUENe_PvilRW8WvSO-4Jr9j/view?usp=sharing)，双击即可启动。
   - 默认使用Edge浏览器作为运行环境。
 > 生成可执行文件的步骤记录在`app_desktop.py`文件中。未来会为其他平台生成可执行文件。
 
@@ -101,6 +103,22 @@
 上例的修改过程如下图所示：
 
 <img src="./docs/rename_io.gif" style="zoom:75%;" />
+
+## 修改模型输入输出名称
+
+点击模型输入或输出节点，在弹出的侧边栏中，为模型输入输出键入新的名称即可。
+
+![rename_model_io](./docs/rename_model_io.gif)
+
+## 增加模型输出节点
+
+有时候我们需要增加/抽取某个特定节点的输出作为整个模型的输出。比如之前的模型输出节点在编辑过程中被删除了，需要增加新的，或者有时候我们需要抽取一些中间层特征输出做更细致的分析。
+
+通过`onnx-modifier`，我们只需要在对应节点的侧边栏中，点击`Add Output`按钮即可在该节点后部增加一个模型输出节点，其名称与原节点的输出名相同。
+
+如下图，我们增加了两个模型输出节点，分别为第一个卷积层的输出和第二个卷积层的输出。
+
+![add_new_outputs](./docs/add_new_outputs.gif)
 
 ## 编辑节点属性值
 

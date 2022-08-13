@@ -1,15 +1,17 @@
 # TODO
 
-- support desktop application.
-- support more flexible downloading schema
-    - As this [request](https://github.com/ZhangGe6/onnx-modifier/pull/5) notes, the current downloading schema prevents `onnx-modifier ` from being deployed remotely as a service.
-
-- support adding more complicated nodes (which has some simple parameters like `reshape`).
-- support adding model input/output node.
-- support combine models.
-- support user-defined input/output number when the type of node's input/output is list.
-- slim the codes.
-    - because some `.js` files (like electron.js and even python.js) in the `static` folder and `electron.html` in `templates` folder are legacy of Netron and can be further slimmed.
+- [ ] support desktop application.
+    - [x] Windows
+    - [ ] Linux
+- [ ] support more flexible downloading schema
+    - [ ] As this [request](https://github.com/ZhangGe6/onnx-modifier/pull/5) notes, the current downloading schema prevents `onnx-modifier ` from being deployed remotely as a service.
+- [ ] support adding more complicated nodes (which has some simple parameters like `reshape`).
+- [ ] support combine models.
+- [ ] support user-defined input/output number when the type of node's input/output is list.
+- [ ] slim the code.
+    - [ ] because some `.js` files (like electron.js and even python.js) in the `static` folder and `electron.html` in `templates` folder are legacy of Netron and can be further slimmed.
+- [x] support adding model input/output node.
+- [x] fix issue that "extra model inputs" emerges after deleting nodes. [issue#12](https://github.com/ZhangGe6/onnx-modifier/issues/12)
 
 
 # Some known reference issues/feature requests

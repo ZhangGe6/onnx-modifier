@@ -1,15 +1,23 @@
 # onnx-modifier update log
 
+## 20220813
+
+- support adding model input/output node. [issue 7](https://github.com/ZhangGe6/onnx-modifier/issues/7), [issue 8](https://github.com/ZhangGe6/onnx-modifier/issues/8), [issue 13](https://github.com/ZhangGe6/onnx-modifier/issues/13)
+
+- fix issue that "extra model inputs" emerges after deleting nodes. [issue#12](https://github.com/ZhangGe6/onnx-modifier/issues/12)
+- update windows executable file.
+
 ## 20220701
-support renaming model input/output
+
+- support renaming model input/output
 
 ## 20220621
-add Dockerfile
-    - thanks to [fengwang](https://github.com/fengwang)
+- add Dockerfile
+  - thanks to [fengwang](https://github.com/fengwang)
 
 ## 20220620
 
-add Windows executable file.
+- add Windows executable file.
 
 ## 20220612
 
