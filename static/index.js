@@ -344,6 +344,21 @@ host.BrowserHost = class {
             if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
                 const files = Array.from(e.dataTransfer.files);
                 const file = files.find((file) => this._view.accept(file.name));
+                this.upload_filename = file.name;
+                var form = new FormData();
+                form.append('file', file);
+
+                // https://stackoverflow.com/questions/66039996/javascript-fetch-upload-files-to-python-flask-restful
+                fetch('/open_model', {
+                    method: 'POST',
+                    body: form
+                }).then(function (response) {
+                    return response.text();
+                }).then(function (text) {
+                    console.log('POST response: ');
+                    // Should be 'OK' if everything was successful
+                    console.log(text);
+                });
                 if (file) {
                     this._open(file, files);
                 }

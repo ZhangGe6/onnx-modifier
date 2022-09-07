@@ -1094,7 +1094,7 @@ onnx.Tensor = class {
         }
         context.limit = 10000;
         const value = this._decode(context, 0);
-        console.log(value)
+        // console.log(value)
         return onnx.Tensor._stringify(value, '', '    ');
     }
 
