@@ -11,5 +11,5 @@ COPY ./utils /utils
 COPY ./*.py /
 RUN chmod +x /app.py
 
-CMD ["/bin/bash", "-c", "/app.py"]
+CMD ["/bin/bash", "-c", "/app.py --host='0.0.0.0' --debug=True"]
 

@@ -15,7 +15,7 @@ The following are some notes about How I worked for it.
         - flaskwebgui github repo: https://github.com/ClimenteA/flaskwebgui
     b. add some scripts to keep server running while gui is running
         - see here: https://github.com/ClimenteA/flaskwebgui#install
-        - I added the code in the index.js (around line 355)
+        - I added the code in the static/index.js (around line 355)
     c. Then run: `python app_desktop.py`, the web browser will be automatically lauched for onnx-modifier
 
 2. How to generate excutable files:
