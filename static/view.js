@@ -1254,6 +1254,17 @@ view.Graph = class extends grapher.Graph {
         this.view._updateGraph();
     }
 
+    changeBatchSize(type, value) {
+        if (type === "fixed") {
+            this._reBatchInfo.set("type", "fixed");
+            this._reBatchInfo.set("value", value);
+        }
+        else {  // dynamic
+            this._reBatchInfo.set("type", "dynamic");
+            this._reBatchInfo.set("value", "dynamic");
+        }
+    }
+
     resetGraph() {
         // reset node states
         for (const nodeId of this.nodes.keys()) {

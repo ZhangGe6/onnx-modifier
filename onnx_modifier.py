@@ -5,6 +5,7 @@
 
 import os
 import copy
+import struct
 import numpy as np
 import onnx
 from utils import make_new_node, make_attr_changed_node
@@ -58,7 +59,39 @@ class onnxModifier:
         self.initializer_name2module = dict()
         for initializer in self.initializer:
             self.initializer_name2module[initializer.name] = initializer
-                   
+    
+    def change_batch_size(self, rebatch_info):
+        # https://github.com/onnx/onnx/issues/2182#issuecomment-881752539
+        rebatch_type = rebatch_info['type']
+        rebatch_value = rebatch_info['value']
+        if type == 'fixed':
+            rebatch_value = int(rebatch_value)
+        # print(rebatch_type, rebatch_value)
+        
+        # Change batch size in input, output and value_info
+        for tensor in list(self.graph.input) + list(self.graph.value_info) + list(self.graph.output):
+            tensor.type.tensor_type.shape.dim[0].dim_param = rebatch_value
+        
+        # handle reshapes
+        for node in self.graph.node:
+            if node.op_type != 'Reshape':
+                continue
+            for init in self.graph.initializer:
+                # node.input[1] is expected to be a reshape
+                if init.name != node.input[1]:
+                    continue
+                
+                v = rebatch_value if rebatch_type == 'fixed' else -1
+                # Shape is stored as a list of ints
+                if len(init.int64_data) > 0:
+                    # This overwrites bias nodes' reshape shape but should be fine
+                    init.int64_data[0] = v
+                # Shape is stored as bytes
+                elif len(init.raw_data) > 0:
+                    shape = bytearray(init.raw_data)
+                    struct.pack_into('q', shape, 0, v)
+                    init.raw_data = bytes(shape)
+            
     def remove_node_by_name(self, node_name):
         # remove node in graph
         self.graph.node.remove(self.node_name2module[node_name])        
@@ -167,6 +200,7 @@ class onnxModifier:
         # print(modify_info['node_changed_attr'])
         # print(modify_info['added_node_info'])
         # print(modify_info['added_outputs'])
+        self.change_batch_size(modify_info['rebatch_info'])
         self.remove_node_by_node_states(modify_info['node_states'])
         self.modify_node_io_name(modify_info['node_renamed_io'])
         self.modify_node_attr(modify_info['node_changed_attr'])
@@ -185,10 +219,9 @@ class onnxModifier:
         # onnx.checker.check_model(self.model_proto)
         onnx.save(self.model_proto, save_path)  
     
-    def inference(self, x=None, output_names=None):
+    def inference(self, input_shape=[1, 3, 224, 224], x=None, output_names=None):
         import onnxruntime as rt     
         if not x:
-            input_shape = [1, 3, 224, 224]
             x = np.random.randn(*input_shape).astype(np.float32)
         if not output_names:
             output_name = self.graph.node[-1].output[0]
@@ -207,13 +240,7 @@ class onnxModifier:
         print(out.shape)
         
 if __name__ == "__main__":
-    # model_path = "C:\\Users\\ZhangGe\\Desktop\\squeezenet1.0-3.onnx"
-    # model_path = "C:\\Users\\ZhangGe\\Desktop\\squeezenet1.0-12-int8.onnx"
-    # model_path = "C:\\Users\\ZhangGe\\Desktop\\tflite_sim.onnx"
-    # model_path = "C:\\Users\\ZhangGe\\Desktop\\squeezenet1.0-12.onnx"
-    model_path = "C:\\Users\\ZhangGe\\Desktop\\with-added-output-modified_modified_squeezenet1.0-12.onnx"
-    # model_path = "C:\\Users\\ZhangGe\\Desktop\\squeezenet1.0-3.onnx"   // TODO: this model is not supported well , but why?
-    # model_path = "C:\\Users\\ZhangGe\\Desktop\\mobilenetv2-7.onnx"
+    model_path = "C:\\Users\\ZhangGe\\Desktop\\best.onnx"
     onnx_modifier = onnxModifier.from_model_path(model_path)
     
     def explore_basic():
@@ -261,7 +288,6 @@ if __name__ == "__main__":
         for initializer in onnx_modifier.initializer:
             print(initializer.name)
     
-        
         # print('\nleft nodes:')
         # for node in onnx_modifier.graph.node:
         #     print(node.name)
@@ -307,3 +333,21 @@ if __name__ == "__main__":
         # print(onnx_modifier.graph.output)
         onnx_modifier.check_and_save_model()
     # test_add_output()
+
+    def test_change_batch_size():
+        onnx_modifier.inference(input_shape=(1, 3, 640, 640))
+        print("batch size 1 passed")
+        
+        onnx_modifier.reload()
+        onnx_modifier.change_batch_size({'type': 'fixed', 'value': '2'})
+        onnx_modifier.inference(input_shape=(2, 3, 640, 640))
+        print("batch size 2 passed")
+        
+        onnx_modifier.reload()
+        onnx_modifier.change_batch_size({'type': 'dynamic', 'value': 'dynamic'})
+        onnx_modifier.inference(input_shape=(6, 3, 640, 640))
+        print("batch size dynamic passed")
+        
+        onnx_modifier.check_and_save_model()
+    # test_change_batch_size()
+    

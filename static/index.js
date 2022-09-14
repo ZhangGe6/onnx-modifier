@@ -231,7 +231,8 @@ host.BrowserHost = class {
                     'node_changed_attr' : this.mapToObjectRec(this._view._graph._changedAttributes),
                     'added_node_info' : this.mapToObjectRec(this.parseLightNodeInfo2Map(this._view._graph._addedNode)),
                     'added_outputs' : this.arrayToObject(this.process_added_outputs(this._view._graph._addedOutputs, 
-                                                                this._view._graph._renameMap, this._view._graph._modelNodeName2State))
+                                                                this._view._graph._renameMap, this._view._graph._modelNodeName2State)),
+                    'rebatch_info' : this.mapToObjectRec(this._view._graph._reBatchInfo)
                 })
             }).then(function (response) {
                 return response.text();

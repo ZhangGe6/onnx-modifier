@@ -24,6 +24,7 @@
 - [x] 增加模型输出节点
 - [x] 编辑节点属性值
 - [x] 增加新节点（beta）
+- [x] 修改模型batch size
 
 `onnx-modifier`基于流行的模型可视化工具 [Netron](https://github.com/lutzroeder/netron) 和轻量级Web应用框架 [flask](https://github.com/pallets/flask) 开发。希望它能给社区带来一些贡献~
 
@@ -155,7 +156,12 @@
 6. 在当前版本中，如果一个节点的输入/输出是一个列表类型（如`Concat`），限制最多显示8个。如果一个节点实际输入/输出小于8个，则填写对应数目的输入输出即可，多出来的应以`list_custom`开头，它们会在后续处理中自动被忽略。
 7. 这个功能还处在开发中，可能会不够鲁棒。所以如果大家在实际使用时碰到问题，非常欢迎提issue!
 
+## 修改模型batch size
+动态batch size和固定batch size均已支持。
+- 动态batch size：点击`Dynamic batch size`即可；
+- 动态bacth size：在`Fixed batch size`后方输入框内填入预期的batch size值；
 
+<img src="./docs/rebatch.gif" style="zoom:75%;" />
 
 `onnx-modifer`正在活跃地更新中:hammer_and_wrench:。 欢迎使用，提issue，如果有帮助的话，感谢给个:star:~
 

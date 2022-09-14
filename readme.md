@@ -23,6 +23,7 @@ Currently, the following editing operations are supported:
 - [x] Add new model outputs
 - [x] Edit the attribute of nodes
 - [x] Add new nodes (experimental)
+- [x] Change batch size
 
 Here is the [update log](./docs/update_log.md) and [TODO list](./docs/todo_list.md).
 
@@ -188,6 +189,17 @@ The following are some notes for this feature:
 6. For the `Inputs/Outputs` with type `list`, it is forced to be at most 8 elements in the current version. If the actual inputs/outputs number is less than 8, we can leave the unused items with the name starting with `list_custom`, and they will be automatically omitted.
 
 7. This feature is experimentally supported now and may be not very robust. So any issues are warmly welcomed if some unexpected results are encountered.
+
+## Change batch size
+`onnx-modifier` supports editing batch size now. Both `Dynamic batch size` and `Fixed batch size` modes are supported.
+- `Dynamic batch size`: Click the `Dynamic batch size` button, then we get a model which supports dynamic batch size inferece;
+- `Fixed batch size`: Input the fixed batch size we want, then we are done;
+
+<img src="./docs/rebatch.gif" style="zoom:75%;" />
+
+Note the differences between `fixed batch size inference` and `dynamic batch size inference`, as [this blog](https://nietras.com/2021/05/24/set-dynamic-batch-size-using-onnx-sharp/) illustrates:
+> - When running a model with only fixed dimensions, the ONNX Runtime will prepare and optimize the graph for execution when constructing the Inference Session.
+> -  when the model has dynamic dimensions like batch size, the ONNX Runtime may instead cache optimized graphs for specific batch sizes when inputs are first encountered for that batch size.
 
 # Sample models
 
