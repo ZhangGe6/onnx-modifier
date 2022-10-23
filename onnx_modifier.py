@@ -4,6 +4,7 @@
 # https://stackoverflow.com/questions/52402448/how-to-read-individual-layers-weight-bias-values-from-onnx-model
 
 import os
+import time
 import copy
 import struct
 import numpy as np
@@ -203,7 +204,7 @@ class onnxModifier:
         # print(modify_info['node_renamed_io'])
         # print(modify_info['node_changed_attr'])
         # print(modify_info['added_node_info'])
-        # print(modify_info['added_outputs'])
+        # print(modify_info['added_outputs'])  
         self.change_batch_size(modify_info['rebatch_info'])
         self.remove_node_by_node_states(modify_info['node_states'])
         self.modify_node_io_name(modify_info['node_renamed_io'])
@@ -245,7 +246,8 @@ class onnxModifier:
         print(out.shape)
         
 if __name__ == "__main__":
-    model_path = "C:\\Users\\ZhangGe\\Desktop\\best.onnx"
+    model_path = "C:\\Users\\ZhangGe\\Desktop\\resnet18-v2-7.onnx"
+    # model_path = "C:\\Users\\ZhangGe\\Desktop\\movenet_lightning.onnx"
     onnx_modifier = onnxModifier.from_model_path(model_path)
     
     def explore_basic():

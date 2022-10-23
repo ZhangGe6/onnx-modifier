@@ -888,7 +888,7 @@ sidebar.ArgumentView = class {
         let name = this._argument.name || '';
         this._hasId = name ? true : false;
         this._hasKind = initializer && initializer.kind ? true : false;
-        // console.log(this._hasId, this._hasKind, type)  // true true ...
+        // console.log(name, this._hasId, this._hasKind, type)
         if (this._hasId || (!this._hasKind && !type)) {
             this._hasId = true;
 
@@ -964,6 +964,7 @@ sidebar.ArgumentView = class {
                 if (type && (this._hasId || this._hasKind)) {
                     const typeLine = this._host.document.createElement('div');
                     typeLine.className = 'sidebar-view-item-value-line-border';
+                    // console.log(type, type.split('<').join('&lt;').split('>').join('&gt;'))
                     typeLine.innerHTML = 'type: <code><b>' + type.split('<').join('&lt;').split('>').join('&gt;') + '</b></code>';
                     this._element.appendChild(typeLine);
                 }

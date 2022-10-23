@@ -25,6 +25,9 @@ view.View = class {
             direction: 'vertical',
             mousewheel: 'scroll'
         };
+        this.lastScrollLeft = 0;
+        this.lastScrollTop = 0;
+        this._zoom = 1;
         this._host.initialize(this).then(() => {
             this._model = null;
             this._graphs = [];
@@ -481,6 +484,7 @@ view.View = class {
         }
         this.lastViewGraph = this._graph; 
         const graph = this.activeGraph;
+
         // console.log(graph.nodes)
         
         return this._timeout(100).then(() => {
@@ -555,7 +559,7 @@ view.View = class {
                 return Promise.resolve();
             }
             else {
-                this._zoom = 1;
+                // this._zoom = 1;
 
                 const groups = graph.groups;
                 const nodes = graph.nodes;
@@ -583,6 +587,10 @@ view.View = class {
                     viewGraph._addedOutputs = this.lastViewGraph._addedOutputs;
                     // console.log(viewGraph._renameMap);
                     // console.log(viewGraph._modelNodeName2State)
+
+                    const container = this._getElementById('graph');
+                    this.lastScrollLeft = container.scrollLeft;
+                    this.lastScrollTop = container.scrollTop;
                 }
                 
                 viewGraph.add(graph);
@@ -601,13 +609,12 @@ view.View = class {
 
                 viewGraph.build(this._host.document, origin);
 
-                this._zoom = 1;
+                // this._zoom = 1;
 
                 return this._timeout(20).then(() => {
 
                     viewGraph.update();
                     
-                    // 让画面可拖动/缩放 =======>
                     const elements = Array.from(canvas.getElementsByClassName('graph-input') || []);
                     if (elements.length === 0) {
                         const nodeElements = Array.from(canvas.getElementsByClassName('graph-node') || []);
@@ -631,39 +638,45 @@ view.View = class {
                     canvas.setAttribute('width', width);
                     canvas.setAttribute('height', height);
 
-                    this._zoom = 1;
-                    this._updateZoom(this._zoom);
-
                     const container = this._getElementById('graph');
-                    if (elements && elements.length > 0) {
-                        // Center view based on input elements
-                        const xs = [];
-                        const ys = [];
-                        for (let i = 0; i < elements.length; i++) {
-                            const element = elements[i];
-                            const rect = element.getBoundingClientRect();
-                            xs.push(rect.left + (rect.width / 2));
-                            ys.push(rect.top + (rect.height / 2));
-                        }
-                        let x = xs[0];
-                        const y = ys[0];
-                        if (ys.every(y => y === ys[0])) {
-                            x = xs.reduce((a, b) => a + b, 0) / xs.length;
-                        }
-                        const graphRect = container.getBoundingClientRect();
-                        const left = (container.scrollLeft + x - graphRect.left) - (graphRect.width / 2);
-                        const top = (container.scrollTop + y - graphRect.top) - (graphRect.height / 2);
-                        container.scrollTo({ left: left, top: top, behavior: 'auto' });
-                    }
-                    else {
-                        const canvasRect = canvas.getBoundingClientRect();
-                        const graphRect = container.getBoundingClientRect();
-                        const left = (container.scrollLeft + (canvasRect.width / 2) - graphRect.left) - (graphRect.width / 2);
-                        const top = (container.scrollTop + (canvasRect.height / 2) - graphRect.top) - (graphRect.height / 2);
-                        container.scrollTo({ left: left, top: top, behavior: 'auto' });
-                    }
+                    // console.log(this.lastScrollLeft, this.lastScrollTop, this._zoom)
+                    if (this.lastScrollLeft != 0 ||  this.lastScrollTop != 0 || this._zoom != 1) {
+                        // console.log("scrolling")
+                        this._updateZoom(this._zoom);
+                        container.scrollTo({ left: this.lastScrollLeft, top: this.lastScrollTop, behavior: 'auto' });
+                    } 
+                    else {   
+                        this._zoom = 1;
+                        this._updateZoom(this._zoom);
 
-                    // <======= 让画面可拖动/缩放
+                        if (elements && elements.length > 0) {
+                            // Center view based on input elements
+                            const xs = [];
+                            const ys = [];
+                            for (let i = 0; i < elements.length; i++) {
+                                const element = elements[i];
+                                const rect = element.getBoundingClientRect();
+                                xs.push(rect.left + (rect.width / 2));
+                                ys.push(rect.top + (rect.height / 2));
+                            }
+                            let x = xs[0];
+                            const y = ys[0];
+                            if (ys.every(y => y === ys[0])) {
+                                x = xs.reduce((a, b) => a + b, 0) / xs.length;
+                            }
+                            const graphRect = container.getBoundingClientRect();
+                            const left = (container.scrollLeft + x - graphRect.left) - (graphRect.width / 2);
+                            const top = (container.scrollTop + y - graphRect.top) - (graphRect.height / 2);
+                            container.scrollTo({ left: left, top: top, behavior: 'auto' });
+                        }
+                        else {
+                            const canvasRect = canvas.getBoundingClientRect();
+                            const graphRect = container.getBoundingClientRect();
+                            const left = (container.scrollLeft + (canvasRect.width / 2) - graphRect.left) - (graphRect.width / 2);
+                            const top = (container.scrollTop + (canvasRect.height / 2) - graphRect.top) - (graphRect.height / 2);
+                            container.scrollTo({ left: left, top: top, behavior: 'auto' });
+                        }
+                    }
 
                     this._graph = viewGraph;
                     return;
@@ -1021,6 +1034,11 @@ view.View = class {
         }
     }
 
+    reloadLastLocation() {
+        const container = this._getElementById('graph');
+
+
+    }
 };
 
 view.Graph = class extends grapher.Graph {
@@ -1308,10 +1326,16 @@ view.Graph = class extends grapher.Graph {
         this._renameMap = new Map();
 
         // clear custom added nodes
-        this._addedNode = new Map()
-        this.view._graphs[0].reset_custom_added_node()
-        this._addedOutputs = []
-        this.view._graphs[0].reset_custom_added_outputs()
+        this._addedNode = new Map();
+        this.view._graphs[0].reset_custom_added_node();
+        this._addedOutputs = [];
+        this.view._graphs[0].reset_custom_added_outputs();
+
+        // reset load location
+        var container = this.view._getElementById('graph');
+        container.scrollLeft = 0;
+        container.scrollTop = 0;
+        this.view._zoom = 1;
     }
 
     recordRenameInfo(modelNodeName, src_name, dst_name) {

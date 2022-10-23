@@ -1,5 +1,7 @@
 # TODO
 
+- [ ] **ensure the model is fully loaded before modify() is called.**
+    - otherwise `NameError: name 'onnx_modifier' is not defined` error will be invoked.
 - [ ] support desktop application.
     - [x] Windows
     - [ ] Linux

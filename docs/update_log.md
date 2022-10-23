@@ -1,5 +1,10 @@
 # onnx-modifier update log
 
+## 20220921
+- add argparse module for custom config
+- fix model parsing issue when the model is load in a drag-and-drop way
+- support editing batch size
+
 ## 20220813
 
 - support adding model input/output node. [issue 7](https://github.com/ZhangGe6/onnx-modifier/issues/7), [issue 8](https://github.com/ZhangGe6/onnx-modifier/issues/8), [issue 13](https://github.com/ZhangGe6/onnx-modifier/issues/13)
