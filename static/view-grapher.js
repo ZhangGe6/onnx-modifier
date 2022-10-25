@@ -27,6 +27,7 @@ grapher.Graph = class {
         this._addedOutputs = [];
 
         this._reBatchInfo = new Map();
+        this._initializerEditInfo = new Map();
     }
 
     get options() {

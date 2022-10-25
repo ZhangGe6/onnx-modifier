@@ -444,6 +444,7 @@ onnx.Graph = class {
         // console.log(graph)
         for (const initializer of graph.initializer) {
             const tensor = context.tensor(initializer.name);
+            // console.log(initializer)   // type: TensorProto
             tensor.initializer = new onnx.Tensor(context, initializer, 'Initializer');
         }
         for (const sparse_initializer of graph.sparse_initializer) {
@@ -566,6 +567,9 @@ onnx.Graph = class {
                 arg_list = [this._context.argument(arg_name)]
             }
 
+            for (var arg of arg_list) {
+                arg.is_custom_added = true;
+            }
             inputs.push(new onnx.Parameter(input.name, arg_list));
         }
 
@@ -595,6 +599,10 @@ onnx.Graph = class {
                 }
                 
                 arg_list = [this._context.argument(arg_name)]
+            }
+
+            for (var arg of arg_list) {
+                arg.is_custom_added = true;
             }
             outputs.push(new onnx.Parameter(output.name, arg_list));
         }
@@ -677,7 +685,8 @@ onnx.Argument = class {
         this._annotation = annotation;
         this._description = description || '';
 
-        this.original_name = original_name || name
+        this.original_name = original_name || name;
+        this.is_custom_added = false;
 
     }
 
@@ -1766,6 +1775,7 @@ onnx.GraphContext = class {
 
     argument(name, original_name) {
         const tensor = this.tensor(name);
+        // console.log(tensor)
         const type = tensor.initializer ? tensor.initializer.type : tensor.type || null;
         return new onnx.Argument(name, type, tensor.initializer, tensor.annotation, tensor.description, original_name);
 

@@ -132,6 +132,7 @@ sidebar.NodeSidebar = class {
         this._attributes = [];
         this._inputs = [];
         this._outputs = [];
+        // console.log(node)  // onnx.Node
 
         if (node.type) {
             let showDocumentation = null;
@@ -305,7 +306,7 @@ sidebar.NodeSidebar = class {
     }
 
     _addInput(name, input, param_idx) {
-        // console.log(input)
+        // console.log(input)  // type: onnx.Parameter
         if (input.arguments.length > 0) {
             const view = new sidebar.ParameterView(this._host, input, 'input', param_idx, this._modelNodeName);
             view.on('export-tensor', (sender, tensor) => {
@@ -875,7 +876,9 @@ sidebar.ArgumentView = class {
         const quantization = argument.quantization;
         const type = argument.type;
         const location = this._argument.location !== undefined;
-        if (type || initializer || quantization || location) {
+        const is_custom_added = argument.is_custom_added;
+        // console.log(argument)
+        if (type || initializer || quantization || location || is_custom_added) {
             this._expander = this._host.document.createElement('div');
             this._expander.className = 'sidebar-view-item-value-expander';
             this._expander.innerText = '+';
@@ -949,6 +952,7 @@ sidebar.ArgumentView = class {
                 this._expander.innerText = '-';
 
                 const initializer = this._argument.initializer;
+                // console.log(this._argument, initializer) // type: onnx.Argument, onnx.Tensor
                 if (this._hasId && this._hasKind) {
                     const kindLine = this._host.document.createElement('div');
                     kindLine.className = 'sidebar-view-item-value-line-border';
@@ -998,8 +1002,29 @@ sidebar.ArgumentView = class {
                     location.innerHTML = 'location: ' + '<b>' + this._argument.location + '</b>';
                     this._element.appendChild(location);
                 }
+                
+                if (initializer || this._argument.is_custom_added) {
+                    const editInitializer = this._host.document.createElement('div');
+                    editInitializer.className = 'sidebar-view-item-value-line-border';
+                    editInitializer.innerHTML = 'If this is an initializer, you can input new value for it here:';
+                    this._element.appendChild(editInitializer);
+    
+                    var inputInitializer = document.createElement("INPUT");
+                    inputInitializer.setAttribute("type", "text");
+                    inputInitializer.setAttribute("size", "42");
+                    inputInitializer.addEventListener('input', (e) => {
+                        // console.log(e.target.value)
+                        this._host._view._graph.changeInitializer(this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, this._argument.type._dataType, e.target.value);
+                    });
+                    this._element.appendChild(inputInitializer);
+                }
 
                 if (initializer) {
+                    // to edit the existed initializer
+                    const origInitLine = this._host.document.createElement('div');
+                    origInitLine.className = 'sidebar-view-item-value-line-border';
+                    origInitLine.innerHTML = 'original initializer value:';
+                    this._element.appendChild(origInitLine);
                     const contentLine = this._host.document.createElement('pre');
                     const valueLine = this._host.document.createElement('div');
                     try {
@@ -1016,10 +1041,11 @@ sidebar.ArgumentView = class {
                             this._element.appendChild(this._saveButton);
                         }
 
-                        valueLine.className = 'sidebar-view-item-value-line-border';
+                        // valueLine.className = 'sidebar-view-item-value-line-border';
+                        valueLine.className = 'sidebar-view-item-value-border'
                         contentLine.innerHTML = state || initializer.toString();
-                        console.log(initializer)
-                        console.log(state, initializer.toString())
+                        // console.log(initializer)
+                        // console.log(state, initializer.toString())
                     }
                     catch (err) {
                         contentLine.innerHTML = err.toString();
