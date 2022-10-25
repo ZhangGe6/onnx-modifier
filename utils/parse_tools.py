@@ -24,6 +24,7 @@ def parse_tensor(tensor_str, tensor_type):
             return None
     
     tensor_str = tensor_str.replace(" ", "")
+    tensor_str = tensor_str.replace("\n", "")
     stk = []
     for c in tensor_str: # '['  ','  ']' '.' '-' or value
         if c == ",":

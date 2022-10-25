@@ -229,7 +229,8 @@ host.BrowserHost = class {
                     'node_states' : this.mapToObjectRec(this._view._graph._modelNodeName2State),
                     'node_renamed_io' : this.mapToObjectRec(this._view._graph._renameMap),
                     'node_changed_attr' : this.mapToObjectRec(this._view._graph._changedAttributes),
-                    'added_node_info' : this.mapToObjectRec(this.parseLightNodeInfo2Map(this._view._graph._addedNode)),
+                    'added_node_info' : this.mapToObjectRec(this.parseAddedLightNodeInfo2Map(this._view._graph._addedNode, 
+                                                                this._view._graph._initializerEditInfo)),
                     'added_outputs' : this.arrayToObject(this.process_added_outputs(this._view._graph._addedOutputs, 
                                                                 this._view._graph._renameMap, this._view._graph._modelNodeName2State)),
                     'rebatch_info' : this.mapToObjectRec(this._view._graph._reBatchInfo),
@@ -720,19 +721,73 @@ host.BrowserHost = class {
     }
 
     // convert view.LightNodeInfo to Map object for easier transmission to Python backend
-    parseLightNodeInfo2Map(nodes_info) {
+    parseAddedLightNodeInfo2Map(nodes_info, initializer_info) {
+        console.log(nodes_info)
+        console.log(initializer_info)
         var res_map = new Map()
         for (const [modelNodeName, node_info] of nodes_info) {
             var node_info_map = new Map()
             node_info_map.set('properties', node_info.properties)
             node_info_map.set('attributes', node_info.attributes)
-            node_info_map.set('inputs', node_info.inputs)
-            node_info_map.set('outputs', node_info.outputs)
 
+            // skip the input and output which is optional and has no initializer value
+            var inputs = new Map()
+            // console.log(node_info)
+            // console.log(node_info.inputs)
+            for (var [input_name, arg_list] of node_info.inputs) {
+                var filtered_arg_list = []
+                for (var arg of arg_list) {
+                    var arg_name = arg[0], arg_optional = arg[1];
+                    if (arg_optional) { 
+                        if (!initializer_info.get(arg_name) || initializer_info.get(arg_name) == "") {
+                            continue;
+                        }
+                    }
+                    filtered_arg_list.push(arg_name);
+                }
+                if (filtered_arg_list.length > 0) {
+                    inputs.set(input_name, filtered_arg_list)
+                }
+            }
+            // console.log(inputs)
+            node_info_map.set('inputs', inputs)
+
+            var outputs = new Map()
+            for (var [output_name, arg_list] of node_info.outputs) {
+                var filtered_arg_list = []
+                for (var arg of arg_list) {
+                    var arg_name = arg[0], arg_optional = arg[1];
+                    if (arg_optional) { 
+                        if (!initializer_info.get(arg_name) || initializer_info.get(arg_name) == "") {
+                            continue;
+                        }
+                    }
+                    filtered_arg_list.push(arg_name);
+                }
+                if (filtered_arg_list.length > 0) {
+                    outputs.set(output_name, filtered_arg_list)
+                }
+            }       
+            node_info_map.set('outputs', outputs)
+            
             res_map.set(modelNodeName, node_info_map)
         }
+        // console.log(res_map)
 
         return res_map
+    }
+
+    // rename the initializer if its corresponding argument name is changed (for primitive nodes)
+    process_initializer(initializer_info, rename_map) {
+        for (const [node_name, rename_pair] of rename_map) {
+            for (const [arg_orig_name, arg_new_name] of rename_pair) {
+                if (initializer_info.has(arg_orig_name)) {
+                    var init_val = initializer_info.get(arg_orig_name)
+                    initializer_info.set(arg_new_name, init_val)
+                    initializer_info.delete(arg_orig_name)
+                }
+            }
+        }
     }
 };
 

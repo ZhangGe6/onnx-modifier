@@ -265,7 +265,7 @@ sidebar.NodeSidebar = class {
                         newNameElement.setAttribute('value', this._host._view._graph._renameMap.get(this._modelNodeName).get(argument.name));
                     }
                     newNameElement.addEventListener('input', (e) => {
-                        console.log(e.target.value);
+                        // console.log(e.target.value);
                         this._host._view._graph.recordRenameInfo(this._modelNodeName, argument.name, e.target.value);
                         // console.log(this._host._view._graph._renameMap);
                     });
@@ -1009,14 +1009,17 @@ sidebar.ArgumentView = class {
                     editInitializerVal.innerHTML = 'This is an initializer, you can input a new value for it here:';
                     this._element.appendChild(editInitializerVal);
     
-                    var inputInitializerVal = document.createElement("INPUT");
+                    var inputInitializerVal = document.createElement("textarea");
                     inputInitializerVal.setAttribute("type", "text");
-                    inputInitializerVal.setAttribute("size", "42");
+                    inputInitializerVal.rows = 1;
+                    inputInitializerVal.cols = 44;
+
                     // reload the last value
                     var orig_arg_name = this._host._view._graph.getOriginalName(this._param_type, this._modelNodeName, this._param_index, this._arg_index)
                     if (this._host._view._graph._initializerEditInfo.get(orig_arg_name)) {
                         // [type, value]
-                        inputInitializerVal.setAttribute("value", this._host._view._graph._initializerEditInfo.get(orig_arg_name)[1]);
+                        // inputInitializerVal.setAttribute("value", this._host._view._graph._initializerEditInfo.get(orig_arg_name)[1]);
+                        inputInitializerVal.innerHTML = this._host._view._graph._initializerEditInfo.get(orig_arg_name)[1];
                     }
 
                     inputInitializerVal.addEventListener('input', (e) => {
@@ -1027,6 +1030,12 @@ sidebar.ArgumentView = class {
                 }
 
                 if (this._argument.is_custom_added) {
+                    if (this._argument.is_optional) {
+                        const isOptionalLine = this._host.document.createElement('div');
+                        isOptionalLine.className = 'sidebar-view-item-value-line-border';
+                        isOptionalLine.innerHTML = 'optional: <code><b>true</b></code>';
+                        this._element.appendChild(isOptionalLine);
+                    }
                     var new_init_val = "", new_init_type = "";
                     // ====== input value ======>
                     const editInitializerVal = this._host.document.createElement('div');
@@ -1034,10 +1043,10 @@ sidebar.ArgumentView = class {
                     editInitializerVal.innerHTML = 'If this is an initializer, you can input new value for it here:';
                     this._element.appendChild(editInitializerVal);
     
-                    var inputInitializerVal = document.createElement("INPUT");
+                    var inputInitializerVal = document.createElement("textarea");
                     inputInitializerVal.setAttribute("type", "text");
-                    inputInitializerVal.setAttribute("size", "42");
-                    // this._element.appendChild(inputInitializerVal);
+                    inputInitializerVal.rows = 1;
+                    inputInitializerVal.cols = 44;
 
                     inputInitializerVal.addEventListener('input', (e) => {
                         // console.log(e.target.value)
@@ -1050,18 +1059,21 @@ sidebar.ArgumentView = class {
                     // ====== input type ======>
                     const editInitializerType = this._host.document.createElement('div');
                     editInitializerType.className = 'sidebar-view-item-value-line-border';
-                    editInitializerType.innerHTML = 'and input its type for it here (see properties->type->? for more info):';
+                    editInitializerType.innerHTML = 'and input its type for it here <b>' + '(see properties->type->?' + '</b>' + ' for more info):';
                     this._element.appendChild(editInitializerType);
     
-                    var inputInitializerType = document.createElement("INPUT");
+                    var inputInitializerType = document.createElement("textarea");
                     inputInitializerType.setAttribute("type", "text");
-                    inputInitializerType.setAttribute("size", "42");
+                    inputInitializerType.rows = 1;
+                    inputInitializerType.cols = 44;
 
-                    var arg_name = this._host._view._graph._addedNode.get(this._modelNodeName).inputs.get(this._parameterName)[this._arg_index]
+                    var arg_name = this._host._view._graph._addedNode.get(this._modelNodeName).inputs.get(this._parameterName)[this._arg_index][0]  // [arg.name, arg.is_optional]
                     if (this._host._view._graph._initializerEditInfo.get(arg_name)) {
                         // [type, value]
-                        inputInitializerType.setAttribute("value", this._host._view._graph._initializerEditInfo.get(arg_name)[0]);
-                        inputInitializerVal.setAttribute("value", this._host._view._graph._initializerEditInfo.get(arg_name)[1]);
+                        // inputInitializerType.setAttribute("value", this._host._view._graph._initializerEditInfo.get(arg_name)[0]);
+                        // inputInitializerVal.setAttribute("value", this._host._view._graph._initializerEditInfo.get(arg_name)[1]);
+                        inputInitializerType.innerHTML = this._host._view._graph._initializerEditInfo.get(arg_name)[0];
+                        inputInitializerVal.innerHTML = this._host._view._graph._initializerEditInfo.get(arg_name)[1];                      
                     }
 
                     inputInitializerType.addEventListener('input', (e) => {

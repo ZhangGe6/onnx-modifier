@@ -179,6 +179,7 @@ class onnxModifier:
         for node_info in nodes_info.values():
             if node_states[node_info['properties']['name']] == "Deleted":
                 continue
+            print(node_info)
             node = make_new_node(node_info)
             # print(node)
             
@@ -261,6 +262,7 @@ class onnxModifier:
         inference_session = rt.InferenceSession(model_proto_bytes)
         
         if not x:
+            np.random.seed(0)
             x = np.random.randn(*input_shape).astype(np.float32)
         if not output_names:
             output_name = self.graph.node[-1].output[0]
@@ -272,11 +274,14 @@ class onnxModifier:
         input_name = inference_session.get_inputs()[0].name
         out = inference_session.run(output_names, {input_name: x})[0]
         print(out.shape)
+        # print(out[0][0][0][0])
         
 if __name__ == "__main__":
     # model_path = "C:\\Users\\ZhangGe\\Desktop\\resnet18-v2-7.onnx"
     # model_path = "C:\\Users\\ZhangGe\\Desktop\\movenet_lightning.onnx"
-    model_path = "C:\\Users\\ZhangGe\\Desktop\\test_edit_init.onnx"
+    # model_path = "C:\\Users\\ZhangGe\\Desktop\\test_edit_init.onnx"
+    model_path = "C:\\Users\\ZhangGe\\Desktop\\modified_test_edit_init.onnx"
+    # model_path = "C:\\Users\\ZhangGe\\Desktop\\test_edit_init.onnx"
     onnx_modifier = onnxModifier.from_model_path(model_path)
     
     def explore_basic():
@@ -346,7 +351,7 @@ if __name__ == "__main__":
     
         onnx_modifier.add_nodes(node_info)
         
-        onnx_modifier.inference()
+        onnx_modifier.inference(input_shape=[1, 1, 192, 192], output_names=["onnx::Transpose_368"])
         onnx_modifier.check_and_save_model()  
     # test_add_node()
 
@@ -360,8 +365,8 @@ if __name__ == "__main__":
     # test_change_node_attr()
         
     def test_inference():
-        onnx_modifier.inference()
-    # test_inference()
+        onnx_modifier.inference(input_shape=[1, 1, 192, 192], output_names=["onnx::Transpose_368"])
+    test_inference()
     
     def test_add_output():
         # print(onnx_modifier.graph.output)
@@ -394,14 +399,11 @@ if __name__ == "__main__":
     # test_modify_primary_initializer()
 
     def test_modify_new_initializer():
-        modify_info = {'node_states': {'input': 'Exist', 'Conv_0': 'Exist', 'LeakyRelu_1': 'Exist', 'Conv_2': 'Exist', 'LeakyRelu_3': 'Exist', 'Conv_4': 'Exist', 'LeakyRelu_5': 'Exist', 'Conv_6': 'Exist', 'LeakyRelu_7': 'Exist', 'Conv_8': 'Exist', 'LeakyRelu_9': 'Exist', 'Conv_10': 'Exist', 'Conv_11': 'Exist', 'LeakyRelu_12': 'Exist', 'Conv_13': 'Exist', 'Conv_14': 'Exist', 'LeakyRelu_15': 'Exist', 'Conv_16': 'Exist', 'Concat_17': 'Exist', 'LeakyRelu_18': 'Exist', 'Conv_19': 'Exist', 'Sigmoid_20': 'Exist', 'Mul_22': 'Exist', 'Conv_23': 'Exist', 'LeakyRelu_24': 'Exist', 'Conv_25': 'Exist', 'Conv_26': 'Exist', 'LeakyRelu_27': 'Exist', 'Conv_28': 'Exist', 'Add_29': 'Exist', 'Conv_30': 'Exist', 'Conv_31': 'Exist', 'LeakyRelu_32': 'Exist', 'Conv_33': 'Exist', 'Conv_34': 'Exist', 'LeakyRelu_35': 'Exist', 'Conv_36': 'Exist', 'Concat_37': 'Exist', 'LeakyRelu_38': 'Exist', 'Conv_39': 'Exist', 
-        'Conv_40': 'Exist', 'LeakyRelu_41': 'Exist', 'Conv_42': 'Exist', 'LeakyRelu_43': 'Exist', 'Conv_44': 'Exist', 'Conv_45': 'Exist', 'LeakyRelu_46': 'Exist', 'Concat_47': 'Exist', 'Reshape_49': 'Exist', 'out_onnx::Transpose_368': 'Exist', 'custom_added_Reshape0': 'Exist', 'out_custom_output_2': 'Exist'}, 'node_renamed_io': {}, 'node_changed_attr': {}, 'added_node_info': {'custom_added_Reshape0': {'properties': {'domain': 'ai.onnx', 'op_type': 'Reshape', 'name': 'custom_added_Reshape0'}, 'attributes': {}, 'inputs': {'data': ['onnx::Transpose_368'], 'shape': ['custom_input_1']}, 'outputs': {'reshaped': ['custom_output_2']}}}, 'added_outputs': {'0': 'custom_output_2'}, 'rebatch_info': {}, 'changed_initializer': {'custom_input_1': ['int64', '[1, 2, 32, 24, 6]']}}
+        modify_info = {'node_states': {'input': 'Exist', 'Conv_0': 'Exist', 'LeakyRelu_1': 'Exist', 'Conv_2': 'Exist', 'LeakyRelu_3': 'Exist', 'Conv_4': 'Exist', 'LeakyRelu_5': 'Exist', 'Conv_6': 'Exist', 'LeakyRelu_7': 'Exist', 'Conv_8': 'Exist', 'LeakyRelu_9': 'Exist', 'Conv_10': 'Exist', 'Conv_11': 'Exist', 'LeakyRelu_12': 'Exist', 'Conv_13': 'Exist', 'Conv_14': 'Exist', 'LeakyRelu_15': 'Exist', 'Conv_16': 'Exist', 'Concat_17': 'Exist', 'LeakyRelu_18': 'Exist', 'Conv_19': 'Exist', 'Sigmoid_20': 'Exist', 'Mul_22': 'Exist', 'Conv_23': 'Exist', 'LeakyRelu_24': 'Exist', 'Conv_25': 'Exist', 'Conv_26': 'Exist', 'LeakyRelu_27': 'Exist', 'Conv_28': 'Exist', 'Add_29': 'Exist', 'Conv_30': 'Exist', 'Conv_31': 'Exist', 'LeakyRelu_32': 'Exist', 'Conv_33': 'Exist', 'Conv_34': 'Exist', 'LeakyRelu_35': 'Exist', 'Conv_36': 'Exist', 'Concat_37': 'Exist', 'LeakyRelu_38': 'Exist', 'Conv_39': 'Exist', 'Conv_40': 'Exist', 'LeakyRelu_41': 'Exist', 'Conv_42': 'Exist', 'LeakyRelu_43': 'Exist', 'Conv_44': 'Exist', 'Conv_45': 'Exist', 'LeakyRelu_46': 'Exist', 'Concat_47': 'Exist', 'Reshape_49': 'Exist', 'out_onnx::Transpose_368': 'Exist', 'custom_added_Slice0': 'Exist'}, 'node_renamed_io': {}, 'node_changed_attr': {}, 'added_node_info': {'custom_added_Slice0': {'properties': {'domain': 'ai.onnx', 'op_type': 'Slice', 'name': 'custom_added_Slice0'}, 'attributes': {}, 'inputs': {'data': ['custom_input_0'], 'starts': ['custom_input_1'], 'ends': ['custom_input_2'], 'output': ['custom_output_5']}, 'outputs': {}}}, 'added_outputs': {}, 'rebatch_info': {}, 'changed_initializer': {'custom_input_1': ['int64', '[0,0,0,0]'], 'custom_input_2': ['int64', '[1,1,192,192]']}}
         onnx_modifier.modify(modify_info)
         onnx_modifier.check_and_save_model()
         onnx_modifier.inference(input_shape=[1, 1, 192, 192], output_names=['custom_output_2'])
-        print(onnx_modifier.initializer_name2module.keys())
-        for initializer in onnx_modifier.initializer:
-            print(f"Tensor Name: {initializer.name}, Data Type: {initializer.data_type}, Shape: {initializer.dims}")
-            
-    test_modify_new_initializer()
-        
+        # print(onnx_modifier.initializer_name2module.keys())
+        # for initializer in onnx_modifier.initializer:
+        #     print(f"Tensor Name: {initializer.name}, Data Type: {initializer.data_type}, Shape: {initializer.dims}")
+    # test_modify_new_initializer()

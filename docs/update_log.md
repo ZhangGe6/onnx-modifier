@@ -1,5 +1,9 @@
 # onnx-modifier update log
 
+## 20221026
+- support scrolling to the last page position when updating model
+- support editing initializer feature
+
 ## 20220921
 - add argparse module for custom config
 - fix model parsing issue when the model is load in a drag-and-drop way
@@ -18,7 +22,7 @@
 
 ## 20220621
 - add Dockerfile
-  - thanks to [fengwang](https://github.com/fengwang)
+  - thanks to [fengwang](https://github.com/fengwang) and [this PR](https://github.com/ZhangGe6/onnx-modifier/pulls?q=is%3Apr+is%3Aclosed)
 
 ## 20220620
 

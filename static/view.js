@@ -588,6 +588,7 @@ view.View = class {
                     viewGraph._initializerEditInfo = this.lastViewGraph._initializerEditInfo;
                     // console.log(viewGraph._renameMap);
                     // console.log(viewGraph._modelNodeName2State)
+                    // console.log(viewGraph._initializerEditInfo)
 
                     const container = this._getElementById('graph');
                     this.lastScrollLeft = container.scrollLeft;
@@ -868,6 +869,7 @@ view.View = class {
         }
     }
 
+    // TODO: add filter feature like here: https://www.w3schools.com/howto/howto_js_dropdown.asp
     UpdateAddNodeDropDown() {
         // update dropdown supported node lost
         var addNodeDropdown = this._host.document.getElementById('add-node-dropdown');
@@ -890,19 +892,19 @@ view.View = class {
             // console.log(node)
             
             for (const input of node.inputs) {
-                var input_list_names = []
+                var arg_list_info = []
                 for (const arg of input._arguments) {
-                    input_list_names.push(arg.name)
+                    arg_list_info.push([arg.name, arg.is_optional])
                 }
-                this.lastViewGraph._addedNode.get(modelNodeName).inputs.set(input.name, input_list_names) 
+                this.lastViewGraph._addedNode.get(modelNodeName).inputs.set(input.name, arg_list_info) 
             }
 
             for (const output of node.outputs) {
-                var output_list_names = []
+                var arg_list_info = []
                 for (const arg of output._arguments) {
-                    output_list_names.push(arg.name)
+                    arg_list_info.push([arg.name, arg.is_optional])
                 }
-                this.lastViewGraph._addedNode.get(modelNodeName).outputs.set(output.name, output_list_names)
+                this.lastViewGraph._addedNode.get(modelNodeName).outputs.set(output.name, arg_list_info)
             }
 
         }
@@ -1402,19 +1404,26 @@ view.Graph = class extends grapher.Graph {
     // changeNodeInputOutput(modelNodeName, parameterName, arg_index, targetValue) {
         if (this._addedNode.has(modelNodeName)) {  // for custom added node 
             if (this._addedNode.get(modelNodeName).inputs.has(parameterName)) {
-                this._addedNode.get(modelNodeName).inputs.get(parameterName)[arg_index] = targetValue
+                var arg_name = this._addedNode.get(modelNodeName).inputs.get(parameterName)[arg_index][0]  // [arg.name, arg.is_optional]
+                // update the corresponding initializer name
+                if (this._initializerEditInfo.has(arg_name)) {
+                    var init_val = this._initializerEditInfo.get(arg_name);
+                    this._initializerEditInfo.set(targetValue, init_val)
+                    this._initializerEditInfo.delete(arg_name)
+                }
+                this._addedNode.get(modelNodeName).inputs.get(parameterName)[arg_index][0] = targetValue
             }
+            // console.log(this._initializerEditInfo)
 
             if (this._addedNode.get(modelNodeName).outputs.has(parameterName)) {
-                this._addedNode.get(modelNodeName).outputs.get(parameterName)[arg_index] = targetValue
+                this._addedNode.get(modelNodeName).outputs.get(parameterName)[arg_index][0] = targetValue
             }
-            // this.view._updateGraph() // otherwise the changes can not be updated without manully updating graph
         }
         // console.log(this._addedNode)
 
         else {    // for the nodes in the original model
             var orig_arg_name = this.getOriginalName(param_type, modelNodeName, param_index, arg_index)
-            console.log(orig_arg_name)
+            // console.log(orig_arg_name)
 
             if (!this._renameMap.get(modelNodeName)) {
                 this._renameMap.set(modelNodeName, new Map());
@@ -1427,20 +1436,13 @@ view.Graph = class extends grapher.Graph {
     }
 
     changeInitializer(modelNodeName, parameterName, param_type, param_index, arg_index, type, targetValue) {
-        if (this._addedNode.has(modelNodeName)) {  // for custom added node 
-        }
-        // console.log(this._addedNode)
-
-        else {    // for the nodes in the original model
-            var orig_arg_name = this.getOriginalName(param_type, modelNodeName, param_index, arg_index)
-            this._initializerEditInfo.set(orig_arg_name, [type, targetValue]);
-        }
-
+        var orig_arg_name = this.getOriginalName(param_type, modelNodeName, param_index, arg_index)
+        this._initializerEditInfo.set(orig_arg_name, [type, targetValue])
         this.view._updateGraph()
     }
 
     changeAddedNodeInitializer(modelNodeName, parameterName, param_type, param_index, arg_index, type, targetValue) {
-        var arg_name = this._addedNode.get(modelNodeName).inputs.get(parameterName)[arg_index]
+        var arg_name = this._addedNode.get(modelNodeName).inputs.get(parameterName)[arg_index][0]
         this._initializerEditInfo.set(arg_name, [type, targetValue]);
         this.view._updateGraph()
     }

@@ -6,7 +6,7 @@ English | [简体中文](readme_zh-CN.md)
 
 To edit an ONNX model, One common way is to visualize the model graph, and edit it using ONNX Python API. This works fine. However, we have to code to edit, then visualize to check. The two processes may iterate for many times, which is time-consuming. 👋
 
-What if we have a tool, which allow us to **edit and preview the editing effect in a totally visualization fashion**?
+What if we have a tool, which allows us to **edit and preview the editing effect in a totally visualization fashion**?
 
 Then `onnx-modifier` comes. With it, we can focus on editing the model graph in the visualization pannel. All the editing information will be summarized and processed by Python ONNX API automatically at last. Then our time can be saved! 🚀
 
@@ -24,6 +24,7 @@ Currently, the following editing operations are supported:
 - [x] Edit the attribute of nodes
 - [x] Add new nodes (experimental)
 - [x] Change batch size
+- [x] Edit model initializers
 
 Here is the [update log](./docs/update_log.md) and [TODO list](./docs/todo_list.md).
 
@@ -176,19 +177,13 @@ Note there is an `Add node` button, following with a selector elements on the to
 
 The following are some notes for this feature:
 
-1. :warning: Currently, adding nodes with initializer (such as weight parameters) is not supported (such as `Conv`, `BatchNormalization`). Adding nodes without initializer are tested and work as expected in my tested case (such as `Flatten`, `ArgMax`, `Concat`).
+1. By clicking the `?` in the `NODE PROPERTIES -> type` element, or the `+` in each `Attribute` element, we can get some reference to help us fill the node information.
 
-2. Click the selector and type the first letter for the new node type (`f` for `Flatten` node for example), we can be quickly navigated to the node type.
+2. It is suggested to fill all of the `Attribute`, without leaving them as `undefined`.  The default value may not be supported well in the current version.
 
-3. By clicking the `?` in the `NODE PROPERTIES -> type` element, or the `+` in each `Attribute` element, we can get some reference to help us fill the node information.
+3. For the `Attribute` with type `list`, items are split with '`,`' (comma). Note that `[]` is not needed.
 
-4. It is suggested to fill all of the `Attribute`, without leaving them as `undefined`.  The default value may not be supported well in the current version.
-
-5. For the `Attribute` with type `list`, items are split with '`,`' (comma)
-
-6. For the `Inputs/Outputs` with type `list`, it is forced to be at most 8 elements in the current version. If the actual inputs/outputs number is less than 8, we can leave the unused items with the name starting with `list_custom`, and they will be automatically omitted.
-
-7. This feature is experimentally supported now and may be not very robust. So any issues are warmly welcomed if some unexpected results are encountered.
+4. For the `Inputs/Outputs` with type `list`, it is forced to be at most 8 elements in the current version. If the actual inputs/outputs number is less than 8, we can leave the unused items with the name starting with `list_custom`, and they will be automatically omitted.
 
 ## Change batch size
 `onnx-modifier` supports editing batch size now. Both `Dynamic batch size` and `Fixed batch size` modes are supported.
@@ -200,6 +195,13 @@ The following are some notes for this feature:
 Note the differences between `fixed batch size inference` and `dynamic batch size inference`, as [this blog](https://nietras.com/2021/05/24/set-dynamic-batch-size-using-onnx-sharp/) illustrates:
 > - When running a model with only fixed dimensions, the ONNX Runtime will prepare and optimize the graph for execution when constructing the Inference Session.
 > -  when the model has dynamic dimensions like batch size, the ONNX Runtime may instead cache optimized graphs for specific batch sizes when inputs are first encountered for that batch size.
+
+## Edit model initializers
+Sometimes we want to edit the values which are stored in model initializers, such as the weight/bias of a convolution layer and the shape parameter of a `Reshape` node. `onnx-modifier` supports this feature now! Input a new value for the initializer in the invoked sidebar and click Download, then we are done.
+
+<img src="./docs/edit_initializer.gif" style="zoom:75%;" />
+
+> Note: For the newly added node, we should also input the datatype of the initializer. (If we are not sure what the datatype is, click `NODE PROPERTIES->type->?`, we may get some clues.)
 
 # Sample models
 

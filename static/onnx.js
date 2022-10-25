@@ -549,7 +549,7 @@ onnx.Graph = class {
             if (input.list) {
                 for (let j = 0; j < max_custom_add_input_num; ++j) {
                     if (node_info_input && node_info_input[j]) {
-                        var arg_name = node_info_input[j]
+                        var arg_name = node_info_input[j][0]  // [arg.name, arg.is_optional]
                     }
                     else {
                         var arg_name = 'list_custom_input_' + (this._custom_add_node_io_idx++).toString()
@@ -559,7 +559,7 @@ onnx.Graph = class {
             }
             else {
                 if (node_info_input && node_info_input[0]) {
-                    var arg_name = node_info_input[0]
+                    var arg_name = node_info_input[0][0]  // [arg.name, arg.is_optional]
                 }
                 else {
                     var arg_name = 'custom_input_' + (this._custom_add_node_io_idx++).toString()
@@ -569,6 +569,9 @@ onnx.Graph = class {
 
             for (var arg of arg_list) {
                 arg.is_custom_added = true;
+                if (input.option && input.option == 'optional') {
+                    arg.is_optional = true;
+                }
             }
             inputs.push(new onnx.Parameter(input.name, arg_list));
         }
@@ -582,7 +585,7 @@ onnx.Graph = class {
             if (output.list) {
                 for (let j = 0; j < max_custom_add_output_num; ++j) {
                     if (node_info_output && node_info_output[j]) {
-                        var arg_name = node_info_output[j]
+                        var arg_name = node_info_output[j][0]
                     }
                     else {
                         var arg_name = 'list_custom_output_' + (this._custom_add_node_io_idx++).toString()
@@ -592,7 +595,7 @@ onnx.Graph = class {
             }
             else {
                 if (node_info_output && node_info_output[0]) {
-                    var arg_name = node_info_output[0]
+                    var arg_name = node_info_output[0][0]
                 }
                 else {
                     var arg_name = 'custom_output_' + (this._custom_add_node_io_idx++).toString()
@@ -603,6 +606,9 @@ onnx.Graph = class {
 
             for (var arg of arg_list) {
                 arg.is_custom_added = true;
+                if (output.option && output.option == 'optional') {
+                    arg.is_optional = true;
+                }
             }
             outputs.push(new onnx.Parameter(output.name, arg_list));
         }
@@ -687,6 +693,7 @@ onnx.Argument = class {
 
         this.original_name = original_name || name;
         this.is_custom_added = false;
+        this.is_optional = false;
 
     }
 

@@ -23,8 +23,9 @@
 - [x] 修改模型输入输出名
 - [x] 增加模型输出节点
 - [x] 编辑节点属性值
-- [x] 增加新节点（beta）
+- [x] 增加新节点
 - [x] 修改模型batch size
+- [x] 修改模型initializers
 
 `onnx-modifier`基于流行的模型可视化工具 [Netron](https://github.com/lutzroeder/netron) 和轻量级Web应用框架 [flask](https://github.com/pallets/flask) 开发。希望它能给社区带来一些贡献~
 
@@ -129,7 +130,7 @@
 
 <img src="./docs/change_attr.gif" style="zoom:75%;" />
 
-## 增加新节点（beta）
+## 增加新节点
 
 有时候我们希望向模型中添加新节点。`onnx-modifier`已开始支持该功能。
 
@@ -148,13 +149,10 @@
 
 以下是该功能的一些提醒和小tip：
 
-1. 在当前版本中，是不支持添加含有参数的节点的（比如`Conv`, `BatchNormalization`）。其他大多数节点，在我的测试中，可正确添加（比如`Flatten`, `ArgMax`, `Concat`）。
-2. 点击selector，输入要添加的节点的首字母（比如`Flatten`的`f`），可帮我们定位到以该字母开头的节点列表区域，加快检索速度。
-3. 点击节点侧边栏的`NODE PROPERTIES`的`type`框右侧的`?`，和节点属性框右侧的`+`，可以显示关于当前节点类型/属性值的参考信息。
-4. 为确保正确性，节点的各属性值建议全部填写（而不是留着`undefined`）。默认值在当前版本可能支持得还不够好。
-5. 如果一个属性值是列表类型，则各元素之间使用‘`,`’分隔。
-6. 在当前版本中，如果一个节点的输入/输出是一个列表类型（如`Concat`），限制最多显示8个。如果一个节点实际输入/输出小于8个，则填写对应数目的输入输出即可，多出来的应以`list_custom`开头，它们会在后续处理中自动被忽略。
-7. 这个功能还处在开发中，可能会不够鲁棒。所以如果大家在实际使用时碰到问题，非常欢迎提issue!
+1. 点击节点侧边栏的`NODE PROPERTIES`的`type`框右侧的`?`，和节点属性框右侧的`+`，可以显示关于当前节点类型/属性值的参考信息。
+2. 为确保正确性，节点的各属性值建议全部填写（而不是留着`undefined`）。默认值在当前版本可能支持得还不够好。
+3. 如果一个属性值是列表类型，则各元素之间使用‘`,`’分隔，无需'[]'。
+4. 在当前版本中，如果一个节点的输入/输出是一个列表类型（如`Concat`），限制最多显示8个。如果一个节点实际输入/输出小于8个，则填写对应数目的输入输出即可，多出来的应以`list_custom`开头，它们会在后续处理中自动被忽略。
 
 ## 修改模型batch size
 动态batch size和固定batch size均已支持。
@@ -162,6 +160,13 @@
 - 动态bacth size：在`Fixed batch size`后方输入框内填入预期的batch size值；
 
 <img src="./docs/rebatch.gif" style="zoom:75%;" />
+
+## 修改模型initializers
+有时候我们要修改一些保存在模型initializer中的数值，比如卷积层的权重/偏置参数，`Reshape`节点的`shape`参数等。使用`onnx-modifier`，这一操作将非常简单：在对应节点侧边栏的initializer中键入新的数值，点击`Download`即可。
+
+<img src="./docs/edit_initializer.gif" style="zoom:75%;" />
+
+> 如果要修改我们**新增加的**节点的initializer，除了键入其数值之外，还要键入其数据类型。（如果我们不确定数据类型，可以点击`NODE PROPERTIES->type->?`，在弹出的节点的详细介绍界面中，可能会找到线索。）
 
 `onnx-modifer`正在活跃地更新中:hammer_and_wrench:。 欢迎使用，提issue，如果有帮助的话，感谢给个:star:~
 
