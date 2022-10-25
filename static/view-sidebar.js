@@ -1003,20 +1003,74 @@ sidebar.ArgumentView = class {
                     this._element.appendChild(location);
                 }
                 
-                if (initializer || this._argument.is_custom_added) {
-                    const editInitializer = this._host.document.createElement('div');
-                    editInitializer.className = 'sidebar-view-item-value-line-border';
-                    editInitializer.innerHTML = 'If this is an initializer, you can input new value for it here:';
-                    this._element.appendChild(editInitializer);
+                if (initializer) {
+                    const editInitializerVal = this._host.document.createElement('div');
+                    editInitializerVal.className = 'sidebar-view-item-value-line-border';
+                    editInitializerVal.innerHTML = 'This is an initializer, you can input a new value for it here:';
+                    this._element.appendChild(editInitializerVal);
     
-                    var inputInitializer = document.createElement("INPUT");
-                    inputInitializer.setAttribute("type", "text");
-                    inputInitializer.setAttribute("size", "42");
-                    inputInitializer.addEventListener('input', (e) => {
+                    var inputInitializerVal = document.createElement("INPUT");
+                    inputInitializerVal.setAttribute("type", "text");
+                    inputInitializerVal.setAttribute("size", "42");
+                    // reload the last value
+                    var orig_arg_name = this._host._view._graph.getOriginalName(this._param_type, this._modelNodeName, this._param_index, this._arg_index)
+                    if (this._host._view._graph._initializerEditInfo.get(orig_arg_name)) {
+                        // [type, value]
+                        inputInitializerVal.setAttribute("value", this._host._view._graph._initializerEditInfo.get(orig_arg_name)[1]);
+                    }
+
+                    inputInitializerVal.addEventListener('input', (e) => {
                         // console.log(e.target.value)
                         this._host._view._graph.changeInitializer(this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, this._argument.type._dataType, e.target.value);
                     });
-                    this._element.appendChild(inputInitializer);
+                    this._element.appendChild(inputInitializerVal);
+                }
+
+                if (this._argument.is_custom_added) {
+                    var new_init_val = "", new_init_type = "";
+                    // ====== input value ======>
+                    const editInitializerVal = this._host.document.createElement('div');
+                    editInitializerVal.className = 'sidebar-view-item-value-line-border';
+                    editInitializerVal.innerHTML = 'If this is an initializer, you can input new value for it here:';
+                    this._element.appendChild(editInitializerVal);
+    
+                    var inputInitializerVal = document.createElement("INPUT");
+                    inputInitializerVal.setAttribute("type", "text");
+                    inputInitializerVal.setAttribute("size", "42");
+                    // this._element.appendChild(inputInitializerVal);
+
+                    inputInitializerVal.addEventListener('input', (e) => {
+                        // console.log(e.target.value)
+                        new_init_val = e.target.value;
+                        this._host._view._graph.changeAddedNodeInitializer(this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, new_init_type, new_init_val);
+                    });
+                    this._element.appendChild(inputInitializerVal);
+                    // <====== input value ======
+                    
+                    // ====== input type ======>
+                    const editInitializerType = this._host.document.createElement('div');
+                    editInitializerType.className = 'sidebar-view-item-value-line-border';
+                    editInitializerType.innerHTML = 'and input its type for it here (see properties->type->? for more info):';
+                    this._element.appendChild(editInitializerType);
+    
+                    var inputInitializerType = document.createElement("INPUT");
+                    inputInitializerType.setAttribute("type", "text");
+                    inputInitializerType.setAttribute("size", "42");
+
+                    var arg_name = this._host._view._graph._addedNode.get(this._modelNodeName).inputs.get(this._parameterName)[this._arg_index]
+                    if (this._host._view._graph._initializerEditInfo.get(arg_name)) {
+                        // [type, value]
+                        inputInitializerType.setAttribute("value", this._host._view._graph._initializerEditInfo.get(arg_name)[0]);
+                        inputInitializerVal.setAttribute("value", this._host._view._graph._initializerEditInfo.get(arg_name)[1]);
+                    }
+
+                    inputInitializerType.addEventListener('input', (e) => {
+                        // console.log(e.target.value)
+                        new_init_type = e.target.value;
+                        this._host._view._graph.changeAddedNodeInitializer(this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, new_init_type, new_init_val);
+                    });
+                    this._element.appendChild(inputInitializerType);
+                    // <====== input type ======
                 }
 
                 if (initializer) {

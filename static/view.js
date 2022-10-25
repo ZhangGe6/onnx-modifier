@@ -585,6 +585,7 @@ view.View = class {
                     viewGraph._addedNode = this.lastViewGraph._addedNode;
                     viewGraph._add_nodeKey = this.lastViewGraph._add_nodeKey;
                     viewGraph._addedOutputs = this.lastViewGraph._addedOutputs;
+                    viewGraph._initializerEditInfo = this.lastViewGraph._initializerEditInfo;
                     // console.log(viewGraph._renameMap);
                     // console.log(viewGraph._modelNodeName2State)
 
@@ -1033,12 +1034,6 @@ view.View = class {
             }
         }
     }
-
-    reloadLastLocation() {
-        const container = this._getElementById('graph');
-
-
-    }
 };
 
 view.Graph = class extends grapher.Graph {
@@ -1432,29 +1427,23 @@ view.Graph = class extends grapher.Graph {
     }
 
     changeInitializer(modelNodeName, parameterName, param_type, param_index, arg_index, type, targetValue) {
-        // changeNodeInputOutput(modelNodeName, parameterName, arg_index, targetValue) {
-            // if (this._addedNode.has(modelNodeName)) {  // for custom added node 
-            //     if (this._addedNode.get(modelNodeName).inputs.has(parameterName)) {
-            //         this._addedNode.get(modelNodeName).inputs.get(parameterName)[arg_index] = targetValue
-            //     }
-    
-            //     if (this._addedNode.get(modelNodeName).outputs.has(parameterName)) {
-            //         this._addedNode.get(modelNodeName).outputs.get(parameterName)[arg_index] = targetValue
-            //     }
-            //     // this.view._updateGraph() // otherwise the changes can not be updated without manully updating graph
-            // }
-            // // console.log(this._addedNode)
-    
-            // else {    // for the nodes in the original model
-                
-                var orig_arg_name = this.getOriginalName(param_type, modelNodeName, param_index, arg_index)
-                this._initializerEditInfo.set(orig_arg_name, [type, targetValue]);
-                // console.log(this._renameMap)
-            // }
-            console.log(this._initializerEditInfo)
-    
-            // this.view._updateGraph()
+        if (this._addedNode.has(modelNodeName)) {  // for custom added node 
         }
+        // console.log(this._addedNode)
+
+        else {    // for the nodes in the original model
+            var orig_arg_name = this.getOriginalName(param_type, modelNodeName, param_index, arg_index)
+            this._initializerEditInfo.set(orig_arg_name, [type, targetValue]);
+        }
+
+        this.view._updateGraph()
+    }
+
+    changeAddedNodeInitializer(modelNodeName, parameterName, param_type, param_index, arg_index, type, targetValue) {
+        var arg_name = this._addedNode.get(modelNodeName).inputs.get(parameterName)[arg_index]
+        this._initializerEditInfo.set(arg_name, [type, targetValue]);
+        this.view._updateGraph()
+    }
 
 
     build(document, origin) {

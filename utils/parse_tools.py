@@ -1,4 +1,6 @@
 import numpy as np
+from typing import cast
+from onnx.mapping import NP_TYPE_TO_TENSOR_TYPE
 
 def parse_value(value_str, value_type):
     if value_type.startswith('int'):
@@ -9,6 +11,7 @@ def parse_value(value_str, value_type):
         raise RuntimeError("type {} is not considered in current version. \
                             You can kindly report an issue for this problem. Thanks!".format(value_type))
 
+# parse numpy values from string
 def parse_tensor(tensor_str, tensor_type):
     def extract_val():
         num_str = ""
@@ -22,7 +25,7 @@ def parse_tensor(tensor_str, tensor_type):
     
     tensor_str = tensor_str.replace(" ", "")
     stk = []
-    for i, c in enumerate(tensor_str): # '['  ','  ']' '.' '-' or value
+    for c in tensor_str: # '['  ','  ']' '.' '-' or value
         if c == ",":
             ext_val = extract_val()
             if ext_val is not None: stk.append(ext_val)
@@ -55,6 +58,11 @@ def parse_tensor(tensor_str, tensor_type):
     else:
         raise RuntimeError("type {} is not considered in current version. \
                             You can kindly report an issue for this problem. Thanks!".format(tensor_type))
+
+# map np datatype to onnx datatype
+# https://github.com/onnx/onnx/blob/8669fad0247799f4d8683550eec749974b4f5338/onnx/helper.py#L1177
+def np2onnxdtype(np_dtype):
+    return cast(int, NP_TYPE_TO_TENSOR_TYPE[np_dtype])
 
 if __name__ == "__main__":
     # tensor_str = "1"
