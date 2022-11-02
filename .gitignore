@@ -11,5 +11,6 @@ dist/
 
 # self maintained files
 gym/
+local_tmp/
 *ppt
 *pptx

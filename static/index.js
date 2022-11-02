@@ -722,8 +722,8 @@ host.BrowserHost = class {
 
     // convert view.LightNodeInfo to Map object for easier transmission to Python backend
     parseAddedLightNodeInfo2Map(nodes_info, initializer_info) {
-        console.log(nodes_info)
-        console.log(initializer_info)
+        // console.log(nodes_info)
+        // console.log(initializer_info)
         var res_map = new Map()
         for (const [modelNodeName, node_info] of nodes_info) {
             var node_info_map = new Map()
