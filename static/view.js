@@ -952,7 +952,8 @@ view.View = class {
 
             for (var i = 0; i < node._attributes.length; ++i) {
                 if (attr_change_map.get(node._attributes[i].name)) {
-                    node._attributes[i]._value = attr_change_map.get(node._attributes[i].name)
+                    // [val, type]
+                    node._attributes[i]._value = attr_change_map.get(node._attributes[i].name)[0]
                 }
             }
 
@@ -1358,9 +1359,9 @@ view.Graph = class extends grapher.Graph {
 
     }
 
-    changeNodeAttribute(modelNodeName, attributeName, targetValue) {
+    changeNodeAttribute(modelNodeName, attributeName, targetValue, type) {
         if (this._addedNode.has(modelNodeName)) {
-            this._addedNode.get(modelNodeName).attributes.set(attributeName, targetValue)
+            this._addedNode.get(modelNodeName).attributes.set(attributeName, [targetValue, type])
         }
         // console.log(this._addedNode)
 
@@ -1368,7 +1369,7 @@ view.Graph = class extends grapher.Graph {
             if (!this._changedAttributes.get(modelNodeName)) {
                 this._changedAttributes.set(modelNodeName, new Map());
             }
-            this._changedAttributes.get(modelNodeName).set(attributeName, targetValue)
+            this._changedAttributes.get(modelNodeName).set(attributeName, [targetValue, type])
             // console.log(this._changedAttributes)
 
         }

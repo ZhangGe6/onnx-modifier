@@ -1,12 +1,18 @@
 import onnx
 from onnx import AttributeProto
-
+from .parse_tools import parse_str2val
 
 def make_new_node(node_info):
     name = node_info['properties']['name']
     op_type = node_info['properties']['op_type']
     # attributes = node_info['attributes']
-    attributes = {k: v for k, v in node_info['attributes'].items() if not v == 'undefined'}
+    # attributes = {k: v for k, v in node_info['attributes'].items() if not v == 'undefined'}
+    attributes = {}
+    for attr_name, attr_meta in node_info['attributes'].items():
+        attr_value, attr_type = attr_meta
+        if attr_value == 'undefined' or len(attr_value.replace(' ', '')) == 0:
+            continue
+        attributes[attr_name] = parse_str2val(attr_value, attr_type)
     # print(attributes)
     
     inputs = []
@@ -40,7 +46,6 @@ def make_attr_changed_node(node, attr_change_info):
     # because AttributeProto is constructed barely based on the input value
     # https://github.com/onnx/onnx/blob/4e24b635c940801555bee574b4eb3a34cab9acd5/onnx/helper.py#L472
     def make_type_value(value, AttributeProto_type):
-        # https://github.com/protocolbuffers/protobuf/blob/main/python/google/protobuf/internal/enum_type_wrapper.py#L60
         attr_type = AttributeProto.AttributeType.Name(AttributeProto_type)
         if attr_type == "FLOAT":
             return float(value)
@@ -62,7 +67,8 @@ def make_attr_changed_node(node, attr_change_info):
     for attr in node.attribute:
         # print(onnx.helper.get_attribute_value(attr))
         if attr.name in attr_change_info.keys():            
-            new_attr[attr.name] = make_type_value(attr_change_info[attr.name], attr.type)
+            # attr_change_info: {attr: [value, type]}
+            new_attr[attr.name] = make_type_value(attr_change_info[attr.name][0], attr.type)
         else:
             # https://github.com/onnx/onnx/blob/4e24b635c940801555bee574b4eb3a34cab9acd5/onnx/helper.py#L548
             new_attr[attr.name] = onnx.helper.get_attribute_value(attr)

@@ -706,7 +706,7 @@ class NodeAttributeView {
                 attr_input.addEventListener('input', (e) => {
                     // console.log(e.target.value);
                     // console.log(this.parse_value(e.target.value, type))
-                    this._host._view._graph.changeNodeAttribute(this._modelNodeName, this._attributeName, this.parse_value(e.target.value, type));
+                    this._host._view._graph.changeNodeAttribute(this._modelNodeName, this._attributeName, e.target.value, type);
                     // console.log(this._host._view._graph._renameMap);
                 });
 
@@ -777,6 +777,7 @@ class NodeAttributeView {
         }
     }
 
+    // deprecated
     parse_value(value, type) {
         switch (type) {
             case "int64":

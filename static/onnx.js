@@ -620,7 +620,12 @@ onnx.Graph = class {
         var attributes = []
         if (schema.attributes) {
             for (const attr of schema.attributes) {
-                var value = node_info.attributes.get(attr.name)  // modified value or null
+                // [value, type]
+                // console.log(node_info.attributes)
+                var value = null;
+                if (node_info.attributes.has(attr.name)) {
+                    value = node_info.attributes.get(attr.name)[0];
+                }
                 attributes.push(
                     new onnx.LightAttributeInfo(
                         attr.name, 
@@ -631,6 +636,7 @@ onnx.Graph = class {
                     )
             }
         }
+        // console.log(attributes)
         var custom_add_node = new onnx.Node(
                 this._context, 
                 node_info.properties.get('op_type'), 
@@ -877,7 +883,12 @@ onnx.Attribute = class {
             if (metadata.type === 'DataType') {
                 this._type = metadata.type;
                 const value = this._value ? parseInt(this._value.toString(), 10) : this._value;
-                this._value = Number.isInteger(value) ? context.createDataType(value) : value;
+                // this._value = Number.isInteger(value) ? context.createDataType(value) : value;
+                if (value != NaN && Number.isInteger(value)) {
+                    this._value = context.createDataType(value);
+                }
+                // console.log(attribute.type, attribute.value)
+                // console.log(this._type, value, this._value)
             }
         }
     }

@@ -11,7 +11,7 @@ import numpy as np
 import onnx
 from onnx import numpy_helper
 from utils import make_new_node, make_attr_changed_node
-from utils import parse_tensor, np2onnxdtype
+from utils import parse_str2np, np2onnxdtype
 
 class onnxModifier:
     def __init__(self, model_name, model_proto):
@@ -179,11 +179,14 @@ class onnxModifier:
         for node_info in nodes_info.values():
             if node_states[node_info['properties']['name']] == "Deleted":
                 continue
-            print(node_info)
+            # print(node_info)
             node = make_new_node(node_info)
             # print(node)
             
             self.graph.node.append(node)
+            
+            # update the node_name2module
+            self.node_name2module[node.name] = node
 
     def add_outputs(self, added_outputs):
         # https://github.com/onnx/onnx/issues/3277#issuecomment-1050600445
@@ -192,9 +195,9 @@ class onnxModifier:
         # filter out the deleted custom-added outputs
         value_info_protos = []
         shape_info = onnx.shape_inference.infer_shapes(self.model_proto)
-        print(added_output_names)
+        # print(added_output_names)
         for value_info in shape_info.graph.value_info:
-            print(value_info.name)
+            # print(value_info.name)
             if value_info.name in added_output_names:
                 value_info_protos.append(value_info)
         self.graph.output.extend(value_info_protos)
@@ -206,7 +209,7 @@ class onnxModifier:
             init_type, init_val_str = meta
             if init_val_str == "": continue # in case we clear the input
             # print(init_name, init_type, init_val)
-            init_val = parse_tensor(init_val_str, init_type)
+            init_val = parse_str2np(init_val_str, init_type)
             # print(init_val)
             # for primary initilizers
             if init_name in self.initializer_name2module.keys():
@@ -304,7 +307,7 @@ class onnxModifier:
         
         input_name = inference_session.get_inputs()[0].name
         out = inference_session.run(output_names, {input_name: x})[0]
-        print(out.shape)
+        print(out.shape, out.dtype)
         # print(out[0][0][0][0])
         
 if __name__ == "__main__":
@@ -313,7 +316,9 @@ if __name__ == "__main__":
     # model_path = "C:\\Users\\ZhangGe\\Desktop\\test_edit_init.onnx"
     # model_path = "C:\\Users\\ZhangGe\\Desktop\\modified_test_edit_init.onnx"
     # model_path = "C:\\Users\\ZhangGe\\Desktop\\test_edit_init.onnx"
-    model_path = "C:\\Users\\ZhangGe\\Desktop\\tiny_squeezenet1.0-3.onnx"
+    # model_path = "C:\\Users\\ZhangGe\\Desktop\\tiny_squeezenet1.0-3.onnx"
+    # model_path = "C:\\Users\\ZhangGe\\Desktop\\little_model.onnx"
+    model_path = "C:\\Users\\ZhangGe\\Desktop\\modified_little_model.onnx"
     onnx_modifier = onnxModifier.from_model_path(model_path)
     
     def explore_basic():
@@ -397,8 +402,9 @@ if __name__ == "__main__":
     # test_change_node_attr()
         
     def test_inference():
-        onnx_modifier.inference(input_shape=[1, 1, 192, 192], output_names=["onnx::Transpose_368"])
-    # test_inference()
+        onnx_modifier.inference(input_shape=[1, 1, 192, 192], output_names=["input.20"])
+        onnx_modifier.inference(input_shape=[1, 1, 192, 192], output_names=["custom_output_1"])
+    test_inference()
     
     def test_add_output():
         # print(onnx_modifier.graph.output)
@@ -444,4 +450,14 @@ if __name__ == "__main__":
         modify_info = {'node_states': {'data_0': 'Exist', 'Conv0': 'Exist', 'Relu1': 'Exist', 'MaxPool2': 'Exist', 'Conv3': 'Exist', 'Relu4': 'Exist', 'Conv5': 'Exist', 'Relu6': 'Exist', 'Conv7': 'Exist', 'Relu8': 'Exist', 'Concat9': 'Exist', 'Conv10': 'Exist'}, 'node_renamed_io': {'Conv3': {'pool1_1': 'conv1_2'}, 'MaxPool2': {'conv1_2': 'conv1'}}, 'node_changed_attr': {}, 'added_node_info': {}, 'added_outputs': {}, 'rebatch_info': {}, 'changed_initializer': {}}
         onnx_modifier.modify(modify_info)
         onnx_modifier.check_and_save_model()
-    test_remove_isolated_nodes()
+    # test_remove_isolated_nodes()
+
+    def test_tmp_debug():
+        modify_info = {'node_states': {'input': 'Exist', 'Conv_0': 'Exist', 'LeakyRelu_1': 'Exist', 'Conv_2': 'Exist', 'LeakyRelu_3': 'Exist', 'Conv_4': 'Exist', 'out_input.20': 'Exist', 'custom_added_Cast0': 'Exist'}, 'node_renamed_io': {}, 'node_changed_attr': {}, 'added_node_info': {'custom_added_Cast0': {'properties': {'domain': 'ai.onnx', 'op_type': 'Cast', 'name':'custom_added_Cast0'}, 'attributes': {'to': 'float32'}, 'inputs': {'input': ['input.20']}, 'outputs': {'output': ['custom_output_1']}}}, 'added_outputs': {}, 'rebatch_info': {}, 'changed_initializer': {}}
+        onnx_modifier.modify(modify_info)
+        onnx_modifier.check_and_save_model()
+    # test_tmp_debug()
+    
+        
+        
+        
