@@ -539,78 +539,83 @@ onnx.Graph = class {
         
         // console.log(node_info)
         var inputs = []
-        for (let i = 0; i < schema.inputs.length; ++i) {
-            const input = schema.inputs[i]
-            
-            var node_info_input = node_info.inputs.get(input.name)
-            // console.log(node_info_input)
-
-            var arg_list = []
-            if (input.list) {
-                for (let j = 0; j < max_custom_add_input_num; ++j) {
-                    if (node_info_input && node_info_input[j]) {
-                        var arg_name = node_info_input[j][0]  // [arg.name, arg.is_optional]
+        // deal with node type with no input, like Constant
+        if (schema.inputs) {
+            for (let i = 0; i < schema.inputs.length; ++i) {
+                const input = schema.inputs[i]
+                
+                var node_info_input = node_info.inputs.get(input.name)
+                // console.log(node_info_input)
+    
+                var arg_list = []
+                if (input.list) {
+                    for (let j = 0; j < max_custom_add_input_num; ++j) {
+                        if (node_info_input && node_info_input[j]) {
+                            var arg_name = node_info_input[j][0]  // [arg.name, arg.is_optional]
+                        }
+                        else {
+                            var arg_name = 'list_custom_input_' + (this._custom_add_node_io_idx++).toString()
+                        }
+                        arg_list.push(this._context.argument(arg_name))
                     }
-                    else {
-                        var arg_name = 'list_custom_input_' + (this._custom_add_node_io_idx++).toString()
-                    }
-                    arg_list.push(this._context.argument(arg_name))
-                }
-            }
-            else {
-                if (node_info_input && node_info_input[0]) {
-                    var arg_name = node_info_input[0][0]  // [arg.name, arg.is_optional]
                 }
                 else {
-                    var arg_name = 'custom_input_' + (this._custom_add_node_io_idx++).toString()
+                    if (node_info_input && node_info_input[0]) {
+                        var arg_name = node_info_input[0][0]  // [arg.name, arg.is_optional]
+                    }
+                    else {
+                        var arg_name = 'custom_input_' + (this._custom_add_node_io_idx++).toString()
+                    }
+                    arg_list = [this._context.argument(arg_name)]
                 }
-                arg_list = [this._context.argument(arg_name)]
-            }
-
-            for (var arg of arg_list) {
-                arg.is_custom_added = true;
-                if (input.option && input.option == 'optional') {
-                    arg.is_optional = true;
+    
+                for (var arg of arg_list) {
+                    arg.is_custom_added = true;
+                    if (input.option && input.option == 'optional') {
+                        arg.is_optional = true;
+                    }
                 }
+                inputs.push(new onnx.Parameter(input.name, arg_list));
             }
-            inputs.push(new onnx.Parameter(input.name, arg_list));
         }
 
         var outputs = []
-        for (let i = 0; i < schema.outputs.length; ++i) {
-            const output = schema.outputs[i]
-            var node_info_output = node_info.outputs.get(output.name)
-
-            var arg_list = []
-            if (output.list) {
-                for (let j = 0; j < max_custom_add_output_num; ++j) {
-                    if (node_info_output && node_info_output[j]) {
-                        var arg_name = node_info_output[j][0]
+        if (schema.outputs) {
+            for (let i = 0; i < schema.outputs.length; ++i) {
+                const output = schema.outputs[i]
+                var node_info_output = node_info.outputs.get(output.name)
+    
+                var arg_list = []
+                if (output.list) {
+                    for (let j = 0; j < max_custom_add_output_num; ++j) {
+                        if (node_info_output && node_info_output[j]) {
+                            var arg_name = node_info_output[j][0]
+                        }
+                        else {
+                            var arg_name = 'list_custom_output_' + (this._custom_add_node_io_idx++).toString()
+                        }
+                        arg_list.push(this._context.argument(arg_name))
                     }
-                    else {
-                        var arg_name = 'list_custom_output_' + (this._custom_add_node_io_idx++).toString()
-                    }
-                    arg_list.push(this._context.argument(arg_name))
-                }
-            }
-            else {
-                if (node_info_output && node_info_output[0]) {
-                    var arg_name = node_info_output[0][0]
                 }
                 else {
-                    var arg_name = 'custom_output_' + (this._custom_add_node_io_idx++).toString()
+                    if (node_info_output && node_info_output[0]) {
+                        var arg_name = node_info_output[0][0]
+                    }
+                    else {
+                        var arg_name = 'custom_output_' + (this._custom_add_node_io_idx++).toString()
+                    }
+                    
+                    arg_list = [this._context.argument(arg_name)]
                 }
-                
-                arg_list = [this._context.argument(arg_name)]
-            }
-
-            for (var arg of arg_list) {
-                arg.is_custom_added = true;
-                if (output.option && output.option == 'optional') {
-                    arg.is_optional = true;
+    
+                for (var arg of arg_list) {
+                    arg.is_custom_added = true;
+                    if (output.option && output.option == 'optional') {
+                        arg.is_optional = true;
+                    }
                 }
+                outputs.push(new onnx.Parameter(output.name, arg_list));
             }
-            outputs.push(new onnx.Parameter(output.name, arg_list));
         }
 
         // console.log(inputs)
