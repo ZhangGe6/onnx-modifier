@@ -15,19 +15,16 @@
 
 目前已支持下列操作：
 
-- [x] 删除/恢复节点
-  - 删除单个节点
-  - 删除一个节点及所有以该节点为根节点的子节点
-  - 恢复误删的节点
-- [x] 修改节点输入输出名
-- [x] 修改模型输入输出名
-- [x] 增加模型输出节点
-- [x] 编辑节点属性值
-- [x] 增加新节点
-- [x] 修改模型batch size
-- [x] 修改模型initializers
+:white_check_mark: 删除/恢复节点<br>
+:white_check_mark: 修改节点输入输出名<br>
+:white_check_mark: 修改模型输入输出名<br>
+:white_check_mark: 增加模型输出节点<br>
+:white_check_mark: 编辑节点属性值<br>
+:white_check_mark: 增加新节点<br>
+:white_check_mark: 修改模型batch size<br>
+:white_check_mark: 修改模型initializers<br>
 
-`onnx-modifier`基于流行的模型可视化工具 [Netron](https://github.com/lutzroeder/netron) 和轻量级Web应用框架 [flask](https://github.com/pallets/flask) 开发。希望它能给社区带来一些贡献~
+`onnx-modifier`基于流行的模型可视化工具 [Netron](https://github.com/lutzroeder/netron) 和轻量级Web应用框架 [Flask](https://github.com/pallets/flask) 开发。希望它能给社区带来一些贡献~
 
 # 安装与运行
 目前支持两种方法运行`onnx-modifier`：
@@ -40,8 +37,7 @@
   git clone git@github.com:ZhangGe6/onnx-modifier.git
   cd onnx-modifier
   
-  pip install onnx
-  pip install flask
+  pip install onnx flask
   ```
 
 - 运行 
@@ -184,7 +180,7 @@
 # 参考资料
 
 - [Netron](https://github.com/lutzroeder/netron)
-- [flask](https://github.com/pallets/flask)
+- [Flask](https://github.com/pallets/flask)
 - ONNX IR [Official doc](https://github.com/onnx/onnx/blob/main/docs/IR.md)
 - ONNX Python API [Official doc](https://github.com/onnx/onnx/blob/main/docs/PythonAPIOverview.md), [Leimao's Blog](https://leimao.github.io/blog/ONNX-Python-API/)
 - ONNX IO Stream  [Leimao's Blog](https://leimao.github.io/blog/ONNX-IO-Stream/)

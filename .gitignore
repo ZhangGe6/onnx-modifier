@@ -14,3 +14,4 @@ gym/
 local_tmp/
 *ppt
 *pptx
+local_test.py

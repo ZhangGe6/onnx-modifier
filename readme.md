@@ -10,21 +10,18 @@ What if we have a tool, which allows us to **edit and preview the editing effect
 
 Then `onnx-modifier` comes. With it, we can focus on editing the model graph in the visualization pannel. All the editing information will be summarized and processed by Python ONNX API automatically at last. Then our time can be saved! 🚀
 
-`onnx-modifier` is built based on the popular network viewer [Netron](https://github.com/lutzroeder/netron) and the lightweight web application framework [flask](https://github.com/pallets/flask).
+`onnx-modifier` is built based on the popular network viewer [Netron](https://github.com/lutzroeder/netron) and the lightweight web application framework [Flask](https://github.com/pallets/flask).
 
 Currently, the following editing operations are supported:
 
-- [x] Delete/recover nodes
-  - Delete a single node.
-  - Delete a node and all the nodes rooted on it.
-  - Recover a deleted node.
-- [x] Rename the node inputs/outputs
-- [x] Rename the model inputs/outputs
-- [x] Add new model outputs
-- [x] Edit the attribute of nodes
-- [x] Add new nodes (experimental)
-- [x] Change batch size
-- [x] Edit model initializers
+:white_check_mark: Delete/recover nodes<br>
+:white_check_mark: Rename the node inputs/outputs<br>
+:white_check_mark: Rename the model inputs/outputs<br>
+:white_check_mark: Add new model outputs<br>
+:white_check_mark: Edit the attribute of nodes<br>
+:white_check_mark: Add new nodes<br>
+:white_check_mark: Change batch size<br>
+:white_check_mark: Edit model initializers<br>
 
 Here is the [update log](./docs/update_log.md) and [TODO list](./docs/todo_list.md).
 
@@ -219,7 +216,7 @@ For quick testing, some typical sample models are provided as following. Most of
 # Credits and referred materials
 
 - [Netron](https://github.com/lutzroeder/netron)
-- [flask](https://github.com/pallets/flask)
+- [Flask](https://github.com/pallets/flask)
 - ONNX IR [Official doc](https://github.com/onnx/onnx/blob/main/docs/IR.md)
 - ONNX Python API [Official doc](https://github.com/onnx/onnx/blob/main/docs/PythonAPIOverview.md), [Leimao&#39;s Blog](https://leimao.github.io/blog/ONNX-Python-API/)
 - ONNX IO Stream  [Leimao&#39;s Blog](https://leimao.github.io/blog/ONNX-IO-Stream/)
