@@ -484,7 +484,7 @@ view.View = class {
         }
         this.lastViewGraph = this._graph; 
         const graph = this.activeGraph;
-
+        // console.log(graph)
         // console.log(graph.nodes)
         
         return this._timeout(100).then(() => {
@@ -994,7 +994,7 @@ view.View = class {
                 }
             }
         }
-
+        // console.log(this._graphs[0].outputs)
         // create and add new output to graph
         this._graphs[0].reset_custom_added_outputs();
         for (var output_name of this.lastViewGraph._addedOutputs) {
@@ -1064,11 +1064,9 @@ view.Graph = class extends grapher.Graph {
     }
 
     createInput(input) {
+        var show_name = input.name; 
         if (this._renameMap.get(input.name)) {
             var show_name = this._renameMap.get(input.name).get(input.name);
-        }
-        else {
-            var show_name = input.name;       // input nodes should have name
         }
         const value = new view.Input(this, input, show_name);
         // value.name = (this._nodeKey++).toString();
@@ -1082,17 +1080,16 @@ view.Graph = class extends grapher.Graph {
 
     createOutput(output) {
         var modelNodeName = "out_" + output.name;  // in case the output has the same name with the last node
+        var show_name = output.name;
         if (this._renameMap.get(modelNodeName)) {
             var show_name = this._renameMap.get(modelNodeName).get(output.name);
-        }
-        else {
-            var show_name = output.name;       // input nodes should have name
         }
         const value = new view.Output(this, output, modelNodeName, show_name);
         // value.name = (this._nodeKey++).toString();  
         value.name = "out_" + output.name;   // output nodes should have name
         output.modelNodeName = "out_" + output.name;
         this.setNode(value);
+        // console.log(value)
         return value;
     }
 
@@ -1383,7 +1380,7 @@ view.Graph = class extends grapher.Graph {
         }
 
         if (param_type == 'model_output') {
-            modelNodeName = 'out_' + modelNodeName
+            // modelNodeName = 'out_' + modelNodeName
             // console.log(modelNodeName)
             var orig_arg_name = this._modelNodeName2ModelNode.get(modelNodeName).arguments[0].original_name
             // console.log(orig_arg_name)
@@ -1402,6 +1399,7 @@ view.Graph = class extends grapher.Graph {
     }
 
     changeNodeInputOutput(modelNodeName, parameterName, param_type, param_index, arg_index, targetValue) {
+        // console.log(modelNodeName)
     // changeNodeInputOutput(modelNodeName, parameterName, arg_index, targetValue) {
         if (this._addedNode.has(modelNodeName)) {  // for custom added node 
             if (this._addedNode.get(modelNodeName).inputs.has(parameterName)) {

@@ -213,27 +213,6 @@ sidebar.NodeSidebar = class {
     
         this._addHeader('Output adding helper');
         this._addButton('Add Output');
-        
-        // deprecated
-        // this.add_separator(this._elements, 'sidebar-view-separator');
-        // this._addHeader('Rename helper');
-        // if (inputs && inputs.length > 0) {
-        //     for (const input of inputs) {
-        //         this.add_rename_aux_element(input.arguments);
-        //     }
-        // }
-        // if (outputs && outputs.length > 0) {
-        //     for (const output of outputs) {
-        //         this.add_rename_aux_element(output.arguments);
-        //     }
-        // }
-
-        // this.add_separator(this._elements, 'sidebar-view-separator');
-        // this._addHeader('Add children node');
-        // this._addDropdownSelector('AddChildrenNode');
-        // this.add_span()
-        // this._addButton('Add Node');
-
     }
 
     add_separator(elment, className) {
@@ -247,35 +226,6 @@ sidebar.NodeSidebar = class {
         span.innerHTML = "&nbsp;&nbsp;&nbsp;"; // (if this doesn't work, try " ")
         span.className = className;
         this._elements.push(span); 
-    }
-
-    add_rename_aux_element(arguments_) {
-        if (arguments_.length > 0) {
-            for (const argument of arguments_) {
-                if (this._host._view._graph._pathArgumentNames.has(argument.name)) {
-
-                    const origNameElement =  this._host.document.createElement("div");
-                    origNameElement.innerHTML = argument.name + " => ";
-                    const newNameElement = this._host.document.createElement('input');
-                    newNameElement.setAttribute('type', 'text');
-                    // reload the existed renamed value
-                    if (this._host._view._graph._renameMap.get(this._modelNodeName) &&
-                        this._host._view._graph._renameMap.get(this._modelNodeName).get(argument.name))
-                    {   
-                        newNameElement.setAttribute('value', this._host._view._graph._renameMap.get(this._modelNodeName).get(argument.name));
-                    }
-                    newNameElement.addEventListener('input', (e) => {
-                        // console.log(e.target.value);
-                        this._host._view._graph.recordRenameInfo(this._modelNodeName, argument.name, e.target.value);
-                        // console.log(this._host._view._graph._renameMap);
-                    });
-
-                    this._elements.push(origNameElement);
-                    this._elements.push(newNameElement);
-
-                }
-            }
-        }
     }
 
     render() {
@@ -324,6 +274,7 @@ sidebar.NodeSidebar = class {
 
     _addOutput(name, output, param_idx) {
         if (output.arguments.length > 0) {
+            // console.log(this._modelNodeName)
             const item = new sidebar.NameValueView(this._host, name, new sidebar.ParameterView(this._host, output, 'output', param_idx, this._modelNodeName));
             this._outputs.push(item);
             this._elements.push(item.render());
@@ -362,38 +313,6 @@ sidebar.NodeSidebar = class {
             buttonElement.addEventListener('click', () => {
                 this._host._view._graph.add_output(this._modelNodeName)
             });   
-        }
-    }
-
-    // deprecated
-    _addDropdownSelector(title) {
-        if (title === 'AddChildrenNode') {
-            const selectorElement = this._host.document.createElement('SELECT');
-            selectorElement.setAttribute('id', 'sidebar-AddChildrenNode');
-            this._elements.push(selectorElement);
-            // console.log(this._host._view._model.supported_nodes)
-            for (const node of this._host._view._model.supported_nodes) {
-                // node: [domain, op]
-                // console.log(node)
-                // console.log(node[0])
-                // console.log(node[1])
-
-                var option = new Option(node[1], node[0] + ':' + node[1]);
-                // console.log(option)
-                selectorElement.appendChild(option);
-            }
-            
-            var selected_val = selectorElement.options[selectorElement.selectedIndex].value
-            this.add_op_domain = selected_val.split(':')[0]
-            this.add_op_type = selected_val.split(':')[1]
-            // console.log(selectorElement.options[selectorElement.selectedIndex].text)
-            // console.log(selectorElement.options[selectorElement.selectedIndex].value)
-            selectorElement.addEventListener('change', () => {
-                var selected_val = selectorElement.options[selectorElement.selectedIndex].value
-                this.add_op_domain = selected_val.split(':')[0]
-                this.add_op_type = selected_val.split(':')[1]
-            });
-
         }
     }
 
@@ -1231,8 +1150,8 @@ sidebar.ModelSidebar = class {
                 this._addHeader('Outputs');
                 // for (const output of graph.outputs) {
                 for (const [index, output] of graph.outputs.entries()){
-                    this.addArgument(output.name, output, index, 'model_output');
-                    // this.addArgument(output.modelNodeName, output, index, 'model_output');
+                    // this.addArgument(output.name, output, index, 'model_output');
+                    this.addArgument(output.modelNodeName, output, index, 'model_output');
                 }
             }
         }
