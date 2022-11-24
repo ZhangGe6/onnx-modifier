@@ -6,6 +6,7 @@
 import os
 import copy
 import struct
+import warnings
 import numpy as np
 import onnx
 from onnx import numpy_helper
@@ -66,16 +67,24 @@ class onnxModifier:
     
     def change_batch_size(self, rebatch_info):
         if not (rebatch_info): return
-        # https://github.com/onnx/onnx/issues/2182#issuecomment-881752539
+        # https://github.com/onnx/onnx/issues/2182
         rebatch_type = rebatch_info['type']
         rebatch_value = rebatch_info['value']
-        if type == 'fixed':
+        if rebatch_type == 'fixed':
             rebatch_value = int(rebatch_value)
         # print(rebatch_type, rebatch_value)
         
         # Change batch size in input, output and value_info
         for tensor in list(self.graph.input) + list(self.graph.value_info) + list(self.graph.output):
-            tensor.type.tensor_type.shape.dim[0].dim_param = rebatch_value
+            if type(rebatch_value) == str:
+                tensor.type.tensor_type.shape.dim[0].dim_param = rebatch_value
+            elif type(rebatch_value) == int:
+                tensor.type.tensor_type.shape.dim[0].dim_value = rebatch_value
+            else:
+                warnings.warn('Unknown type {} for batch size. Fallback to dynamic batch size.'.format(type(rebatch_value)))
+                tensor.type.tensor_type.shape.dim[0].dim_param = str(rebatch_value)
+        # print(type(rebatch_value), self.graph.input[0].type.tensor_type.shape.dim[0].dim_value)
+        # print(type(rebatch_value), self.graph.input[0].type.tensor_type.shape.dim[0].dim_param)
         
         # handle reshapes
         for node in self.graph.node:
