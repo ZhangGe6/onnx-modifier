@@ -24,8 +24,11 @@ def parse_str2np(tensor_str, tensor_type):
         else:
             return None
     
+    # preprocess for tensor_str: remove blank and newline character
     tensor_str = tensor_str.replace(" ", "")
     tensor_str = tensor_str.replace("\n", "")
+    # preprocess for tensor_type: extract type info in case users input type+shape, like `float32[1,3,1,1]``
+    tensor_type = tensor_type.split("[")[0]
     stk = []
     for c in tensor_str: # '['  ','  ']' '.' '-' or value
         if c == ",":
@@ -59,6 +62,7 @@ def parse_str2np(tensor_str, tensor_type):
         return np.array(val, dtype=np.float32)
     else:
         raise RuntimeError("type {} is not considered in current version. \
+                            Current supported types are: int64, int32, int8, float64 and float32. \
                             You can kindly report an issue for this problem. Thanks!".format(tensor_type))
     
 # parse Python or onnx built-in values from string
@@ -90,6 +94,8 @@ def parse_str2val(val_str, val_type):
         
     else:
         raise RuntimeError("type {} is not considered in current version. \
+                            Current supported types are: int, int32, int64, int[], int32[], int64[], \
+                            float, float32, float64 and float[], float32[], float64[]. \
                             You can kindly report an issue for this problem. Thanks!".format(val_type))
 
 
