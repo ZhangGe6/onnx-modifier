@@ -225,11 +225,15 @@ class onnxModifier:
                 self.initializer_name2module[init_name].CopyFrom(tensor)
             # for custom added initilizers
             else:
+                # more details about why the .flatten() is needed can be seen in https://github.com/ZhangGe6/onnx-modifier/issues/28
+                init_val_flat = init_val
+                if len(init_val.shape) > 1:
+                    init_val_flat = init_val.flatten()
                 initializer_tensor = onnx.helper.make_tensor(
                     name=init_name,
                     data_type=np2onnxdtype(init_val.dtype),
                     dims=init_val.shape,
-                    vals=init_val)
+                    vals=init_val_flat)
                 # print(initializer_tensor)
                 self.initializer.append(initializer_tensor)
                 self.initializer_name2module[init_name] = initializer_tensor

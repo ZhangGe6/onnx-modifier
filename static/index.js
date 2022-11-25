@@ -389,7 +389,7 @@ host.BrowserHost = class {
         //     let url = this.document.location
         //     let route = "/flaskwebgui-keep-server-alive"
         //     // let interval_request = 3 * 1000 //sec
-        //     let interval_request = 0.5 * 1000 //sec
+        //     let interval_request = 0.2 * 1000 //sec
 
         //     function keep_alive_server(){
         //         getRequest(url + route)

@@ -1,6 +1,10 @@
 # TODO
 
 - [ ] add `shape inference` feature (mentioned in [this issue](https://github.com/ZhangGe6/onnx-modifier/issues/22))
+- [ ] refine the code.
+    - [ ] seperate the model graph rendering and editting into two classes in the js code for "cleaner" code.  
+    - [ ] slim the code.
+        - because some `.js` files (like electron.js and even python.js) in the `static` folder and `electron.html` in `templates` folder are legacies of Netron and can be further slimmed.
 - [ ] **ensure the model is fully loaded before modify() is called.**
     - otherwise `NameError: name 'onnx_modifier' is not defined` error will be invoked.
 - [ ] support desktop application.
@@ -10,8 +14,6 @@
     - [ ] As this [request](https://github.com/ZhangGe6/onnx-modifier/pull/5) notes, the current downloading schema prevents `onnx-modifier ` from being deployed remotely as a service.
 - [ ] support combine models.
 - [ ] support user-defined input/output number when the type of node's input/output is list.
-- [ ] slim the code.
-    - [ ] because some `.js` files (like electron.js and even python.js) in the `static` folder and `electron.html` in `templates` folder are legacy of Netron and can be further slimmed.
 - [x] support adding model input/output node.
 - [x] fix issue that "extra model inputs" emerges after deleting nodes. [issue#12](https://github.com/ZhangGe6/onnx-modifier/issues/12)
 - [x] support adding more complicated nodes (which has some simple parameters like `reshape`).
