@@ -67,24 +67,32 @@ def parse_str2np(tensor_str, tensor_type):
     
 # parse Python or onnx built-in values from string
 def parse_str2val(val_str, val_type):
-    # a compatible function in case user inputs double side bracket for list values
-    def rm_doubleside_brackets(ls_val_str):
-        return ls_val_str[1:-1]
+    def preprocess(ls_val_str):
+        ls_val_str = ls_val_str.replace(" ", "")
+        # a compatible function in case user inputs double side bracket for list values
+        if len(ls_val_str) >= 2 and ls_val_str[0] == "[" and ls_val_str[-1] == "]":
+            return ls_val_str[1:-1]
+        return ls_val_str
         
     # Python built-in values
     if val_type in ["int", "int32", "int64"]:
         return int(val_str)
     elif val_type in ["int[]", "int32[]", "int64[]"]:
         attr_val = []
-        for v in rm_doubleside_brackets(val_str).split(","):
+        for v in preprocess(val_str).split(","):
             attr_val.append(int(v))
         return attr_val
     elif val_type in ["float", "float32", "float64"]:
         return float(val_str)
     elif val_type in ["float[]", "float32[]", "float64[]"]:
         attr_val = []
-        for v in rm_doubleside_brackets(val_str).split(","):
+        for v in preprocess(val_str).split(","):
             attr_val.append(float(v))
+        return attr_val
+    elif val_type in ["string[]"]:
+        attr_val = []
+        for v in preprocess(val_str).split(","):
+            attr_val.append(str(v))
         return attr_val
     
     # onnx built-in values 

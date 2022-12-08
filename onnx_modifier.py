@@ -208,8 +208,10 @@ class onnxModifier:
             # print(value_info.name)
             if value_info.name in added_output_names:
                 value_info_protos.append(value_info)
+                self.node_name2module["out_" + value_info.name] = value_info
+                self.graph_output_names.append("out_" + value_info.name)
         self.graph.output.extend(value_info_protos)
-
+        
     def modify_initializer(self, changed_initializer):
         # print(changed_initializer)
         for init_name, meta in changed_initializer.items():
@@ -262,8 +264,23 @@ class onnxModifier:
                     for inp in remained_node.input:
                         if inp in self.initializer_name2module.keys():
                             self.initializer.remove(self.initializer_name2module[inp])
-                            
+        
+        def shape_inference():
+            # clear the existed value_info and replace them with newly inferred one
+            del self.graph.value_info[:]
+            
+            inferred_shape_info = onnx.shape_inference.infer_shapes(self.model_proto)
+            # for value_info in inferred_shape_info.graph.value_info:
+            #     self.graph.value_info.append(value_info)
+            
+            # update output
+            # print(inferred_shape_info.graph.output)
+            for output in inferred_shape_info.graph.output:
+                if "out_" + output.name in self.graph_output_names:
+                    self.node_name2module["out_" + output.name].type.CopyFrom(output.type)
+                
         remove_isolated_nodes()
+        shape_inference()
                         
     def modify(self, modify_info):
         '''
@@ -271,7 +288,7 @@ class onnxModifier:
         before modify_node_io_name(), to avoid name mismatch error.
         2. add_nodes() should be placed at the first place, otherwise
         remove_node_by_node_states() will delete the initializer of 
-        newly added nodes mistakenly
+        newly added nodes by mistake.
         '''
         # print(modify_info['node_states'])
         # print(modify_info['node_renamed_io'])

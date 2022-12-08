@@ -54,11 +54,11 @@ def make_attr_changed_node(node, attr_change_info):
         elif attr_type == "STRING":
             return str(value)
         elif attr_type == "FLOATS":
-            return [float(v) for v in value]
+            return parse_str2val(value, "float[]")
         elif attr_type == "INTS":
-            return [int(v) for v in value]
+            return parse_str2val(value, "int[]")
         elif attr_type == "STRINGS":
-            return [str(v) for v in value]
+            return parse_str2val(value, "string[]")
         else:
             raise RuntimeError("type {} is not considered in current version. \
                                You can kindly report an issue for this problem. Thanks!".format(attr_type))
