@@ -200,17 +200,10 @@ class onnxModifier:
         # https://github.com/onnx/onnx/issues/3277#issuecomment-1050600445
         added_output_names = added_outputs.values()
         if len(added_output_names) == 0: return 
-        # filter out the deleted custom-added outputs
-        value_info_protos = []
-        shape_info = onnx.shape_inference.infer_shapes(self.model_proto)
-        # print(added_output_names)
-        for value_info in shape_info.graph.value_info:
-            # print(value_info.name)
-            if value_info.name in added_output_names:
-                value_info_protos.append(value_info)
-                self.node_name2module["out_" + value_info.name] = value_info
-                self.graph_output_names.append("out_" + value_info.name)
-        self.graph.output.extend(value_info_protos)
+        # print(self.graph_output_names)
+        for name in added_output_names:
+            self.graph_output_names.append("out_" + name)
+            # then the actual output will be added in post_process()->shape_inference()
         
     def modify_initializer(self, changed_initializer):
         # print(changed_initializer)
@@ -268,17 +261,19 @@ class onnxModifier:
         def shape_inference():
             # clear the existed value_info and replace them with newly inferred one
             del self.graph.value_info[:]
-            
+            # clear output, otherwise infer_shapes() could fail due to shape inconsistency
+            del self.graph.output[:]
             inferred_shape_info = onnx.shape_inference.infer_shapes(self.model_proto)
-            # for value_info in inferred_shape_info.graph.value_info:
-            #     self.graph.value_info.append(value_info)
+            for value_info in inferred_shape_info.graph.value_info:
+                self.graph.value_info.append(value_info)
             
             # update output
-            # print(inferred_shape_info.graph.output)
-            for output in inferred_shape_info.graph.output:
-                if "out_" + output.name in self.graph_output_names:
-                    self.node_name2module["out_" + output.name].type.CopyFrom(output.type)
-                
+            inferred_output = []
+            for value_info in inferred_shape_info.graph.value_info:
+                if "out_" + value_info.name in self.graph_output_names:
+                    inferred_output.append(value_info)
+            self.graph.output.extend(inferred_output)
+            
         remove_isolated_nodes()
         shape_inference()
                         

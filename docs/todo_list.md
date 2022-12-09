@@ -1,6 +1,5 @@
 # TODO
 
-- [ ] add `shape inference` feature (mentioned in [this issue](https://github.com/ZhangGe6/onnx-modifier/issues/22))
 - [ ] refine the code.
     - [ ] seperate the model graph rendering and editting into two classes in the js code for "cleaner" code.  
     - [ ] slim the code.
@@ -9,6 +8,7 @@
     - otherwise `NameError: name 'onnx_modifier' is not defined` error will be invoked.
 - [ ] support desktop application.
     - [x] Windows
+        - [ ] fix the shutdown issue
     - [ ] Linux
 - [ ] support more flexible downloading schema
     - [ ] As this [request](https://github.com/ZhangGe6/onnx-modifier/pull/5) notes, the current downloading schema prevents `onnx-modifier ` from being deployed remotely as a service.
@@ -17,6 +17,7 @@
 - [x] support adding model input/output node.
 - [x] fix issue that "extra model inputs" emerges after deleting nodes. [issue#12](https://github.com/ZhangGe6/onnx-modifier/issues/12)
 - [x] support adding more complicated nodes (which has some simple parameters like `reshape`).
+- [x] add `shape inference` feature (mentioned in [this issue](https://github.com/ZhangGe6/onnx-modifier/issues/22))
 
 
 # Some known reference issues/feature requests

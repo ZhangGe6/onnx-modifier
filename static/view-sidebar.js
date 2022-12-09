@@ -931,7 +931,7 @@ sidebar.ArgumentView = class {
     
                     var inputInitializerVal = document.createElement("textarea");
                     inputInitializerVal.setAttribute("type", "text");
-                    inputInitializerVal.rows = 1;
+                    inputInitializerVal.rows = 8;
                     inputInitializerVal.cols = 44;
 
                     // reload the last value
@@ -965,7 +965,7 @@ sidebar.ArgumentView = class {
     
                     var inputInitializerVal = document.createElement("textarea");
                     inputInitializerVal.setAttribute("type", "text");
-                    inputInitializerVal.rows = 1;
+                    inputInitializerVal.rows = 8;
                     inputInitializerVal.cols = 44;
 
                     inputInitializerVal.addEventListener('input', (e) => {
