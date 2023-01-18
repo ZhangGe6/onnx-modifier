@@ -259,11 +259,15 @@ class onnxModifier:
                             self.initializer.remove(self.initializer_name2module[inp])
         
         def shape_inference():
+            # [Shape inference is not guaranteed to be complete]
+            # https://github.com/onnx/onnx/blob/main/docs/ShapeInference.md
             # clear the existed value_info and replace them with newly inferred one
             del self.graph.value_info[:]
             # clear output, otherwise infer_shapes() could fail due to shape inconsistency
+            graph_output_bk = copy.deepcopy(self.graph.output)
             del self.graph.output[:]
             inferred_shape_info = onnx.shape_inference.infer_shapes(self.model_proto)
+            # print(inferred_shape_info.graph.value_info)
             for value_info in inferred_shape_info.graph.value_info:
                 self.graph.value_info.append(value_info)
             
@@ -272,7 +276,11 @@ class onnxModifier:
             for value_info in inferred_shape_info.graph.value_info:
                 if "out_" + value_info.name in self.graph_output_names:
                     inferred_output.append(value_info)
+                    graph_output_bk = [out for out in graph_output_bk if out.name != value_info.name]
             self.graph.output.extend(inferred_output)
+            # when infer_shapes() is not complete, some output would lost
+            # this is a workround. Note that the outputs which are not infered will stay UNCHANGED
+            self.graph.output.extend(graph_output_bk)
             
         remove_isolated_nodes()
         shape_inference()

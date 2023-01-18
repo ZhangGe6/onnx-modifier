@@ -4,7 +4,7 @@ sys.path.append("../../")
 from flaskwebgui import FlaskUI
 from app import app
 
-FlaskUI(app, maximized=True, idle_interval=1).run()
+FlaskUI(app, maximized=True, idle_interval=3).run()
 
 '''
 This script is used for generating excutable files. 

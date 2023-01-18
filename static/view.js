@@ -1321,6 +1321,9 @@ view.Graph = class extends grapher.Graph {
             }
         }
         this._renameMap = new Map();
+        this._changedAttributes = new Map();
+        this._reBatchInfo = new Map();
+        this._initializerEditInfo = new Map();
 
         // clear custom added nodes
         this._addedNode = new Map();
