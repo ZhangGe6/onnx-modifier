@@ -156,21 +156,7 @@ class Application {
             properties: [ 'openFile' ],
             filters: [
                 { name: 'All Model Files',  extensions: [
-                    'onnx', 'ort', 'pb',
-                    'h5', 'hd5', 'hdf5', 'json', 'keras',
-                    'mlmodel', 'mlpackage',
-                    'caffemodel',
-                    'model', 'dnn', 'cmf', 'mar', 'params',
-                    'pdmodel', 'pdparams', 'nb',
-                    'meta',
-                    'tflite', 'lite', 'tfl',
-                    'armnn', 'mnn', 'nn', 'uff', 'uff.txt', 'rknn', 'xmodel', 'kmodel',
-                    'ncnn', 'param', 'tnnproto', 'tmfile', 'ms', 'om',
-                    'pt', 'pth', 'ptl', 't7',
-                    'pkl', 'joblib',
-                    'pbtxt', 'prototxt',
-                    'cfg', 'xml',
-                    'zip', 'tar' ] }
+                    'onnx', 'onn', 'pb', 'onnxtxt', 'pbtxt', 'prototxt', 'txt', 'model', 'pt', 'pth', 'pkl', 'ort', 'ort.onnx' ] }
             ]
         };
         const selectedFiles = electron.dialog.showOpenDialogSync(showOpenDialogOptions);

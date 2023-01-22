@@ -2,6 +2,7 @@
 
 - [ ] refine the code.
     - [ ] seperate the model graph rendering and editting into two classes in the js code for "cleaner" code.  
+    - [ ] make the code more readable, cleaner and consistent in the code format.
     - [ ] slim the code.
         - because some `.js` files (like electron.js and even python.js) in the `static` folder and `electron.html` in `templates` folder are legacies of Netron and can be further slimmed.
 - [ ] **ensure the model is fully loaded before modify() is called.**

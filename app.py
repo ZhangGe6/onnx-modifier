@@ -22,7 +22,7 @@ def open_model():
 @app.route('/download', methods=['POST'])
 def modify_and_download_model():
     modify_info = request.get_json()
-    print(modify_info)
+    # print(modify_info)
     onnx_modifier.reload()   # allow downloading for multiple times
     onnx_modifier.modify(modify_info)
     onnx_modifier.check_and_save_model()
