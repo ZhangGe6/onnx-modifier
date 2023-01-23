@@ -12,6 +12,7 @@ var flatbuffers = flatbuffers || require('./flatbuffers');
 var python = python || require('./python');
 var sidebar = sidebar || require('./view-sidebar');
 var grapher = grapher || require('./view-grapher');
+// var modifier = modifier || require('./modifier');
 
 view.View = class {
 
@@ -66,8 +67,7 @@ view.View = class {
                     container.addEventListener('touchstart', (e) => this._touchStartHandler(e), { passive: true });
                     break;
             }
-
-            
+            this.modifier = new modifier.Modifier(this);
 
         }).catch((err) => {
             this.error(err, null, null);
@@ -438,6 +438,7 @@ view.View = class {
                 }
                 return this._timeout(20).then(() => {
                     const graphs = Array.isArray(model.graphs) && model.graphs.length > 0 ? [ model.graphs[0] ] : [];
+                    this.modifier.loadModelGraph(model, graphs);  // TODO: [] not handled
                     return this._updateGraph(model, graphs);
                 });
             });
@@ -464,7 +465,7 @@ view.View = class {
         var active_graph = Array.isArray(this._graphs) && this._graphs.length > 0 ? this._graphs[0] : null;
         if (active_graph && this.lastViewGraph) {
             this.refreshAddedNode()
-            this.refreshModelInputOutput()
+            // this.refreshModelInputOutput()
             this.refreshNodeArguments()
             this.refreshNodeAttributes()
         }
@@ -484,6 +485,7 @@ view.View = class {
         }
         this.lastViewGraph = this._graph; 
         const graph = this.activeGraph;
+        // this.modifier.apply();
         // console.log(graph)
         // console.log(graph.nodes)
         
@@ -577,9 +579,9 @@ view.View = class {
                     options.ranker = 'longest-path';
                 }
 
-                const viewGraph = new view.Graph(this, model, groups, options);
+                const viewGraph = new view.Graph(this, model, this.modifier, groups, options);
                 if (this.lastViewGraph) {
-                    viewGraph._modelNodeName2State = this.lastViewGraph._modelNodeName2State;
+                    // viewGraph._modelNodeName2State = this.lastViewGraph._modelNodeName2State;
                     viewGraph._renameMap = this.lastViewGraph._renameMap;
                     viewGraph._changedAttributes = this.lastViewGraph._changedAttributes;
                     viewGraph._addedNode = this.lastViewGraph._addedNode;
@@ -1041,8 +1043,8 @@ view.View = class {
 
 view.Graph = class extends grapher.Graph {
 
-    constructor(view, model, compound, options) {
-        super(compound, options);
+    constructor(view, model, modifier, compound, options) {
+        super(modifier, compound, options);
         this.view = view;
         this.model = model;
         this._arguments = new Map();
@@ -1220,16 +1222,16 @@ view.Graph = class extends grapher.Graph {
     }
 
     // My code
-    delete_node(node_name) {
-        this._modelNodeName2State.set(node_name, 'Deleted');
-        this._modelNodeName2ViewNode.get(node_name).element.style.opacity = 0.3;
-    }
+    // delete_node(node_name) {
+    //     this.modifier.name2NodeStates.set(node_name, 'Deleted');
+    //     this._modelNodeName2ViewNode.get(node_name).element.style.opacity = 0.3;
+    // }
 
-    recover_node(node_name) {
-        this._modelNodeName2State.set(node_name, 'Exist');
-        this._modelNodeName2ViewNode.get(node_name).element.style.opacity = 1;
-        // console.log(this._modelNodeName2State)
-    }
+    // recover_node(node_name) {
+    //     this.modifier.name2NodeStates.set(node_name, 'Exist');
+    //     this._modelNodeName2ViewNode.get(node_name).element.style.opacity = 1;
+    //     // console.log(this.modifier.name2NodeStates)
+    // }
 
     delete_node_with_children(node_name) {
         this.delete_backtrack(node_name);
@@ -1238,15 +1240,15 @@ view.Graph = class extends grapher.Graph {
     delete_backtrack(node_name) {
         // console.log(this._modelNodeName2ViewNode)
         // console.log(node_name)
-        // console.log(this._modelNodeName2State.get(node_name))
+        // console.log(this.modifier.name2NodeStates.get(node_name))
         // console.log(this._namedEdges.has(node_name))
 
-        if (this._modelNodeName2State.get(node_name)  == 'Deleted') 
+        if (this.modifier.name2NodeStates.get(node_name)  == 'Deleted') 
         {
             return;
         }
 
-        this._modelNodeName2State.set(node_name, 'Deleted');
+        this.modifier.name2NodeStates.set(node_name, 'Deleted');
         this._modelNodeName2ViewNode.get(node_name).element.style.opacity = 0.3;
 
         if (!this._namedEdges.has(node_name)){ // for leaf node
@@ -1281,7 +1283,7 @@ view.Graph = class extends grapher.Graph {
         // reset node states
         for (const nodeId of this.nodes.keys()) {
             const node = this.node(nodeId);
-            this._modelNodeName2State.set(node.label.modelNodeName, 'Exist')
+            this.modifier.name2NodeStates.set(node.label.modelNodeName, 'Exist')
         }
         
         // console.log(this._renameMap)
@@ -1594,7 +1596,7 @@ view.Node = class extends grapher.Node {
 
     toggle() {
         this._expand.content = '-';
-        this._graph = new view.Graph(this.context.view, this.context.model, false, {});
+        this._graph = new view.Graph(this.context.view, this.context.model, this.context.modifier, false, {});
         this._graph.add(this.value);
         // const document = this.element.ownerDocument;
         // const parent = this.element.parentElement;

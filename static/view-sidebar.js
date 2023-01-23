@@ -291,27 +291,32 @@ sidebar.NodeSidebar = class {
         
         if (title === 'Delete Single Node') {
             buttonElement.addEventListener('click', () => {
-                this._host._view._graph.delete_node(this._modelNodeName)
+                // this._host._view._graph.delete_node(this._modelNodeName)
+                this._host._view.modifier.deleteSingleNode(this._modelNodeName);
             });
         }
         if (title === 'Delete With Children') {
             buttonElement.addEventListener('click', () => {
-                this._host._view._graph.delete_node_with_children(this._modelNodeName)
+                // this._host._view._graph.delete_node_with_children(this._modelNodeName);
+                this._host._view.modifier.deleteNodeWithChildren(this._modelNodeName)
             });
         }
         if (title === 'Recover Node') {
             buttonElement.addEventListener('click', () => {
-                this._host._view._graph.recover_node(this._modelNodeName)
+                // this._host._view._graph.recover_node(this._modelNodeName)
+                // this._host._view.modifier.recoverSingleNode(this._modelNodeName);
             });
         }
         if (title === 'Enter') {
             buttonElement.addEventListener('click', () => {
-                this._host._view._updateGraph()
+                // this._host._view._updateGraph();
+                this._host._view.modifier.deleteEnter();
             });
         }
         if (title === 'Add Output') {
             buttonElement.addEventListener('click', () => {
-                this._host._view._graph.add_output(this._modelNodeName)
+                // this._host._view._graph.add_output(this._modelNodeName);
+                this._host._view.modifier.addModelOutput(this._modelNodeName);
             });   
         }
     }

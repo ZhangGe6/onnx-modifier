@@ -226,13 +226,13 @@ host.BrowserHost = class {
                 // Specify the method
                 method: 'POST',
                 body: JSON.stringify({
-                    'node_states' : this.mapToObjectRec(this._view._graph._modelNodeName2State),
+                    'node_states' : this.mapToObjectRec(this._view.modifier.name2NodeStates),
                     'node_renamed_io' : this.mapToObjectRec(this._view._graph._renameMap),
                     'node_changed_attr' : this.mapToObjectRec(this._view._graph._changedAttributes),
                     'added_node_info' : this.mapToObjectRec(this.parseAddedLightNodeInfo2Map(this._view._graph._addedNode, 
                                                                 this._view._graph._initializerEditInfo)),
-                    'added_outputs' : this.arrayToObject(this.process_added_outputs(this._view._graph._addedOutputs, 
-                                                                this._view._graph._renameMap, this._view._graph._modelNodeName2State)),
+                    'added_outputs' : this.arrayToObject(this.process_added_outputs(this._view.modifier.addedOutputs, 
+                        this._view._graph._renameMap, this._view.modifier.name2NodeStates)),
                     'rebatch_info' : this.mapToObjectRec(this._view._graph._reBatchInfo),
                     'changed_initializer' : this.mapToObjectRec(this._view._graph._initializerEditInfo)
                 })

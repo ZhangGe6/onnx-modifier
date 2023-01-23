@@ -4,7 +4,8 @@ var dagre = dagre || require('./dagre');
 
 grapher.Graph = class {
 
-    constructor(compound, options) {
+    constructor(modifier, compound, options) {
+        this.modifier = modifier;
         this._isCompound = compound;
         this._options = options;
         this._nodes = new Map();
@@ -13,10 +14,7 @@ grapher.Graph = class {
         this._children['\x00'] = {};
         this._parent = {};
 
-        // My code
-        this._modelNodeName2ViewNode = new Map();
         this._modelNodeName2ModelNode = new Map();
-        this._modelNodeName2State = new Map();
         this._namedEdges = new Map();
 
         this._pathArgumentNames = new Set();  // the name of arguments which occurs in both sides of an edge
@@ -50,13 +48,15 @@ grapher.Graph = class {
         }
 
         const modelNodeName = node.modelNodeName
-        this._modelNodeName2ViewNode.set(modelNodeName, node);
-        this._modelNodeName2ModelNode.set(modelNodeName, node.value)
-        
-        // _modelNodeName2State save our modifications, and wil be initilized at the first graph construction only
+        this._modelNodeName2ModelNode.set(modelNodeName, node.value);
+        this.modifier.name2ViewNode.set(modelNodeName, node);
+        this.modifier.name2ModelNode.set(modelNodeName, node.value);
+
+
+        // this.modifier.name2NodeStates save our modifications, and wil be initilized at the first graph construction only
         // otherwise the modfications will lost
-        if (!this._modelNodeName2State.get(modelNodeName)) {
-            this._modelNodeName2State.set(modelNodeName, 'Exist');
+        if (!this.modifier.name2NodeStates.get(modelNodeName)) {
+            this.modifier.name2NodeStates.set(modelNodeName, 'Exist');
         }
     }
 
@@ -76,10 +76,14 @@ grapher.Graph = class {
         // _namedEdges: from : to
         var from_node_name = edge.from.modelNodeName
         var to_node_name = edge.to.modelNodeName
-        if (!this._namedEdges.has(from_node_name)) {
-            this._namedEdges.set(from_node_name, []);
+        // if (!this._namedEdges.has(from_node_name)) {
+        //     this._namedEdges.set(from_node_name, []);
+        // }
+        // this._namedEdges.get(from_node_name).push(to_node_name);
+        if (!this.modifier.namedEdges.has(from_node_name)) {
+            this.modifier.namedEdges.set(from_node_name, []);
         }
-        this._namedEdges.get(from_node_name).push(to_node_name);
+        this.modifier.namedEdges.get(from_node_name).push(to_node_name);
     }
 
 
@@ -177,11 +181,10 @@ grapher.Graph = class {
         edgePathGroupDefs.appendChild(marker("arrowhead-vee-select"));
         // <==== 显示 边上的箭头
         
-        // console.log(this._modelNodeName2State)
         for (const nodeId of this.nodes.keys()) {
             const node = this.node(nodeId);
             if (this.children(nodeId).length == 0) {
-                if (this._modelNodeName2State.get(node.label.modelNodeName) == 'Exist') {
+                if (this.modifier.name2NodeStates.get(node.label.modelNodeName) == 'Exist') {
                     // console.log("build", node.label.modelNodeName)
                     node.label.build(document, nodeGroup);  
                 }
@@ -207,8 +210,8 @@ grapher.Graph = class {
             var node_from = this._nodes.get(edge.v).label;
             var node_to = this._nodes.get(edge.w).label;
             if (
-                this._modelNodeName2State.get(node_from.modelNodeName) == 'Exist' &&
-                this._modelNodeName2State.get(node_to.modelNodeName) == 'Exist'
+                this.modifier.name2NodeStates.get(node_from.modelNodeName) == 'Exist' &&
+                this.modifier.name2NodeStates.get(node_to.modelNodeName) == 'Exist'
             )
             {
                 edge.label.build(document, edgePathGroup, edgeLabelGroup);
@@ -223,7 +226,7 @@ grapher.Graph = class {
             const node = this.node(nodeId);
             if (this.children(nodeId).length == 0) {
                 // node
-                if (this._modelNodeName2State.get(node.label.modelNodeName) == 'Exist') {
+                if (this.modifier.name2NodeStates.get(node.label.modelNodeName) == 'Exist') {
                     node.label.update();  // 让节点显示出来
                 }
             }
@@ -241,8 +244,8 @@ grapher.Graph = class {
             var node_from = this._nodes.get(edge.v).label;
             var node_to = this._nodes.get(edge.w).label;
             if (
-                this._modelNodeName2State.get(node_from.modelNodeName) == 'Exist' &&
-                this._modelNodeName2State.get(node_to.modelNodeName) == 'Exist'
+                this.modifier.name2NodeStates.get(node_from.modelNodeName) == 'Exist' &&
+                this.modifier.name2NodeStates.get(node_to.modelNodeName) == 'Exist'
             )
             {
                 edge.label.update();  // 让边显示出来
