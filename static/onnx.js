@@ -539,7 +539,7 @@ onnx.Graph = class {
         
         // console.log(node_info)
         var inputs = []
-        // deal with node type with no input, like Constant
+        // use "if" to deal with node type with no input, like Constant
         if (schema.inputs) {
             for (let i = 0; i < schema.inputs.length; ++i) {
                 const input = schema.inputs[i]

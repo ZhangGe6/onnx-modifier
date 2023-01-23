@@ -699,9 +699,9 @@ host.BrowserHost = class {
     // 2. filter out the custom output which is added, but deleted later 
     process_added_outputs(addedOutputs, renameMap, modelNodeName2State) {
         var processed = []
-        for (let i = 0; i < addedOutputs.length; ++i) {
-            if (modelNodeName2State.get("out_" + addedOutputs[i]) == "Exist") {
-                processed.push(addedOutputs[i]);
+        for (var out of addedOutputs) {
+            if (modelNodeName2State.get("out_" + out) == "Exist") {
+                processed.push(out);
             }
         }
         for (let i = 0; i < processed.length; ++i) {

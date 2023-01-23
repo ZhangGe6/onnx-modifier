@@ -24,7 +24,7 @@ grapher.Graph = class {
         this._changedAttributes = new Map();
 
         this._addedNode = new Map();
-        this._addedOutputs = [];
+        this._addedOutputs = new Set();
 
         this._reBatchInfo = new Map();
         this._initializerEditInfo = new Map();

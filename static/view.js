@@ -1260,11 +1260,8 @@ view.Graph = class extends grapher.Graph {
 
     add_output(node_name) {
         var model_node = this._modelNodeName2ModelNode.get(node_name);
-        for (var output of model_node.outputs) {
-            for (var argument of output.arguments) {
-                this._addedOutputs.push(argument.name);
-            }
-        }
+        // use a output argument as a proxy
+        this._addedOutputs.add(model_node.outputs[0].arguments[0].name);
         // console.log(this._addedOutputs);
         this.view._updateGraph();
     }
