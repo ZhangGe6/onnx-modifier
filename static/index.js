@@ -208,8 +208,9 @@ host.BrowserHost = class {
 
         const resetButton = this.document.getElementById('reset-graph');
         resetButton.addEventListener('click', () => {
-            this._view._graph.resetGraph();
-            this._view._updateGraph();
+            // this._view._graph.resetGraph();
+            // this._view._updateGraph();
+            this._view.modifier.resetGraph();
         })
 
         const downloadButton = this.document.getElementById('download-graph');
@@ -227,14 +228,14 @@ host.BrowserHost = class {
                 method: 'POST',
                 body: JSON.stringify({
                     'node_states' : this.mapToObjectRec(this._view.modifier.name2NodeStates),
-                    'node_renamed_io' : this.mapToObjectRec(this._view._graph._renameMap),
-                    'node_changed_attr' : this.mapToObjectRec(this._view._graph._changedAttributes),
-                    'added_node_info' : this.mapToObjectRec(this.parseAddedLightNodeInfo2Map(this._view._graph._addedNode, 
-                                                                this._view._graph._initializerEditInfo)),
+                    'node_renamed_io' : this.mapToObjectRec(this._view.modifier.renameMap),
+                    'node_changed_attr' : this.mapToObjectRec(this._view.modifier.changedAttributes),
+                    'added_node_info' : this.mapToObjectRec(this.parseAddedLightNodeInfo2Map(this._view.modifier.addedNode, 
+                        this._view.modifier.initializerEditInfo)),
                     'added_outputs' : this.arrayToObject(this.process_added_outputs(this._view.modifier.addedOutputs, 
-                        this._view._graph._renameMap, this._view.modifier.name2NodeStates)),
-                    'rebatch_info' : this.mapToObjectRec(this._view._graph._reBatchInfo),
-                    'changed_initializer' : this.mapToObjectRec(this._view._graph._initializerEditInfo)
+                        this._view.modifier.renameMap, this._view.modifier.name2NodeStates)),
+                    'rebatch_info' : this.mapToObjectRec(this._view.modifier.reBatchInfo),
+                    'changed_initializer' : this.mapToObjectRec(this._view.modifier.initializerEditInfo)
                 })
             }).then(function (response) {
                 return response.text();
@@ -263,7 +264,8 @@ host.BrowserHost = class {
             var add_op_domain = selected_val.split(':')[0]
             var add_op_type = selected_val.split(':')[1]
             // console.log(selected_val)
-            this._view._graph.add_node(add_op_domain, add_op_type)
+            // this._view._graph.add_node(add_op_domain, add_op_type)
+            this._view.modifier.addNode(add_op_domain, add_op_type);
             this._view._updateGraph();
         })
 

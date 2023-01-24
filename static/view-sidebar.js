@@ -291,31 +291,26 @@ sidebar.NodeSidebar = class {
         
         if (title === 'Delete Single Node') {
             buttonElement.addEventListener('click', () => {
-                // this._host._view._graph.delete_node(this._modelNodeName)
                 this._host._view.modifier.deleteSingleNode(this._modelNodeName);
             });
         }
         if (title === 'Delete With Children') {
             buttonElement.addEventListener('click', () => {
-                // this._host._view._graph.delete_node_with_children(this._modelNodeName);
-                this._host._view.modifier.deleteNodeWithChildren(this._modelNodeName)
+                this._host._view.modifier.deleteNodeWithChildren(this._modelNodeName);
             });
         }
         if (title === 'Recover Node') {
             buttonElement.addEventListener('click', () => {
-                // this._host._view._graph.recover_node(this._modelNodeName)
-                // this._host._view.modifier.recoverSingleNode(this._modelNodeName);
+                this._host._view.modifier.recoverSingleNode(this._modelNodeName);
             });
         }
         if (title === 'Enter') {
             buttonElement.addEventListener('click', () => {
-                // this._host._view._updateGraph();
                 this._host._view.modifier.deleteEnter();
             });
         }
         if (title === 'Add Output') {
             buttonElement.addEventListener('click', () => {
-                // this._host._view._graph.add_output(this._modelNodeName);
                 this._host._view.modifier.addModelOutput(this._modelNodeName);
             });   
         }
@@ -618,20 +613,13 @@ class NodeAttributeView {
                 if (content && typeof content === 'string') {
                     content = content.split('<').join('&lt;').split('>').join('&gt;');
                 }
-                // const line = this._host.document.createElement('div');
-                // line.className = 'sidebar-view-item-value-line';
-                // line.innerHTML = content ? content : '&nbsp;';
-                // this._element.appendChild(line);
 
                 var attr_input = document.createElement("INPUT");
                 attr_input.setAttribute("type", "text");
                 attr_input.setAttribute("size", "42");
                 attr_input.setAttribute("value", content ? content : 'undefined');
                 attr_input.addEventListener('input', (e) => {
-                    // console.log(e.target.value);
-                    // console.log(this.parse_value(e.target.value, type))
-                    this._host._view._graph.changeNodeAttribute(this._modelNodeName, this._attributeName, e.target.value, type);
-                    // console.log(this._host._view._graph._renameMap);
+                    this._host._view.modifier.changeNodeAttribute(this._modelNodeName, this._attributeName, e.target.value, type);
                 });
 
                 this._element.appendChild(attr_input);
@@ -826,23 +814,12 @@ sidebar.ArgumentView = class {
             name = name.split('\n').shift(); // custom argument id
             name = name || ' ';
 
-            // const nameLine = this._host.document.createElement('div');
-            // nameLine.className = 'sidebar-view-item-value-line';
-            // nameLine.innerHTML = '<span class=\'sidebar-view-item-value-line-content\'>name: <b>' + name + '</b></span>';
-            // this._element.appendChild(nameLine);
-
             var arg_input = document.createElement("INPUT");
             arg_input.setAttribute("type", "text");
             arg_input.setAttribute("size", "42");
             arg_input.setAttribute("value", name);
             arg_input.addEventListener('input', (e) => {
-                // console.log(this._argument)
-                // console.log(this._argument.name)
-                // console.log(e.target.value);
-                // this._host._view._graph.changeNodeInputOutput(this._modelNodeName, this._parameterName, this._arg_index, e.target.value, this._argument._name);
-                // this._host._view._graph.changeNodeInputOutput(this._modelNodeName, this._parameterName, this._arg_index, e.target.value);
-                this._host._view._graph.changeNodeInputOutput(this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, e.target.value);
-                // console.log(this._host._view._graph._renameMap);
+                this._host._view.modifier.changeNodeInputOutput(this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, e.target.value);
             });
             this._element.appendChild(arg_input);
 
@@ -941,15 +918,15 @@ sidebar.ArgumentView = class {
 
                     // reload the last value
                     var orig_arg_name = this._host._view._graph.getOriginalName(this._param_type, this._modelNodeName, this._param_index, this._arg_index)
-                    if (this._host._view._graph._initializerEditInfo.get(orig_arg_name)) {
+                    if (this._host._view.modifier.initializerEditInfo.get(orig_arg_name)) {
                         // [type, value]
-                        // inputInitializerVal.setAttribute("value", this._host._view._graph._initializerEditInfo.get(orig_arg_name)[1]);
-                        inputInitializerVal.innerHTML = this._host._view._graph._initializerEditInfo.get(orig_arg_name)[1];
+                        inputInitializerVal.innerHTML = this._host._view.modifier.initializerEditInfo.get(orig_arg_name)[1];
                     }
 
                     inputInitializerVal.addEventListener('input', (e) => {
                         // console.log(e.target.value)
-                        this._host._view._graph.changeInitializer(this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, this._argument.type._dataType, e.target.value);
+                        // this._host._view._graph.changeInitializer(this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, this._argument.type._dataType, e.target.value);
+                        this._host._view.modifier.changeInitializer(this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, this._argument.type._dataType, e.target.value);
                     });
                     this._element.appendChild(inputInitializerVal);
                 }
@@ -974,9 +951,8 @@ sidebar.ArgumentView = class {
                     inputInitializerVal.cols = 44;
 
                     inputInitializerVal.addEventListener('input', (e) => {
-                        // console.log(e.target.value)
                         new_init_val = e.target.value;
-                        this._host._view._graph.changeAddedNodeInitializer(this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, new_init_type, new_init_val);
+                        this._host._view.modifier.changeAddedNodeInitializer(this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, new_init_type, new_init_val);
                     });
                     this._element.appendChild(inputInitializerVal);
                     // <====== input value ======
@@ -992,19 +968,16 @@ sidebar.ArgumentView = class {
                     inputInitializerType.rows = 1;
                     inputInitializerType.cols = 44;
 
-                    var arg_name = this._host._view._graph._addedNode.get(this._modelNodeName).inputs.get(this._parameterName)[this._arg_index][0]  // [arg.name, arg.is_optional]
-                    if (this._host._view._graph._initializerEditInfo.get(arg_name)) {
+                    var arg_name = this._host._view.modifier.addedNode.get(this._modelNodeName).inputs.get(this._parameterName)[this._arg_index][0]  // [arg.name, arg.is_optional]
+                    if (this._host._view.modifier.initializerEditInfo.get(arg_name)) {
                         // [type, value]
-                        // inputInitializerType.setAttribute("value", this._host._view._graph._initializerEditInfo.get(arg_name)[0]);
-                        // inputInitializerVal.setAttribute("value", this._host._view._graph._initializerEditInfo.get(arg_name)[1]);
-                        inputInitializerType.innerHTML = this._host._view._graph._initializerEditInfo.get(arg_name)[0];
-                        inputInitializerVal.innerHTML = this._host._view._graph._initializerEditInfo.get(arg_name)[1];                      
+                        inputInitializerType.innerHTML = this._host._view.modifier.initializerEditInfo.get(arg_name)[0];
+                        inputInitializerVal.innerHTML = this._host._view.modifier.initializerEditInfo.get(arg_name)[1];                      
                     }
 
                     inputInitializerType.addEventListener('input', (e) => {
-                        // console.log(e.target.value)
                         new_init_type = e.target.value;
-                        this._host._view._graph.changeAddedNodeInitializer(this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, new_init_type, new_init_val);
+                        this._host._view.modifier.changeAddedNodeInitializer(this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, new_init_type, new_init_val);
                     });
                     this._element.appendChild(inputInitializerType);
                     // <====== input type ======
@@ -1032,11 +1005,8 @@ sidebar.ArgumentView = class {
                             this._element.appendChild(this._saveButton);
                         }
 
-                        // valueLine.className = 'sidebar-view-item-value-line-border';
                         valueLine.className = 'sidebar-view-item-value-border'
                         contentLine.innerHTML = state || initializer.toString();
-                        // console.log(initializer)
-                        // console.log(state, initializer.toString())
                     }
                     catch (err) {
                         contentLine.innerHTML = err.toString();
@@ -1199,7 +1169,7 @@ sidebar.ModelSidebar = class {
         fixed_batch_size_value.setAttribute("size", "5");
         fixed_batch_size_value.setAttribute("value", 1);
         fixed_batch_size_value.addEventListener('input', (e) => {
-            this._host._view._graph.changeBatchSize('fixed', e.target.value);
+            this._host._view.modifier.changeBatchSize('fixed', e.target.value);
         });
 
         this._elements.push(fixed_batch_size_value);
@@ -1213,7 +1183,7 @@ sidebar.ModelSidebar = class {
         
         if (title === 'Dynamic batch size') {
             buttonElement.addEventListener('click', () => {
-                this._host._view._graph.changeBatchSize("dynamic")
+                this._host._view.modifier.changeBatchSize("dynamic");
             });
         }
     }

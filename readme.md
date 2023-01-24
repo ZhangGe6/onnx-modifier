@@ -4,7 +4,7 @@ English | [简体中文](readme_zh-CN.md)
 
 # Introduction
 
-To edit an ONNX model, One common way is to visualize the model graph, and edit it using ONNX Python API. This works fine. However, we have to code to edit, then visualize to check. The two processes may iterate for many times, which is time-consuming. 👋
+To edit an ONNX model, one common way is to visualize the model graph, and edit it using ONNX Python API. This works fine. However, we have to code to edit, then visualize to check. The two processes may iterate for many times, which is time-consuming. 👋
 
 What if we have a tool, which allows us to **edit and preview the editing effect in a totally visualization fashion**?
 
