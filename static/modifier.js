@@ -393,7 +393,8 @@ modifier.Modifier = class {
             // console.log(typeof node)
             // console.log(node.constructor.name)
             if (node.arguments) {   // model input or model output. Because they are purely onnx.Parameter
-                node.arguments[0] = this.graph._context.argument(node.modelNodeName);
+                // node.arguments[0] = this.graph._context.argument(node.modelNodeName);
+                node.arguments[0] = this.graph._context.argument(node.arguments[0].original_name);
             }
             
             else {                   // model nodes
