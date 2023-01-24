@@ -238,7 +238,6 @@ class onnxModifier:
 
             def find_node_by_output_name(output_name):
                 for node in self.graph.node:
-                    print(node)
                     if output_name.lstrip('out_') in node.output:
                         return [node]
                 return []
