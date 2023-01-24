@@ -260,7 +260,6 @@ class onnxModifier:
             for node in remained_nodes:
                 # delete the node if it does not serve as the input or output of any other nodes
                 if node not in connected_nodes:
-                    print(node)
                     self.graph.node.remove(self.node_name2module[node.name])
                     for inp in node.input:
                         if inp in self.initializer_name2module.keys():
