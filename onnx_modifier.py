@@ -106,13 +106,6 @@ class onnxModifier:
                     struct.pack_into('q', shape, 0, v)
                     init.raw_data = bytes(shape)
             
-    def remove_node_by_name(self, node_name):
-        # remove node in graph
-        self.graph.node.remove(self.node_name2module[node_name])        
-    
-    def remove_model_output_by_name(self, node_name):
-        self.graph.output.remove(self.node_name2module[node_name])
-
     def remove_node_by_node_states(self, node_states):
         # remove node from graph
         for node_name, node_state in node_states.items():
@@ -122,11 +115,11 @@ class onnxModifier:
             if node_state == 'Deleted':
                 if node_name in self.graph_output_names:
                     # print('removing output {} ...'.format(node_name))
-                    self.remove_model_output_by_name(node_name)
+                    self.graph.output.remove(self.node_name2module[node_name])
                 else:
                     # print('removing node {} ...'.format(node_name))
-                    self.remove_node_by_name(node_name)
-        
+                    self.graph.node.remove(self.node_name2module[node_name])
+
         remained_node_inputs = []
         for remained_node in self.graph.node:
             remained_node_inputs += remained_node.input
@@ -235,12 +228,12 @@ class onnxModifier:
         
     def post_process(self):
         def remove_isolated_nodes():
-            # remove the remained corresponding isolated nodes, like Constant
-            remained_node_inputs, remained_node_outputs = [], []
+            # remove the remained isolated nodes, like Constant
+            remained_node_inputs, remained_node_outputs = [], [] # str list
             for remained_node in self.graph.node:
                 remained_node_inputs += remained_node.input
                 remained_node_outputs += remained_node.output
-                
+
             for remained_node in self.graph.node:
                 # delete the node if it does not serve as the input or output of any other nodes
                 unused = True
@@ -251,8 +244,13 @@ class onnxModifier:
                 for input in remained_node.input:
                     if input in remained_node_outputs:
                         unused = False
+                        break
+                    # if the node input is the model input, then save the node 
+                    if input in self.graph_input_names:
+                        unused = False
                         break    
                 if unused:
+                    # print("{} is unused and removed".format(remained_node.name))
                     self.graph.node.remove(self.node_name2module[remained_node.name])
                     for inp in remained_node.input:
                         if inp in self.initializer_name2module.keys():
