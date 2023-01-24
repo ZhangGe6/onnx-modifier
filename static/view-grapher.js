@@ -14,17 +14,7 @@ grapher.Graph = class {
         this._children['\x00'] = {};
         this._parent = {};
 
-        this._modelNodeName2ModelNode = new Map();
-        this._namedEdges = new Map();
-
-        this._pathArgumentNames = new Set();  // the name of arguments which occurs in both sides of an edge
-        this._renameMap = new Map();
-        this._changedAttributes = new Map();
-
-        this._addedNode = new Map();
-        this._addedOutputs = new Set();
-
-        this._reBatchInfo = new Map();
+        // this._pathArgumentNames = new Set();  // the name of arguments which occurs in both sides of an edge
     }
 
     get options() {
@@ -47,10 +37,8 @@ grapher.Graph = class {
         }
 
         const modelNodeName = node.modelNodeName
-        this._modelNodeName2ModelNode.set(modelNodeName, node.value);
         this.modifier.name2ViewNode.set(modelNodeName, node);
         this.modifier.name2ModelNode.set(modelNodeName, node.value);
-
 
         // this.modifier.name2NodeStates save our modifications, and wil be initilized at the first graph construction only
         // otherwise the modfications will lost

@@ -917,7 +917,7 @@ sidebar.ArgumentView = class {
                     inputInitializerVal.cols = 44;
 
                     // reload the last value
-                    var orig_arg_name = this._host._view._graph.getOriginalName(this._param_type, this._modelNodeName, this._param_index, this._arg_index)
+                    var orig_arg_name = this._host._view.modifier.getOriginalName(this._param_type, this._modelNodeName, this._param_index, this._arg_index)
                     if (this._host._view.modifier.initializerEditInfo.get(orig_arg_name)) {
                         // [type, value]
                         inputInitializerVal.innerHTML = this._host._view.modifier.initializerEditInfo.get(orig_arg_name)[1];
@@ -925,7 +925,6 @@ sidebar.ArgumentView = class {
 
                     inputInitializerVal.addEventListener('input', (e) => {
                         // console.log(e.target.value)
-                        // this._host._view._graph.changeInitializer(this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, this._argument.type._dataType, e.target.value);
                         this._host._view.modifier.changeInitializer(this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, this._argument.type._dataType, e.target.value);
                     });
                     this._element.appendChild(inputInitializerVal);

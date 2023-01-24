@@ -1013,6 +1013,7 @@ view.Graph = class extends grapher.Graph {
         for (const output of graph.outputs) {
             const viewOutput = this.createOutput(output);
             for (const argument of output.arguments) {
+                // console.log(argument)
                 this.createArgument(argument).to(viewOutput);
             }
         }
@@ -1302,7 +1303,7 @@ view.Argument = class {
                 // console.log(this.context._namedEdges);
                 
                 // this argument occurs in both sides of the edge, so it is a `path` argument
-                this.context._pathArgumentNames.add(this._argument.name);
+                // this.context._pathArgumentNames.add(this._argument.name);
             }
         }
     }
