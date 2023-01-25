@@ -10,13 +10,13 @@ modifier.Modifier = class {
         this.name2NodeStates = new Map();
         this.addedOutputs = new Set();
         this.addedNode = new Map();
+        this.addNodeKey = 0;
 
         this.namedEdges = new Map();
         this.changedAttributes = new Map();
         this.initializerEditInfo = new Map();
         this.renameMap = new Map();
         this.reBatchInfo = new Map();
-        this._add_nodeKey = 0;
     }
 
     loadModelGraph(model, graphs) {
@@ -41,7 +41,7 @@ modifier.Modifier = class {
 
     // ======= Record modified info =======> //
     addNode(op_domain, op_type) {
-        var node_id = (this._add_nodeKey++).toString();  // in case input (onnx) node has no name
+        var node_id = (this.addNodeKey++).toString();  // in case input (onnx) node has no name
         var modelNodeName = 'custom_added_' + op_type + node_id;
 
         var properties = new Map();

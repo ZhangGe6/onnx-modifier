@@ -64,7 +64,6 @@ class onnxModifier:
         self.initializer_name2module = dict()
         for initializer in self.initializer:
             self.initializer_name2module[initializer.name] = initializer
-        # print(self.initializer_name2module.keys())
     
     def change_batch_size(self, rebatch_info):
         if not (rebatch_info): return
@@ -106,7 +105,7 @@ class onnxModifier:
                     shape = bytearray(init.raw_data)
                     struct.pack_into('q', shape, 0, v)
                     init.raw_data = bytes(shape)
-            
+
     def remove_node_by_node_states(self, node_states):
         # remove node from graph
         for node_name, node_state in node_states.items():
@@ -228,108 +227,67 @@ class onnxModifier:
                 self.initializer_name2module[init_name] = initializer_tensor
 
     def post_process(self):
-        def get_remained_inputs_outputs():
-            remained_inputs, remained_outputs = [], [] # str list
-            for remained_node in self.graph.node:
-                remained_inputs += remained_node.input
-                remained_outputs += remained_node.output
-                print(remained_node.name, remained_node.input, remained_node.output)
-            print("remained_inputs", remained_inputs)
-            print("remained_outputs", remained_outputs)
-            return remained_inputs, remained_outputs
-        
-        def is_isolated_node_check_1(node, remained_inputs, remained_outputs):
-            # 1. if the node does not serve as the input or output of any other nodes
-            for output in node.output:
-                if output in remained_inputs:
-                    # print("its output is served as other nodes' input")
-                    return False
-            for input in node.input:
-                if input in remained_outputs:
-                    # print("its input is served as other nodes' output")
-                    return False
-                # if the node input is the model input, then save the node 
-                if input in self.graph_input_names:
-                    # print("its input is served as model input")
-                    return False
-            return True
-        
-        def is_isolated_node_check_2(node, remained_inputs):
-            # 2. if all the node's inputs are Constant and all its output (node) are deleted
-            # like isolated Concat, Unsqueeze      
-            is_all_input_constant = True
-            # for inp in node.input:
-                # print("dir(inp)", dir(inp))
-                # if not (hasattr(node, "op_type") and node.op_type != "Constant"):
-                #     is_all_input_constant = False
+        def get_tail_outputs():
+            def collect_backtrack(input):
+                if input not in input2nodes.keys(): # if the node has no child node
+                    tail_outputs.add(input)
+                    return
+                
+                node = input2nodes[input]
+                if node in traversed_nodes: return  # if the node has been traversed
+                traversed_nodes.append(node)
+                
+                for node in input2nodes[input]:
+                    for output in node.output:
+                        collect_backtrack(output)
+            
+            input2nodes = dict()
+            for node in self.graph.node:
+                for input in node.input:
+                    if not (input in input2nodes.keys()):
+                        input2nodes[input] = []
+                    input2nodes[input].append(node)        
                     
-                    
-                # if inp in self.initializer_name2module.keys():
-                #     print(dir(self.initializer_name2module[inp]))
-                # if not (inp in self.initializer_name2module.keys() and \
-                # hasattr(self.initializer_name2module[inp], "kind") and \
-                # self.initializer_name2module[inp].kind == "Constant"):
-                #     is_all_input_constant = False
-                #     break
-            print("==> in check 2, {} is_all_input_constant {}".format(node.name, is_all_input_constant))
-            if not is_all_input_constant:
-                return False
-
-            is_all_output_deleted = True
-            for out in node.output:
-                if out in remained_inputs:
-                    is_all_output_deleted = False
-            if is_all_output_deleted:
-                return True
-            
-            return False
-        
-        def is_isolated_nodes(node, remained_inputs, remained_outputs):
-            if is_isolated_node_check_1(node, remained_inputs, remained_outputs):
-                print("{} does not pass check_1".format(node.name))
-                return True
-            if is_isolated_node_check_2(node, remained_inputs):
-                print("{} does not pass check_2".format(node.name))
-                return True
-            return False
-
-        def is_isolated_constant(node, remained_inputs):
-            # print(node.name, dir(node))
-            if hasattr(node, "op_type") and node.op_type != "Constant":
-                return False
-            
-            # print("{} is Constant".format(node.name))
-            
-            is_all_output_deleted = True
-            for out in node.output:
-                if out in remained_inputs:
-                    is_all_output_deleted = False
-            # print("is_all_output_deleted", is_all_output_deleted)
-            if is_all_output_deleted:
-                return True
-            return False
+            tail_outputs = set()
+            traversed_nodes = []
+            for inp in self.graph.input:
+                collect_backtrack(inp.name)
+            # print(tail_outputs)
+            return tail_outputs
             
         def remove_isolated_nodes():
-            remained_inputs, remained_outputs = get_remained_inputs_outputs()
-            for remained_node in self.graph.node:
-                # print(remained_node.name)
-                if is_isolated_nodes(remained_node, remained_inputs, remained_outputs):
-                    print("{} is isolated and removed in round 1".format(remained_node.name))
-                    self.graph.node.remove(self.node_name2module[remained_node.name])
-                    for inp in remained_node.input:
+            def collect_reverse_backtrack(output):
+                if output not in output2node.keys(): return # if the node has no parent node
+                node = output2node[output]
+                if node in connected_nodes: return # if the node has been traversed
+                connected_nodes.append(node)
+                
+                for input in node.input:
+                    collect_reverse_backtrack(input)
+                
+            output2node = dict()
+            for node in self.graph.node:
+                for output in node.output:
+                    output2node[output] = node
+            
+            connected_nodes = []
+            model_tail_outputs = get_tail_outputs()
+            for output in model_tail_outputs:
+                collect_reverse_backtrack(output)
+                   
+            graph_connected_nodes = []
+            graph_connected_initializers = []
+            for node in self.graph.node:
+                if node in connected_nodes:
+                    graph_connected_nodes.append(copy.deepcopy(self.node_name2module[node.name]))
+                    for inp in node.input:
                         if inp in self.initializer_name2module.keys():
-                            self.initializer.remove(self.initializer_name2module[inp])
-
-            remained_inputs, remained_outputs = get_remained_inputs_outputs() # update
-            for remained_node in self.graph.node:
-                print(remained_node.name, is_isolated_constant(remained_node, remained_inputs))
-                if is_isolated_constant(remained_node, remained_inputs):
-                    print("{} is isolated (Constant) and removed in round 2".format(remained_node.name))
-                    self.graph.node.remove(self.node_name2module[remained_node.name])
-                    for inp in remained_node.input:
-                        if inp in self.initializer_name2module.keys():
-                            self.initializer.remove(self.initializer_name2module[inp])
-
+                            graph_connected_initializers.append(copy.deepcopy(self.initializer_name2module[inp]))
+            del self.graph.node[:]
+            del self.initializer[:]
+            self.graph.node.extend(graph_connected_nodes)
+            self.initializer.extend(graph_connected_initializers)
+            
         def shape_inference():
             # [Shape inference is not guaranteed to be complete]
             # https://github.com/onnx/onnx/blob/main/docs/ShapeInference.md
@@ -354,7 +312,7 @@ class onnxModifier:
             # this is a workround. Note that the outputs which are not infered will stay UNCHANGED
             self.graph.output.extend(graph_output_bk)
 
-        remove_isolated_nodes()
+        # remove_isolated_nodes()
         shape_inference()
 
     def modify(self, modify_info):
