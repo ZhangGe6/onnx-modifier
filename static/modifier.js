@@ -8,11 +8,11 @@ modifier.Modifier = class {
         this.name2ModelNode = new Map();
         this.name2ViewNode = new Map();
         this.name2NodeStates = new Map();
+        this.namedEdges = new Map();
+
         this.addedOutputs = new Set();
         this.addedNode = new Map();
         this.addNodeKey = 0;
-
-        this.namedEdges = new Map();
         this.changedAttributes = new Map();
         this.initializerEditInfo = new Map();
         this.renameMap = new Map();
@@ -23,12 +23,13 @@ modifier.Modifier = class {
         this.model = model;
         this.graphs = graphs;
         this.graph = this.graphs[0];
+        // this.analyzeModelGraph();
 
-        this.UpdateAddNodeDropDown();
+        this.updateAddNodeDropDown();
     }
 
     // TODO: add filter feature like here: https://www.w3schools.com/howto/howto_js_dropdown.asp
-    UpdateAddNodeDropDown() {
+    updateAddNodeDropDown() {
         // update dropdown supported node lost
         var addNodeDropdown = this.view._host.document.getElementById('add-node-dropdown');
         for (const node of this.model.supported_nodes) {

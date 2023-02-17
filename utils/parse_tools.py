@@ -29,25 +29,30 @@ def parse_str2np(tensor_str, tensor_type):
     tensor_str = tensor_str.replace("\n", "")
     # preprocess for tensor_type: extract type info in case users input type+shape, like `float32[1,3,1,1]``
     tensor_type = tensor_type.split("[")[0]
-    stk = []
-    for c in tensor_str: # '['  ','  ']' '.' '-' or value
-        if c == ",":
-            ext_val = extract_val()
-            if ext_val is not None: stk.append(ext_val)
-        elif c == "]":
-            ext_val = extract_val()
-            if ext_val is not None: stk.append(ext_val)
-            
-            arr = []
-            while stk[-1] != '[':
-                arr.append(stk.pop())
-            stk.pop()  # the left [
-            
-            arr.reverse()
-            stk.append(arr)
-        else:
-            stk.append(c)
-    val = stk[0]
+    # for vector
+    if "[" in tensor_str:
+        stk = []
+        for c in tensor_str: # '['  ','  ']' '.' '-' or value
+            if c == ",":
+                ext_val = extract_val()
+                if ext_val is not None: stk.append(ext_val)
+            elif c == "]":
+                ext_val = extract_val()
+                if ext_val is not None: stk.append(ext_val)
+                
+                arr = []
+                while stk[-1] != '[':
+                    arr.append(stk.pop())
+                stk.pop()  # the left [
+                
+                arr.reverse()
+                stk.append(arr)
+            else:
+                stk.append(c)
+        val = stk[0]
+    # for scalar
+    else:
+        val = tensor_str
     
     # wrap with numpy with the specific data type
     if tensor_type == "int64":
@@ -114,7 +119,11 @@ def np2onnxdtype(np_dtype):
 
 if __name__ == "__main__":
     def test_parse_str2np():
-        # tensor_str = "1"
+        # tensor_str = "1.223"
+        tensor_str = "0.023"
+        val = parse_str2np(tensor_str, "float32")
+        print(type(val), val)
+        
         # tensor_str = "[1, 2, 3]"
         tensor_str = "[[10, 2.3, 3],[1, 2e6, 3]]"
         val = parse_str2np(tensor_str, "float32")
@@ -123,7 +132,7 @@ if __name__ == "__main__":
         tensor_str = "[[10, 2, 3],[1, 2, 3]]"
         val = parse_str2np(tensor_str, "int64")
         print(type(val), val)
-    # test_parse_str2np()
+    test_parse_str2np()
     
     def test_parse_str2val():
         val_str = "1"
@@ -141,6 +150,6 @@ if __name__ == "__main__":
         # val_str = "float"
         val = parse_str2val(val_str, "DataType")
         print(val)
-    test_parse_str2val()
+    # test_parse_str2val()
     
     

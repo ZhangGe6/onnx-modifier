@@ -1,9 +1,14 @@
 # onnx-modifier update log
 
+## 20230125
+- fix the model output lost issue due to incomplete shape_inference
+- refactor modify operations into modifier.js
+
 ## 20221209
 - support removing legacy isolated nodes (like Constant) automatically
 - support more flexible node attribute parsing
 - some issue fixing and function improvements towards more user-friendly operations.
+- add shape_inference feature when saving model
 
 ## 20221026
 - support scrolling to the last page position when updating model
