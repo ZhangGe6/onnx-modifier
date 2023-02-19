@@ -6,13 +6,13 @@ from onnx import TensorProto
 # parse numpy values from string
 def parse_str2np(tensor_str, tensor_type):
     def parse_value(value_str, value_type):
-        if value_type.startswith('int'):
+        if value_type.startswith('int') or value_type.startswith('uint'):
             return int(value_str)
         elif value_type.startswith('float'):
             return float(value_str)
         else:
-            raise RuntimeError("type {} is not considered in current version. \
-                                You can kindly report an issue for this problem. Thanks!".format(value_type))
+            raise RuntimeError("type {} is not considered in current version.\n \
+                                You are kindly to report an issue for this problem. Thanks!".format(value_type))
 
     def extract_val():
         num_str = ""
@@ -55,20 +55,15 @@ def parse_str2np(tensor_str, tensor_type):
         val = tensor_str
     
     # wrap with numpy with the specific data type
-    if tensor_type == "int64":
-        return np.array(val, dtype=np.int64)
-    elif tensor_type == "int32":
-        return np.array(val, dtype=np.int32)
-    elif tensor_type == "int8":
-        return np.array(val, dtype=np.int8)
-    elif tensor_type == "float64":
-        return np.array(val, dtype=np.float64)
-    elif tensor_type == "float32":
-        return np.array(val, dtype=np.float32)
-    else:
-        raise RuntimeError("type {} is not considered in current version. \
-                            Current supported types are: int64, int32, int8, float64 and float32. \
-                            You can kindly report an issue for this problem. Thanks!".format(tensor_type))
+    try:
+        return np.array(val, getattr(np, tensor_type))
+    except:
+        raise RuntimeError("Type {} is not supported.\n \
+                            You can check all supported datatypes in \
+                                https://numpy.org/doc/stable/user/basics.types.html or \
+                                https://www.tutorialspoint.com/numpy/numpy_data_types.htm . \
+                            If the problem still exists, \
+                            you are kindly to report an issue. Thanks!".format(tensor_type))
     
 # parse Python or onnx built-in values from string
 def parse_str2val(val_str, val_type):
@@ -106,10 +101,10 @@ def parse_str2val(val_str, val_type):
         return getattr(TensorProto, val_str.upper())
         
     else:
-        raise RuntimeError("type {} is not considered in current version. \
+        raise RuntimeError("type {} is not considered in current version.\n \
                             Current supported types are: int, int32, int64, int[], int32[], int64[], \
-                            float, float32, float64 and float[], float32[], float64[]. \
-                            You can kindly report an issue for this problem. Thanks!".format(val_type))
+                            float, float32, float64 and float[], float32[], float64[].\n \
+                            You are kindly to report an issue for this problem. Thanks!".format(val_type))
 
 
 # map np datatype to onnx datatype
@@ -118,21 +113,45 @@ def np2onnxdtype(np_dtype):
     return cast(int, NP_TYPE_TO_TENSOR_TYPE[np_dtype])
 
 if __name__ == "__main__":
+    
+    def tmp_debug():
+        val = 0.0171247538316637
+        np_fp32 = np.array(val, dtype=np.float32)
+        np_fp64 = np.array(val, dtype=np.float64)
+        np_fp64_conv = np.array(np_fp32, dtype=np.float64)
+
+        print(val)
+        np.set_printoptions(precision=20)
+        print(np_fp32)
+        print(np_fp64)
+        print(np_fp32 == np_fp64)
+        
+        print(np_fp64_conv)
+        
+        pass
+    # tmp_debug()
+    
     def test_parse_str2np():
-        # tensor_str = "1.223"
-        tensor_str = "0.023"
-        val = parse_str2np(tensor_str, "float32")
-        print(type(val), val)
+        # # tensor_str = "1.223"
+        # tensor_str = "0.023"
+        # val = parse_str2np(tensor_str, "float32")
+        # print(type(val), val)
         
-        # tensor_str = "[1, 2, 3]"
-        tensor_str = "[[10, 2.3, 3],[1, 2e6, 3]]"
-        val = parse_str2np(tensor_str, "float32")
-        print(type(val), val)
+        # # tensor_str = "[1, 2, 3]"
+        # tensor_str = "[[10, 2.3, 3],[1, 2e6, 3]]"
+        # val = parse_str2np(tensor_str, "float32")
+        # print(type(val), val)
         
-        tensor_str = "[[10, 2, 3],[1, 2, 3]]"
-        val = parse_str2np(tensor_str, "int64")
-        print(type(val), val)
-    test_parse_str2np()
+        # tensor_str = "[[10, 2, 3],[1, 2, 3]]"
+        # val = parse_str2np(tensor_str, "int64")
+        # print(type(val), val)
+        
+        init_val_str = '[[[[0.0171247538316637]],[[0.0175070028011204]],[[0.0174291938997821]]]]'
+        init_type = 'float32'
+        init_val = parse_str2np(init_val_str, init_type)
+        # print(init_val)
+        pass
+    # test_parse_str2np()
     
     def test_parse_str2val():
         val_str = "1"
