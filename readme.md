@@ -95,12 +95,11 @@ Click `Open Model...` to upload the ONNX model to edit. The model will be parsed
 
 # Usage
 
-Graph-level-operation elements are placed on the left-top of the page. Currently, there are four buttons: `Refresh`, `Reset`, `Download` and `Add node`. They can do:
-- `Refresh`: Refresh the model graph to preview editing effects.
-
-  > In this version, the model graph is refreshed automatically as soon as an editing operation is invoked. So this button can be used much fewer than earlier versions.
+Graph-level-operation elements are placed on the left-top of the page. Currently, there are three buttons:  `Reset`, `Download` and `Add node`. They can do:
 - `Reset`: Reset the whole model graph to its initial state;
-- `Download`: Save the modified model into disk.
+- `Download`: Save the modified model into disk. Note the two checkboxes on the right
+  - (**experimental**) select `shape inferece` to do [shape inferece](https://github.com/onnx/onnx/blob/main/docs/ShapeInference.md) when saving model.
+  - (**experimental**)  select `clean up` to remove the unused nodes and tensors (like [ONNX GraphSurgeon](https://docs.nvidia.com/deeplearning/tensorrt/onnx-graphsurgeon/docs/ir/graph.html#onnx_graphsurgeon.Graph.cleanup)).
 - `Add node`: Add a new node into the model.
 
 Node-level-operation elements are all in the sidebar, which can be invoked by clicking a specific node.

@@ -201,16 +201,27 @@ host.BrowserHost = class {
             click: () => this._about()
         });
 
-        const refreshButton = this.document.getElementById('refresh-graph');
-        refreshButton.addEventListener('click', () => {
-            this._view._updateGraph();
-        })
+        // const refreshButton = this.document.getElementById('refresh-graph');
+        // refreshButton.addEventListener('click', () => {
+        //     this._view._updateGraph();
+        // })
 
         const resetButton = this.document.getElementById('reset-graph');
         resetButton.addEventListener('click', () => {
             // this._view._graph.resetGraph();
             // this._view._updateGraph();
             this._view.modifier.resetGraph();
+        })
+
+        const downloadWithShapeInfCheckBox = this.document.getElementById('shapeInference');
+        downloadWithShapeInfCheckBox.addEventListener('click', () => {
+            // console.log(downloadWithShapeInfCheckBox.checked);
+            this._view.modifier.onOffShapeInf(downloadWithShapeInfCheckBox.checked);
+        })
+        const downloadWithCleanUp = this.document.getElementById('cleanUp');
+        downloadWithCleanUp.addEventListener('click', () => {
+            // console.log(downloadWithCleanUp.checked);
+            this._view.modifier.onOffCleanUp(downloadWithCleanUp.checked);
         })
 
         const downloadButton = this.document.getElementById('download-graph');
@@ -235,7 +246,8 @@ host.BrowserHost = class {
                     'added_outputs' : this.arrayToObject(this.process_added_outputs(this._view.modifier.addedOutputs, 
                         this._view.modifier.renameMap, this._view.modifier.name2NodeStates)),
                     'rebatch_info' : this.mapToObjectRec(this._view.modifier.reBatchInfo),
-                    'changed_initializer' : this.mapToObjectRec(this._view.modifier.initializerEditInfo)
+                    'changed_initializer' : this.mapToObjectRec(this._view.modifier.initializerEditInfo),
+                    'postprocess_args' : {'shapeInf' : this._view.modifier.downloadWithShapeInf, 'cleanUp' : this._view.modifier.downloadWithCleanUp}
                 })
             }).then(function (response) {
                 return response.text();

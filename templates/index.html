@@ -46,19 +46,6 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
 .toolbar-back-button:hover { background: #000000; border-color: #000000; }
 .toolbar-name-button { float: left; background: rgba(255, 255, 255, 0.95); border-top-right-radius: 6px; border-bottom-right-radius: 6px; border: 1px solid #777; color: #777; border-left: 1px; border-left-color: #ffffff; margin: 2px 0 2px 0; padding: 0 12px 0 6px; cursor: pointer; width: auto; height: 20px; font-size: 11px; line-height: 0; transition: 0.1s; }
 .toolbar-name-button:hover { color: #000000; }
-.graph-op-button-refresh {
-    cursor: pointer;
-    background-color: white;
-    border: 1px solid grey;
-    border-radius: 3px;
-    color: black;
-    font-family:"Oliviar Sans Light";
-    font-size: 16px;
-    position:absolute;
-    left: 2px;
-    top: 30px;
-}
-.graph-op-button-refresh:active {  background: #e7e7e7; }
 .graph-op-button-reset {
     cursor: pointer;
     background-color: white;
@@ -66,10 +53,10 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
     border-radius: 3px;
     color: black;
     font-family:"Oliviar Sans Light";
-    font-size: 16px;
+    font-size: 20px;
     position:absolute;
     left: 2px;
-    top: 60px;
+    top: 30px;
 }
 .graph-op-button-reset:active {  background: #e7e7e7; }
 .graph-op-button-download {
@@ -79,12 +66,44 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
     border-radius: 3px;
     color: black;
     font-family:"Oliviar Sans Light";
-    font-size: 16px;
+    font-size: 20px;
     position:absolute;
     left: 2px;
-    top: 90px;
+    top: 65px;
 }
 .graph-op-button-download:active {  background: #e7e7e7; }
+.download-checkbox-shapeInference {
+    position:absolute;
+    left: 120px;
+    top: 62px;
+    width: 15px;
+    height: 15px;
+}
+.download-anno-shapeInference {
+    position:absolute;
+    left: 140px;
+    top: 62px;
+    font-family:"Oliviar Sans Light";
+    font-size: 10px;
+    border:none
+}
+
+.download-checkbox-cleanUp {
+    position:absolute;
+    left: 120px;
+    top: 80px;
+    width: 15px;
+    height: 15px;
+}
+.download-anno-cleanUp {
+    position:absolute;
+    left: 140px;
+    top: 80px;
+    font-family:"Oliviar Sans Light";
+    font-size: 10px;
+    border:none
+}
+
 .graph-op-button-addNode {
     cursor: pointer;
     background-color: white;
@@ -92,17 +111,17 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
     border-radius: 3px;
     color: black;
     font-family:"Oliviar Sans Light";
-    font-size: 16px;
+    font-size: 20px;
     position:absolute;
     left: 2px;
-    top: 120px;
+    top: 100px;
 }
 .graph-op-button-addNode:active {  background: #e7e7e7; }
 .graph-op-add-node-dropdown {
-
+    font-size: 15px;
     position:absolute;
     left: 2px;
-    top: 150px;
+    top: 135px;
 }
 .icon .border { stroke: #fff; }
 .icon .stroke { stroke: #808080; }
@@ -270,9 +289,12 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
         </svg>
     </button>
 
-    <button id="refresh-graph" class="graph-op-button-refresh">Refresh</button>
     <button id="reset-graph" class="graph-op-button-reset">Reset</button>
     <button id="download-graph" class="graph-op-button-download">Download</button>
+    <input type="checkbox" id="shapeInference" class="download-checkbox-shapeInference"/> 
+    <input type="text" value="shape inference" class="download-anno-shapeInference" readonly/> </td>
+    <input type="checkbox" id="cleanUp" class="download-checkbox-cleanUp"/> 
+    <input type="text" value="clean up" class="download-anno-cleanUp" readonly/> </td>
     <button id="add-node" class="graph-op-button-addNode">Add node</button>
     <select id="add-node-dropdown" class="graph-op-add-node-dropdown">
     </select>
@@ -294,7 +316,7 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
 
     <div class="center logo-message">
         <div style="height: 30px; text-align: center;">Version <span id="version" class="select">{version}</span></div>
-        <div style="height: 30px; text-align: center;">Copyright &copy; <a href="https://github.com/ZhangGe6" target="blank_">Lutz Roeder</a></div>
+        <div style="height: 30px; text-align: center;">Copyright &copy; <a href="https://github.com/ZhangGe6" target="blank_">ZhangGe6</a></div>
     </div>
     <a id="logo-github" class="center logo-github" href="https://github.com/ZhangGe6/onnx-modifier" target="blank_">
         <svg viewbox="0 0 438.549 438.549">

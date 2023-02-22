@@ -17,6 +17,10 @@ modifier.Modifier = class {
         this.initializerEditInfo = new Map();
         this.renameMap = new Map();
         this.reBatchInfo = new Map();
+
+        this.downloadWithShapeInf = false;
+        this.downloadWithCleanUp = false;
+
     }
 
     loadModelGraph(model, graphs) {
@@ -220,6 +224,16 @@ modifier.Modifier = class {
             this.reBatchInfo.set("type", "dynamic");
             this.reBatchInfo.set("value", "dynamic");
         }
+    }
+
+    onOffShapeInf(turnedOn) {
+        if (turnedOn)  this.downloadWithShapeInf = true;
+        else this.downloadWithShapeInf = false;
+    }
+
+    onOffCleanUp(turnedOn) {
+        if (turnedOn)  this.downloadWithCleanUp= true;
+        else this.downloadWithCleanUp = false;
     }
     // <======= Record modified info ======= //
 

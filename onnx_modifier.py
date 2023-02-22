@@ -226,7 +226,8 @@ class onnxModifier:
                 self.initializer.append(initializer_tensor)
                 self.initializer_name2module[init_name] = initializer_tensor
 
-    def post_process(self):
+    def post_process(self, kwargs):
+        
         def get_tail_outputs():
             def collect_backtrack(input):
                 if input not in input2nodes.keys(): # if the node has no child node
@@ -312,8 +313,15 @@ class onnxModifier:
             # this is a workround. Note that the outputs which are not infered will stay UNCHANGED
             self.graph.output.extend(graph_output_bk)
 
-        # remove_isolated_nodes()
-        shape_inference()
+        useShapeInference = kwargs.pop("shapeInf", False)
+        useCleanUp = kwargs.pop("cleanUp", False)
+        
+        if useShapeInference:
+            print("[EXPERIMENTAL] Do shape inference automatically...")
+            shape_inference()
+        if useCleanUp:
+            print("[EXPERIMENTAL] Remove idle nodes...")
+            remove_isolated_nodes()
 
     def modify(self, modify_info):
         '''
@@ -337,7 +345,7 @@ class onnxModifier:
         self.modify_node_io_name(modify_info['node_renamed_io'])
         self.modify_node_attr(modify_info['node_changed_attr'])
 
-        self.post_process()
+        self.post_process(modify_info['postprocess_args'])
 
     def check_and_save_model(self, save_dir='./modified_onnx'):
         print("saving model...")

@@ -55,16 +55,13 @@
 
 # 用法
 
-
-图结构层级的操作按钮放置在可视化页面的左上角，目前有四个：`Refresh`，`Reset`，`Download`和`Add node`. 它们的功能分别为：
-
-- `Refresh`：刷新界面，预览当前编辑得到的模型图结构；
-
-  > 在当前版本里，模型图结构会在每次编辑操作后即时自动更新，无需手动刷新。所以该按钮用到的次数会比之前的版本里少上不少（解放双手:raised_hands:）。
+图结构层级的操作按钮放置在可视化页面的左上角，目前有三个：`Reset`，`Download`和`Add node`. 它们的功能分别为：
 
 - `Reset`：重置模型图结构为导入时的初始状态；
 
-- `Download`：保存编辑后的模型文件到本地。
+- `Download`：保存编辑后的模型文件到本地。按钮右边的两个复选框（**对应功能可能还不够鲁棒**）
+  - 如果选中`shape inferece`，那么会在保存模型时自动做[形状推导](https://github.com/onnx/onnx/blob/main/docs/ShapeInference.md)
+  - 如果选中`clean up`，则会在保存时自动删掉无用节点 (类似[ONNX GraphSurgeon](https://docs.nvidia.com/deeplearning/tensorrt/onnx-graphsurgeon/docs/ir/graph.html#onnx_graphsurgeon.Graph.cleanup))。
 
 - `Add node`：向当前模型中，添加新节点。
 
