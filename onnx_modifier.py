@@ -194,9 +194,21 @@ class onnxModifier:
         added_output_names = added_outputs.values()
         if len(added_output_names) == 0: return
         # print(self.graph_output_names)
-        for name in added_output_names:
-            self.graph_output_names.append("out_" + name)
-            # then the actual output will be added in post_process()->shape_inference()
+        added_output_protoes = []
+        shape_info = onnx.shape_inference.infer_shapes(self.model_proto)
+        for value_info in shape_info.graph.value_info:
+            if value_info.name in added_output_names:
+                added_output_protoes.append(value_info)
+                added_output_names = [name for name in added_output_names if name != value_info.name]
+        if len(added_output_names) > 0:
+            print("[Warning]: Fail to add the following outputs due to an incomplete shape_inference()")
+            for n in added_output_names: print(n)
+            return
+
+        for output in added_output_protoes:
+            self.graph.output.append(output)
+            self.graph_output_names.append("out_" + output.name)
+            self.node_name2module["out_" + output.name] = output 
 
     def modify_initializer(self, changed_initializer):
         # print(changed_initializer)
