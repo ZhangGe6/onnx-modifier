@@ -439,6 +439,7 @@ onnx.Graph = class {
         this._custom_add_node_io_idx = 0
         this._custom_added_node = []
         this._custom_added_outputs = []
+        this._custom_deleted_outputs = []
         
         // model parameter assignment here!
         // console.log(graph)
@@ -507,7 +508,13 @@ onnx.Graph = class {
 
     get outputs() {
         // return this._outputs;
-        return this._outputs.concat(this._custom_added_outputs);
+        var all_outputs = this._outputs.concat(this._custom_added_outputs);
+        var filtered_outputs = [];
+        for (const out of all_outputs) {
+            if (this._custom_deleted_outputs.includes(out.name)) continue;
+            filtered_outputs.push(out);
+        }
+        return filtered_outputs;
     }
 
     get nodes() {
@@ -659,8 +666,9 @@ onnx.Graph = class {
         return custom_add_node;
     }
 
-    reset_custom_added_outputs() {
+    reset_custom_modified_outputs() {
         this._custom_added_outputs = [];
+        this._custom_deleted_outputs = [];
     }
 
     add_output(name) {
@@ -668,6 +676,9 @@ onnx.Graph = class {
         this._custom_added_outputs.push(new onnx.Parameter(name, [ argument ]));
     }
 
+    delete_output(name) {
+        this._custom_deleted_outputs.push(name);
+    }
 };
 
 onnx.Parameter = class {

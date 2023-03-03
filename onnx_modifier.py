@@ -116,9 +116,11 @@ class onnxModifier:
                 if node_name in self.graph_output_names:
                     # print('removing output {} ...'.format(node_name))
                     self.graph.output.remove(self.node_name2module[node_name])
+                    self.graph_output_names = [n for n in self.graph_output_names if n != node_name]
                 else:
                     # print('removing node {} ...'.format(node_name))
                     self.graph.node.remove(self.node_name2module[node_name])
+                self.node_name2module.pop(node_name, None)
 
         remained_inputs = []
         for remained_node in self.graph.node:

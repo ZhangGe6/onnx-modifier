@@ -1041,10 +1041,11 @@ sidebar.ArgumentView = class {
 
 sidebar.ModelSidebar = class {
 
-    constructor(host, model, graph) {
+    constructor(host, model, graph, clicked_output_name) {
         this._host = host;
         this._model = model;
         this._elements = [];
+        this.clicked_output_name = clicked_output_name
 
         if (model.format) {
             this._addProperty('format', new sidebar.ValueTextView(this._host, model.format));
@@ -1136,7 +1137,11 @@ sidebar.ModelSidebar = class {
         
         this._addHeader('Batch size changing helper');
         this._addRebatcher();
-
+        
+        if (this.clicked_output_name) {
+            this._addHeader('Output deleting helper');
+            this._addButton('Delete the output');
+        }
     }
 
     render() {
@@ -1183,6 +1188,12 @@ sidebar.ModelSidebar = class {
         if (title === 'Dynamic batch size') {
             buttonElement.addEventListener('click', () => {
                 this._host._view.modifier.changeBatchSize("dynamic");
+            });
+        }
+
+        if (title == 'Delete the output') {
+            buttonElement.addEventListener('click', () => {
+                this._host._view.modifier.deleteModelOutput(this.clicked_output_name);
             });
         }
     }

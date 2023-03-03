@@ -758,10 +758,10 @@ view.View = class {
         }
     }
 
-    showModelProperties() {
+    showModelProperties(clicked_output_name) {
         if (this._model) {
             try {
-                const modelSidebar = new sidebar.ModelSidebar(this._host, this._model, this.activeGraph);
+                const modelSidebar = new sidebar.ModelSidebar(this._host, this._model, this.activeGraph, clicked_output_name);
                 modelSidebar.on('update-active-graph', (sender, graph) => {
                     this._updateActiveGraph(graph);
                 });
@@ -1228,7 +1228,7 @@ view.Output = class extends grapher.Node {
         }
         const header = this.header();
         const title = header.add(null, [ 'graph-item-output' ], name, types);
-        title.on('click', () => this.context.view.showModelProperties());
+        title.on('click', () => this.context.view.showModelProperties(modelNodeName));
     }
 
     get inputs() {

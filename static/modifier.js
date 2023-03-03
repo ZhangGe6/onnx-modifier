@@ -65,6 +65,11 @@ modifier.Modifier = class {
         this.applyAndUpdateView();
     }
 
+    deleteModelOutput(output_name) {
+        this.name2NodeStates.set(output_name, 'Deleted');  // "out_" + xxx
+        this.applyAndUpdateView();
+    }
+
     deleteSingleNode(node_name) {
         this.name2NodeStates.set(node_name, 'Deleted');
         this.name2ViewNode.get(node_name).element.style.opacity = 0.3;
@@ -277,7 +282,7 @@ modifier.Modifier = class {
         }
         // console.log(this.graph.outputs)
         // create and add new output to graph
-        this.graph.reset_custom_added_outputs();
+        this.graph.reset_custom_modified_outputs();
         for (var output_name of this.addedOutputs) {
             this.graph.add_output(output_name);
         }
@@ -292,7 +297,7 @@ modifier.Modifier = class {
 
                 output.arguments[0] = arg_with_new_name;
 
-                // change all the name of node input linked with model input meanwhile
+                // change all the name of node output linked with the model output meanwhile
                 for (var node of this.graph._nodes) {
                     for (var node_output of node.outputs) {
                         for (const [index, element] of node_output.arguments.entries()) {
@@ -314,6 +319,13 @@ modifier.Modifier = class {
                         }
                     }
                 }
+            }
+        }
+        
+        for (var output of this.graph.outputs) {
+            var output_orig_name = output.arguments[0].original_name;
+            if (this.name2NodeStates.get('out_' + output_orig_name) == "Deleted") {
+                this.graph.delete_output(output_orig_name);
             }
         }
     }
@@ -444,7 +456,7 @@ modifier.Modifier = class {
         this.addedNode = new Map();
         this.graph.reset_custom_added_node();
         this.addedOutputs = [];
-        this.graph.reset_custom_added_outputs();
+        this.graph.reset_custom_modified_outputs();
 
         // reset load location
         var container = this.view._getElementById('graph');
