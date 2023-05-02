@@ -455,7 +455,7 @@ modifier.Modifier = class {
         // clear custom added nodes
         this.addedNode = new Map();
         this.graph.reset_custom_added_node();
-        this.addedOutputs = [];
+        this.addedOutputs = new Set();
         this.graph.reset_custom_modified_outputs();
 
         // reset load location
