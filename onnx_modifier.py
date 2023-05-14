@@ -10,8 +10,9 @@ import warnings
 import numpy as np
 import onnx
 from onnx import numpy_helper
-from utils import make_new_node, make_attr_changed_node
 from utils import parse_str2np, np2onnxdtype
+from utils import make_new_node, make_attr_changed_node
+from utils import add_outputs_using_onnx_tool
 
 class onnxModifier:
     def __init__(self, model_name, model_proto):
@@ -191,21 +192,25 @@ class onnxModifier:
             # update the node_name2module
             self.node_name2module[node.name] = node
 
-    def add_outputs(self, added_outputs):
+    def add_outputs(self, outputs):
         # https://github.com/onnx/onnx/issues/3277#issuecomment-1050600445
-        added_output_names = added_outputs.values()
-        if len(added_output_names) == 0: return
+        output_names = outputs.values()
+        if len(output_names) == 0: return
         # print(self.graph_output_names)
         added_output_protoes = []
         shape_info = onnx.shape_inference.infer_shapes(self.model_proto)
         for value_info in shape_info.graph.value_info:
-            if value_info.name in added_output_names:
+            if value_info.name in output_names:
                 added_output_protoes.append(value_info)
-                added_output_names = [name for name in added_output_names if name != value_info.name]
-        if len(added_output_names) > 0:
-            print("[Warning]: Fail to add the following outputs due to an incomplete shape_inference()")
-            for n in added_output_names: print(n)
-            return
+                output_names = [name for name in output_names if name != value_info.name]
+        if len(output_names) > 0:
+            print("[Warning]: Fail to add the following outputs due to an incomplete shape_inference() " + \
+                "of primitive onnx package")
+            for n in output_names: print(n)
+            # return
+            print("[Info]: Try to inference their shape using onnx-tool (https://pypi.org/project/onnx-tool/)")
+            aux_output_protoes = add_outputs_using_onnx_tool(output_names, self.model_proto)
+            added_output_protoes += aux_output_protoes
 
         for output in added_output_protoes:
             self.graph.output.append(output)
