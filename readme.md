@@ -38,7 +38,7 @@ Clone the repo and install the required Python packages by
 git clone git@github.com:ZhangGe6/onnx-modifier.git
 cd onnx-modifier
 
-pip install onnx flask
+pip install -r requirements.txt
 ```
 
 Then run
@@ -222,3 +222,4 @@ For quick testing, some typical sample models are provided as following. Most of
 - [onnx-utils](https://github.com/saurabh-shandilya/onnx-utils)
 - [sweetalert](https://github.com/t4t5/sweetalert)
 - [flaskwebgui](https://github.com/ClimenteA/flaskwebgui)
+- [onnx-tool](https://github.com/ThanatosShinji/onnx-tool)

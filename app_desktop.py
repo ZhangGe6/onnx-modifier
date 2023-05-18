@@ -1,7 +1,13 @@
+import os
 import sys
 sys.path.append("../../")
 
-from flaskwebgui import FlaskUI
+try:
+    from flaskwebgui import FlaskUI
+except ModuleNotFoundError:
+    os.system("pip install flaskwebgui==0.3.5")
+    from flaskwebgui import FlaskUI
+    
 from app import app
 
 FlaskUI(app, maximized=True, idle_interval=3).run()

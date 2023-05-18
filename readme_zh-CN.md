@@ -37,7 +37,7 @@
   git clone git@github.com:ZhangGe6/onnx-modifier.git
   cd onnx-modifier
   
-  pip install onnx flask
+  pip install -r requirements.txt
   ```
 
 - 运行 
@@ -183,3 +183,4 @@
 - ONNX IO Stream [Leimao's Blog](https://leimao.github.io/blog/ONNX-IO-Stream/)
 - [onnx-utils](https://github.com/saurabh-shandilya/onnx-utils)
 - [sweetalert](https://github.com/t4t5/sweetalert)
+- [onnx-tool](https://github.com/ThanatosShinji/onnx-tool)

@@ -7,7 +7,7 @@ def add_outputs_using_onnx_tool(output_names, model_proto):
         import onnx_tool
         print("module 'onnx-tool' is installed")
     except ModuleNotFoundError:
-        os.system("pip install onnx-tool")
+        os.system("pip install onnx-tool==0.6.4")
         import onnx_tool
     
     g = onnx_tool.Graph(model_proto.graph, verbose=False)
@@ -20,7 +20,3 @@ def add_outputs_using_onnx_tool(output_names, model_proto):
             out_protos.append(proto)
     
     return out_protos
-
-
-
-    
