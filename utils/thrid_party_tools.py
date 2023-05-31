@@ -1,22 +1,22 @@
 import os
+try:
+    import onnx_tool
+    print("module 'onnx-tool' is installed")
+except ModuleNotFoundError:
+    os.system("pip install onnx-tool==0.6.4")
+    import onnx_tool
 
-def add_outputs_using_onnx_tool(output_names, model_proto):
-    try:
-        # pip page: https://pypi.org/project/onnx-tool/
-        # github page: https://github.com/ThanatosShinji/onnx-tool 
-        import onnx_tool
-        print("module 'onnx-tool' is installed")
-    except ModuleNotFoundError:
-        os.system("pip install onnx-tool==0.6.4")
-        import onnx_tool
-    
+def shape_inference_using_onnx_tool(model_proto):
     g = onnx_tool.Graph(model_proto.graph, verbose=False)
     g.shape_infer()
     
-    out_protos = []
-    for name in output_names:
-        if name in g.tensormap:
-            proto = g.tensormap[name].make_value_proto()
-            out_protos.append(proto)
-    
-    return out_protos
+    value_protos = []
+    for key in g.dynamics:
+        tensor = g.tensormap[key]
+        vinfo = tensor.make_value_proto()
+        if vinfo is None:
+            continue
+        if vinfo not in value_protos:
+            value_protos.append(vinfo)
+
+    return value_protos

@@ -12,7 +12,7 @@ import onnx
 from onnx import numpy_helper
 from utils import parse_str2np, np2onnxdtype
 from utils import make_new_node, make_attr_changed_node
-from utils import add_outputs_using_onnx_tool
+from utils import shape_inference_using_onnx_tool
 
 class onnxModifier:
     def __init__(self, model_name, model_proto):
@@ -196,26 +196,13 @@ class onnxModifier:
         # https://github.com/onnx/onnx/issues/3277#issuecomment-1050600445
         output_names = outputs.values()
         if len(output_names) == 0: return
-        # print(self.graph_output_names)
-        added_output_protoes = []
-        shape_info = onnx.shape_inference.infer_shapes(self.model_proto)
-        for value_info in shape_info.graph.value_info:
-            if value_info.name in output_names:
-                added_output_protoes.append(value_info)
-                output_names = [name for name in output_names if name != value_info.name]
-        if len(output_names) > 0:
-            print("[Warning]: Fail to add the following outputs due to an incomplete shape_inference() " + \
-                "of primitive onnx package")
-            for n in output_names: print(n)
-            # return
-            print("[Info]: Try to inference their shape using onnx-tool (https://pypi.org/project/onnx-tool/)")
-            aux_output_protoes = add_outputs_using_onnx_tool(output_names, self.model_proto)
-            added_output_protoes += aux_output_protoes
+        inferred_value_info = shape_inference_using_onnx_tool(copy.deepcopy(self.model_proto))
 
-        for output in added_output_protoes:
-            self.graph.output.append(output)
-            self.graph_output_names.append("out_" + output.name)
-            self.node_name2module["out_" + output.name] = output 
+        for info in inferred_value_info:
+            if info.name in output_names:
+                self.graph.output.append(info)
+                self.graph_output_names.append("out_" + info.name)
+                self.node_name2module["out_" + info.name] = info 
 
     def modify_initializer(self, changed_initializer):
         # print(changed_initializer)
@@ -309,28 +296,16 @@ class onnxModifier:
             self.initializer.extend(graph_connected_initializers)
             
         def shape_inference():
-            # [Shape inference is not guaranteed to be complete]
-            # https://github.com/onnx/onnx/blob/main/docs/ShapeInference.md
-            # clear the existed value_info and replace them with newly inferred one
-            del self.graph.value_info[:]
-            # clear output, otherwise infer_shapes() could fail due to shape inconsistency
-            graph_output_bk = copy.deepcopy(self.graph.output)
-            del self.graph.output[:]
-            inferred_shape_info = onnx.shape_inference.infer_shapes(self.model_proto)
-            # print(inferred_shape_info.graph.value_info)
-            for value_info in inferred_shape_info.graph.value_info:
-                self.graph.value_info.append(value_info)
+            inferred_shape_info = shape_inference_using_onnx_tool(
+                                        copy.deepcopy(self.model_proto))
 
-            # update output
-            inferred_output = []
-            for value_info in inferred_shape_info.graph.value_info:
-                if "out_" + value_info.name in self.graph_output_names:
-                    inferred_output.append(value_info)
-                    graph_output_bk = [out for out in graph_output_bk if out.name != value_info.name]
-            self.graph.output.extend(inferred_output)
-            # when infer_shapes() is not complete, some output would lost
-            # this is a workround. Note that the outputs which are not infered will stay UNCHANGED
-            self.graph.output.extend(graph_output_bk)
+            del self.graph.value_info[:]
+            del self.graph.output[:]
+            for info in inferred_shape_info:
+                if "out_" + info.name in self.graph_output_names:
+                    self.graph.output.append(info)
+                else:
+                    self.graph.value_info.append(info)
 
         useShapeInference = kwargs.pop("shapeInf", False)
         useCleanUp = kwargs.pop("cleanUp", False)

@@ -47,7 +47,7 @@
   ```
 
 ## 从可执行文件启动
-- Windows: 下载可执行文件onnx-modifier.exe (27.6MB) [Google Drive](https://drive.google.com/file/d/1LRXgZauQ5BUENe_PvilRW8WvSO-4Jr9j/view?usp=sharing) / [Baidu NetDisk](https://pan.baidu.com/s/1JnTX2ofkeWT1516CKOqD5g?pwd=cx79)，双击即可启动。
+- Windows: 下载可执行文件onnx-modifier.exe (27.6MB) [Google Drive](https://drive.google.com/file/d/1LRXgZauQ5BUENe_PvilRW8WvSO-4Jr9j/view?usp=sharing) / [Baidu NetDisk](https://pan.baidu.com/s/1yYKeEtPvIQ8GW5GMLV42YQ?pwd=83ex)，双击即可启动。
   - 默认使用Edge浏览器作为运行环境。
 > 生成可执行文件的步骤记录在`app_desktop.py`文件中。未来会为其他平台生成可执行文件。
 
@@ -60,7 +60,8 @@
 - `Reset`：重置模型图结构为导入时的初始状态；
 
 - `Download`：保存编辑后的模型文件到本地。按钮右边的两个复选框（**对应功能可能还不够鲁棒**）
-  - 如果选中`shape inferece`，那么会在保存模型时自动做[形状推导](https://github.com/onnx/onnx/blob/main/docs/ShapeInference.md)
+  - 如果选中`shape inferece`，则会在保存模型时自动做[形状推导](https://github.com/onnx/onnx/blob/main/docs/ShapeInference.md)
+    > 当前形状推导功能基于[onnx-tool](https://github.com/ThanatosShinji/onnx-tool)实现。
   - 如果选中`clean up`，则会在保存时自动删掉无用节点 (类似[ONNX GraphSurgeon](https://docs.nvidia.com/deeplearning/tensorrt/onnx-graphsurgeon/docs/ir/graph.html#onnx_graphsurgeon.Graph.cleanup))。
 
 - `Add node`：向当前模型中，添加新节点。
@@ -183,4 +184,4 @@
 - ONNX IO Stream [Leimao's Blog](https://leimao.github.io/blog/ONNX-IO-Stream/)
 - [onnx-utils](https://github.com/saurabh-shandilya/onnx-utils)
 - [sweetalert](https://github.com/t4t5/sweetalert)
-- [onnx-tool](https://github.com/ThanatosShinji/onnx-tool)
+- [onnx-tool](https://github.com/ThanatosShinji/onnx-tool) 👍
