@@ -196,7 +196,13 @@ class onnxModifier:
         # https://github.com/onnx/onnx/issues/3277#issuecomment-1050600445
         output_names = outputs.values()
         if len(output_names) == 0: return
-        inferred_value_info = shape_inference_using_onnx_tool(copy.deepcopy(self.model_proto))
+        try:
+            inferred_value_info = shape_inference_using_onnx_tool(copy.deepcopy(self.model_proto))
+        except:
+            print("shape inference using onnx-tool fails, fallback to primitive ONNX Python API.")
+            inferred_value_info = []
+            shape_info = onnx.shape_inference.infer_shapes(self.model_proto)
+            inferred_value_info = [v for v in shape_info.graph.value_info]
 
         for info in inferred_value_info:
             if info.name in output_names:
