@@ -61,7 +61,12 @@ modifier.Modifier = class {
     addModelOutput(node_name) {
         var modelNode = this.name2ModelNode.get(node_name);
         // use a output argument as a proxy
-        this.addedOutputs.add(modelNode.outputs[0].arguments[0].name);
+        var output_name = modelNode.outputs[0].arguments[0].name;
+        if (this.name2NodeStates.get("out_" + output_name)) {
+            this.recoverSingleNode("out_" + output_name);
+        } else {
+            this.addedOutputs.add(output_name);
+        }
         this.applyAndUpdateView();
     }
 
