@@ -151,7 +151,7 @@ if __name__ == "__main__":
         init_val = parse_str2np(init_val_str, init_type)
         # print(init_val)
         pass
-    # test_parse_str2np()
+    test_parse_str2np()
     
     def test_parse_str2val():
         val_str = "1"

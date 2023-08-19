@@ -229,6 +229,8 @@ class onnxModifier:
                 init_val_flat = init_val
                 if len(init_val.shape) > 1:
                     init_val_flat = init_val.flatten()
+                if len(init_val.shape) == 0:
+                    init_val_flat = [init_val.item()]
                 initializer_tensor = onnx.helper.make_tensor(
                     name=init_name,
                     data_type=np2onnxdtype(init_val.dtype),
