@@ -6,7 +6,7 @@
 
 - **删除部分节点**。 比如，`ONNX`文件中一些前后处理的算子节点，以方便后续部署。
 - **修改节点输入输出名**。 比如修改某一节点的输入输出名称，更改模型拓扑结构。
-- **编辑节点属性值**。
+- **修改节点属性值**。
 - **增加新节点**。
 
 目前常用的方法是，先可视化模型图结构，然后基于`ONNX`的Python API编写脚本，对模型图结构进行编辑。但这可能需要我们在可视化-脚本-可视化-...之间反复横跳。而且在一张庞大的图上搜集想要修改的节点，也比较繁琐耗时。👋
@@ -15,14 +15,14 @@
 
 目前已支持下列操作：
 
-:white_check_mark: 删除/恢复节点<br>
-:white_check_mark: 修改节点输入输出名<br>
-:white_check_mark: 修改模型输入输出名<br>
-:white_check_mark: 增加模型输出节点<br>
-:white_check_mark: 编辑节点属性值<br>
-:white_check_mark: 增加新节点<br>
-:white_check_mark: 修改模型batch size<br>
-:white_check_mark: 修改模型initializers<br>
+:white_check_mark: [删除/恢复节点](#Delete_or_recover_nodes)<br>
+:white_check_mark: [增加新节点](#Add_new_nodes)<br>
+:white_check_mark: [修改节点输入输出名](#Rename_the_node_inputs_and_outputs)<br>
+:white_check_mark: [修改模型输入输出名](#Rename_the_model_inputs_and_outputs)<br>
+:white_check_mark: [增加模型输出节点](#Add_new_model_outputs)<br>
+:white_check_mark: [修改节点属性值](#Edit_attribute_of_nodes)<br>
+:white_check_mark: [修改模型batch size](#Edit_batch_size)<br>
+:white_check_mark: [修改模型initializers](#Edit_model_initializers)<br>
 
 `onnx-modifier`基于流行的模型可视化工具 [Netron](https://github.com/lutzroeder/netron) 和轻量级Web应用框架 [Flask](https://github.com/pallets/flask) 开发。希望它能给社区带来一些贡献~
 
@@ -70,7 +70,7 @@
 
 一起来详细康康。
 
-## 删除/恢复节点
+## 删除/恢复节点<a id='Delete_or_recover_nodes'></a>
 
 删除节点有两种模式：`Delete With Children` 和 `Delete Single Node`. 后者只删除当前单个节点；而前者还会自动删除以这个节点为根节点的所有子节点，当我们需要删除一长串节点时，这个功能会比较有用。
 
@@ -82,49 +82,7 @@
 
 <img src="./docs/delete_node.gif" style="zoom:75%;" />
 
-## 修改节点输入输出名
-
-通过修改节点的输出输出名，我们可以对模型拓扑结构进行修改（如删除一些预处理/后处理节点）。该功能同样可以用在更改模型的输出的名称（即修改模型叶子节点的输出名）。
-
-那在`onnx-modifer`中要怎么做呢？很简单，找到节点侧边栏的输入输出对应的输入框，键入新的名称就可以啦。图结构会根据键入的名称即时自动刷新。
-
-举个栗子，在下图所示的模型中，我们想要删除预处理对应的节点（`Sub->Mul->Sub->Transpose`），可以这样做：
-
-1. 点击第一个`Conv`节点，在弹出的属性栏中，将输入名称改为*serving_default_input:0* (`data_0`节点的输出名)；
-2. 图结构自动刷新，可以发现，输入节点已经和第一个`Conv`节点直接相连，几个预处理节点也已经从前向图中分离出来，将它们删除；
-3. 完工（点击`Download`就可以获得编辑后的ONNX模型啦）。
-
-> 如果我们希望通过修改，让节点$A$（比如上例中的`data_0`节点）连向节点$B$（比如上例中的第一个`Conv`节点），建议的方式是：将节点$B$的输入名称修改为节点$A$的输出名称，而不是把$A$的输出名称修改为节点$B$的输入名称。 因为节点$B$的输入名称可能同时为其他节点（比如上例中的`Transpose`节点）的输出名称，会导致一些预料外的结果。
-
-上例的修改过程如下图所示：
-
-<img src="./docs/rename_io.gif" style="zoom:75%;" />
-
-## 修改模型输入输出名称
-
-点击模型输入或输出节点，在弹出的侧边栏中，为模型输入输出键入新的名称即可。
-
-![rename_model_io](./docs/rename_model_io.gif)
-
-## 增加模型输出节点
-
-有时候我们需要增加/抽取某个特定节点的输出作为整个模型的输出。比如之前的模型输出节点在编辑过程中被删除了，需要增加新的，或者有时候我们需要抽取一些中间层特征输出做更细致的分析。
-
-通过`onnx-modifier`，我们只需要在对应节点的侧边栏中，点击`Add Output`按钮即可在该节点后部增加一个模型输出节点，其名称与原节点的输出名相同。
-
-如下图，我们增加了两个模型输出节点，分别为第一个卷积层的输出和第二个卷积层的输出。
-
-![add_new_outputs](./docs/add_new_outputs.gif)
-
-## 编辑节点属性值
-
-在节点侧边栏对应的属性值输入框中，键入新的属性值即可。
-
-> 点击属性值输入框右侧的`+`，可显示该属性的参考信息。
-
-<img src="./docs/change_attr.gif" style="zoom:75%;" />
-
-## 增加新节点
+## 增加新节点<a id='Add_new_nodes'></a>
 
 有时候我们希望向模型中添加新节点。`onnx-modifier`已开始支持该功能。
 
@@ -148,14 +106,57 @@
 3. 如果一个属性值是列表类型，则各元素之间使用‘`,`’分隔，无需'[]'。
 4. 在当前版本中，如果一个节点的输入/输出是一个列表类型（如`Concat`），限制最多显示8个。如果一个节点实际输入/输出小于8个，则填写对应数目的输入输出即可，多出来的应以`list_custom`开头，它们会在后续处理中自动被忽略。
 
-## 修改模型batch size
+
+## 修改节点输入输出名<a id='Rename_the_node_inputs_and_outputs'></a>
+
+通过修改节点的输出输出名，我们可以对模型拓扑结构进行修改（如删除一些预处理/后处理节点）。该功能同样可以用在更改模型的输出的名称（即修改模型叶子节点的输出名）。
+
+那在`onnx-modifer`中要怎么做呢？很简单，找到节点侧边栏的输入输出对应的输入框，键入新的名称就可以啦。图结构会根据键入的名称即时自动刷新。
+
+举个栗子，在下图所示的模型中，我们想要删除预处理对应的节点（`Sub->Mul->Sub->Transpose`），可以这样做：
+
+1. 点击第一个`Conv`节点，在弹出的属性栏中，将输入名称改为*serving_default_input:0* (`data_0`节点的输出名)；
+2. 图结构自动刷新，可以发现，输入节点已经和第一个`Conv`节点直接相连，几个预处理节点也已经从前向图中分离出来，将它们删除；
+3. 完工（点击`Download`就可以获得编辑后的ONNX模型啦）。
+
+> 如果我们希望通过修改，让节点$A$（比如上例中的`data_0`节点）连向节点$B$（比如上例中的第一个`Conv`节点），建议的方式是：将节点$B$的输入名称修改为节点$A$的输出名称，而不是把$A$的输出名称修改为节点$B$的输入名称。 因为节点$B$的输入名称可能同时为其他节点（比如上例中的`Transpose`节点）的输出名称，会导致一些预料外的结果。
+
+上例的修改过程如下图所示：
+
+<img src="./docs/rename_io.gif" style="zoom:75%;" />
+
+## 修改模型输入输出名称s<a id='Rename_the_model_inputs_and_outputs'></a>
+
+点击模型输入或输出节点，在弹出的侧边栏中，为模型输入输出键入新的名称即可。
+
+![rename_model_io](./docs/rename_model_io.gif)
+
+## 增加模型输出节点<a id='Add_new_model_outputs'></a>
+
+有时候我们需要增加/抽取某个特定节点的输出作为整个模型的输出。比如之前的模型输出节点在编辑过程中被删除了，需要增加新的，或者有时候我们需要抽取一些中间层特征输出做更细致的分析。
+
+通过`onnx-modifier`，我们只需要在对应节点的侧边栏中，点击`Add Output`按钮即可在该节点后部增加一个模型输出节点，其名称与原节点的输出名相同。
+
+如下图，我们增加了两个模型输出节点，分别为第一个卷积层的输出和第二个卷积层的输出。
+
+![add_new_outputs](./docs/add_new_outputs.gif)
+
+## 修改节点属性值<a id='Edit_batch_size'></a>
+
+在节点侧边栏对应的属性值输入框中，键入新的属性值即可。
+
+> 点击属性值输入框右侧的`+`，可显示该属性的参考信息。
+
+<img src="./docs/change_attr.gif" style="zoom:75%;" />
+
+## 修改模型batch size<a id='Edit_batch_size'></a>
 动态batch size和固定batch size均已支持。
 - 动态batch size：点击`Dynamic batch size`即可；
 - 动态bacth size：在`Fixed batch size`后方输入框内填入预期的batch size值；
 
 <img src="./docs/rebatch.gif" style="zoom:75%;" />
 
-## 修改模型initializers
+## 修改模型initializers<a id='Edit_model_initializers'></a>
 有时候我们要修改一些保存在模型initializer中的数值，比如卷积层的权重/偏置参数，`Reshape`节点的`shape`参数等。使用`onnx-modifier`，这一操作将非常简单：在对应节点侧边栏的initializer中键入新的数值，点击`Download`即可。
 
 <img src="./docs/edit_initializer.gif" style="zoom:75%;" />

@@ -14,14 +14,14 @@ Then `onnx-modifier` comes. With it, we can focus on editing the model graph in 
 
 Currently, the following editing operations are supported:
 
-:white_check_mark: Delete/recover nodes<br>
-:white_check_mark: Rename the node inputs/outputs<br>
-:white_check_mark: Rename the model inputs/outputs<br>
-:white_check_mark: Add new model outputs<br>
-:white_check_mark: Edit the attribute of nodes<br>
-:white_check_mark: Add new nodes<br>
-:white_check_mark: Change batch size<br>
-:white_check_mark: Edit model initializers<br>
+:white_check_mark: [Delete/recover nodes](#Delete_or_recover_nodes)<br>
+:white_check_mark: [Add new nodes](#Add_new_nodes)<br>
+:white_check_mark: [Rename the node inputs/outputs](#Rename_the_node_inputs_and_outputs)<br>
+:white_check_mark: [Rename the model inputs/outputs](#Rename_the_model_inputs_and_outputs)<br>
+:white_check_mark: [Add new model outputs](#Add_new_model_outputs)<br>
+:white_check_mark: [Edit attribute of nodes](#Edit_attribute_of_nodes)<br>
+:white_check_mark: [Edit batch size](#Edit_batch_size)<br>
+:white_check_mark: [Edit model initializers](#Edit_model_initializers)<br>
 
 Here is the [update log](./docs/update_log.md) and [TODO list](./docs/todo_list.md).
 
@@ -107,7 +107,7 @@ Node-level-operation elements are all in the sidebar, which can be invoked by cl
 
 Let's take a closer look.
 
-## Delete/recover nodes
+## Delete/recover nodes<a id='Delete_or_recover_nodes'></a>
 There are two modes for deleting node: `Delete With Children` and `Delete Single Node`. `Delete Single Node` only deletes the clicked node, while `Delete With Children` also deletes all the node rooted on the clicked node, which is convenient and natural if we want to delete a long path of nodes.
 
 > The implementation of `Delete With Children` is based on the backtracking algorithm.
@@ -118,46 +118,7 @@ The following figure shows a typical deleting process:
 
 <img src="./docs/delete_node.gif" style="zoom:75%;" />
 
-## Rename the name of node inputs/outputs
-
-By changing the input/output name of nodes, we can change the model forward path. It can also be helpful if we want to rename the model output(s).
-
-Using `onnx-modifier`, we can achieve this by simply enter a new name for node inputs/outputs in its corresponding input placeholder. The graph topology is updated automatically and instantly, according to the new names.
-
-For example,  Now we want remove the preprocess operators (`Sub->Mul->Sub->Transpose`) shown in the following figure. We can
-
-1. Click on the 1st `Conv` node, rename its input (X) as *serving_default_input:0* (the output of node `data_0`).
-2. The model graph is updated automatically and we can see the input node links to the 1st `Conv`directly. In addition, the preprocess operators have been split from the main routine. Delete them.
-3. We are done! (click `Download`, then we can get the modified ONNX model).
-
-> Note: To link node $A$ (`data_0` in the above example) to node $B$ (the 1st `Conv` in the above example), **it is suggested to edit the input of node $B$ to the output of node `A`, rather than edit the output of node $A$ to the input of node `B`.** Because the input of $B$ can also be other node's output (`Transpose`  in the above example ) and unexpected result will happen.
-
-The process is shown in the following figure:
-
-<img src="./docs/rename_io.gif" style="zoom:75%;" />
-
-## Rename the model inputs/outputs
-Click the model input/output node, type a new name in the sidebar, then we are done.
-
-![rename_model_io](./docs/rename_model_io.gif)
-
-## Add new model outputs
-
-Sometimes we want to add/extract the output of a certain node as model output. For example, we want to add a new model output after the old one was deleted, or extract intermediate layer output for fine-grained analysis. In `onnx-modifier`, we can achieve this by simply clicking the `Add Output` button in the sidebar of the corresponding node. Then we can get a new model output node following the corresponding node. Its name is the same as the output of the corresponding node.  
-
-In the following example, we add 2 new model outputs, which are the outputs of the 1st `Conv` node and 2nd `Conv` node, respectively.
-
-![add_new_outputs](./docs/add_new_outputs.gif)
-
-## Edit the attribute of nodes
-
-Change the original attribute to a new value, then we are done.
-
-> By clicking the `+` in the right side of placeholder, we can get some helpful reference.
-
-<img src="./docs/change_attr.gif" style="zoom:75%;" />
-
-## Add new node
+## Add new nodes<a id='Add_new_nodes'></a>
 Sometimes we want to add new nodes into the existed model. `onnx-modifier` supports this feature experimentally now.
 
 Note there is an `Add node` button, following with a selector elements on the top-left of the index page. To do this, what we need to do is as easy as 3 steps:
@@ -182,7 +143,46 @@ The following are some notes for this feature:
 
 4. For the `Inputs/Outputs` with type `list`, it is forced to be at most 8 elements in the current version. If the actual inputs/outputs number is less than 8, we can leave the unused items with the name starting with `list_custom`, and they will be automatically omitted.
 
-## Change batch size
+## Rename the name of node inputs/outputs<a id='Rename_the_node_inputs_and_outputs'></a>
+
+By changing the input/output name of nodes, we can change the model forward path. It can also be helpful if we want to rename the model output(s).
+
+Using `onnx-modifier`, we can achieve this by simply enter a new name for node inputs/outputs in its corresponding input placeholder. The graph topology is updated automatically and instantly, according to the new names.
+
+For example,  Now we want remove the preprocess operators (`Sub->Mul->Sub->Transpose`) shown in the following figure. We can
+
+1. Click on the 1st `Conv` node, rename its input (X) as *serving_default_input:0* (the output of node `data_0`).
+2. The model graph is updated automatically and we can see the input node links to the 1st `Conv`directly. In addition, the preprocess operators have been split from the main routine. Delete them.
+3. We are done! (click `Download`, then we can get the modified ONNX model).
+
+> Note: To link node $A$ (`data_0` in the above example) to node $B$ (the 1st `Conv` in the above example), **it is suggested to edit the input of node $B$ to the output of node `A`, rather than edit the output of node $A$ to the input of node `B`.** Because the input of $B$ can also be other node's output (`Transpose`  in the above example ) and unexpected result will happen.
+
+The process is shown in the following figure:
+
+<img src="./docs/rename_io.gif" style="zoom:75%;" />
+
+## Rename the model inputs/outputs<a id='Rename_the_model_inputs_and_outputs'></a>
+Click the model input/output node, type a new name in the sidebar, then we are done.
+
+![rename_model_io](./docs/rename_model_io.gif)
+
+## Add new model outputs<a id='Add_new_model_outputs'></a>
+
+Sometimes we want to add/extract the output of a certain node as model output. For example, we want to add a new model output after the old one was deleted, or extract intermediate layer output for fine-grained analysis. In `onnx-modifier`, we can achieve this by simply clicking the `Add Output` button in the sidebar of the corresponding node. Then we can get a new model output node following the corresponding node. Its name is the same as the output of the corresponding node.  
+
+In the following example, we add 2 new model outputs, which are the outputs of the 1st `Conv` node and 2nd `Conv` node, respectively.
+
+![add_new_outputs](./docs/add_new_outputs.gif)
+
+## Edit attribute of nodes<a id='Edit_attribute_of_nodes'></a>
+
+Change the original attribute to a new value, then we are done.
+
+> By clicking the `+` in the right side of placeholder, we can get some helpful reference.
+
+<img src="./docs/change_attr.gif" style="zoom:75%;" />
+
+## Edit batch size<a id='Edit_batch_size'></a>
 `onnx-modifier` supports editing batch size now. Both `Dynamic batch size` and `Fixed batch size` modes are supported.
 - `Dynamic batch size`: Click the `Dynamic batch size` button, then we get a model which supports dynamic batch size inferece;
 - `Fixed batch size`: Input the fixed batch size we want, then we are done;
@@ -193,7 +193,7 @@ Note the differences between `fixed batch size inference` and `dynamic batch siz
 > - When running a model with only fixed dimensions, the ONNX Runtime will prepare and optimize the graph for execution when constructing the Inference Session.
 > -  when the model has dynamic dimensions like batch size, the ONNX Runtime may instead cache optimized graphs for specific batch sizes when inputs are first encountered for that batch size.
 
-## Edit model initializers
+## Edit model initializers<a id='Edit_model_initializers'></a>
 Sometimes we want to edit the values which are stored in model initializers, such as the weight/bias of a convolution layer and the shape parameter of a `Reshape` node. `onnx-modifier` supports this feature now! Input a new value for the initializer in the invoked sidebar and click Download, then we are done.
 
 <img src="./docs/edit_initializer.gif" style="zoom:75%;" />
