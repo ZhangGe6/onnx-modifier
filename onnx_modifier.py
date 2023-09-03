@@ -12,7 +12,7 @@ import onnx
 from onnx import numpy_helper
 from utils import parse_str2np, np2onnxdtype
 from utils import make_new_node, make_attr_changed_node
-from utils import shape_inference_using_onnx_tool
+from utils import get_infered_shape
 
 class onnxModifier:
     def __init__(self, model_name, model_proto):
@@ -71,41 +71,43 @@ class onnxModifier:
         # https://github.com/onnx/onnx/issues/2182
         rebatch_type = rebatch_info['type']
         rebatch_value = rebatch_info['value']
+        # print(rebatch_type, rebatch_value)
         if rebatch_type == 'fixed':
             rebatch_value = int(rebatch_value)
-        # print(rebatch_type, rebatch_value)
-
-        # Change batch size in input, output and value_info
-        for tensor in list(self.graph.input) + list(self.graph.value_info) + list(self.graph.output):
-            if type(rebatch_value) == str:
+            for tensor in self.graph.input:
+                if type(rebatch_value) == str:
+                    tensor.type.tensor_type.shape.dim[0].dim_param = rebatch_value
+                elif type(rebatch_value) == int:
+                    tensor.type.tensor_type.shape.dim[0].dim_value = rebatch_value
+                else:
+                    warnings.warn('Unknown type {} for batch size. Fallback to dynamic batch size.'.format(type(rebatch_value)))
+                    tensor.type.tensor_type.shape.dim[0].dim_param = str(rebatch_value)
+            
+            self.shape_inference()
+        else: # dynamic batch size
+            # Change batch size in input, output and value_info
+            for tensor in list(self.graph.input) + list(self.graph.value_info) + list(self.graph.output):
                 tensor.type.tensor_type.shape.dim[0].dim_param = rebatch_value
-            elif type(rebatch_value) == int:
-                tensor.type.tensor_type.shape.dim[0].dim_value = rebatch_value
-            else:
-                warnings.warn('Unknown type {} for batch size. Fallback to dynamic batch size.'.format(type(rebatch_value)))
-                tensor.type.tensor_type.shape.dim[0].dim_param = str(rebatch_value)
-        # print(type(rebatch_value), self.graph.input[0].type.tensor_type.shape.dim[0].dim_value)
-        # print(type(rebatch_value), self.graph.input[0].type.tensor_type.shape.dim[0].dim_param)
+            # print(type(rebatch_value), self.graph.input[0].type.tensor_type.shape.dim[0].dim_value)
+            # print(type(rebatch_value), self.graph.input[0].type.tensor_type.shape.dim[0].dim_param)
 
-        # handle reshapes
-        for node in self.graph.node:
-            if node.op_type != 'Reshape':
-                continue
-            for init in self.graph.initializer:
-                # node.input[1] is expected to be a reshape
-                if init.name != node.input[1]:
+            # handle reshapes
+            for node in self.graph.node:
+                if node.op_type != 'Reshape':
                     continue
-
-                v = rebatch_value if rebatch_type == 'fixed' else -1
-                # Shape is stored as a list of ints
-                if len(init.int64_data) > 0:
-                    # This overwrites bias nodes' reshape shape but should be fine
-                    init.int64_data[0] = v
-                # Shape is stored as bytes
-                elif len(init.raw_data) > 0:
-                    shape = bytearray(init.raw_data)
-                    struct.pack_into('q', shape, 0, v)
-                    init.raw_data = bytes(shape)
+                for init in self.graph.initializer:
+                    # node.input[1] is expected to be a reshape
+                    if init.name != node.input[1]:
+                        continue
+                    # Shape is stored as a list of ints
+                    if len(init.int64_data) > 0:
+                        # This overwrites bias nodes' reshape shape but should be fine
+                        init.int64_data[0] = -1
+                    # Shape is stored as bytes
+                    elif len(init.raw_data) > 0:
+                        shape = bytearray(init.raw_data)
+                        struct.pack_into('q', shape, 0, -1)
+                        init.raw_data = bytes(shape)
 
     def remove_node_by_node_states(self, node_states):
         # remove node from graph
@@ -196,13 +198,7 @@ class onnxModifier:
         # https://github.com/onnx/onnx/issues/3277#issuecomment-1050600445
         output_names = outputs.values()
         if len(output_names) == 0: return
-        try:
-            inferred_value_info = shape_inference_using_onnx_tool(copy.deepcopy(self.model_proto))
-        except:
-            print("shape inference using onnx-tool fails, fallback to primitive ONNX Python API.")
-            inferred_value_info = []
-            shape_info = onnx.shape_inference.infer_shapes(self.model_proto)
-            inferred_value_info = [v for v in shape_info.graph.value_info]
+        inferred_value_info = get_infered_shape(self.model_proto)
 
         for info in inferred_value_info:
             if info.name in output_names:
@@ -240,6 +236,18 @@ class onnxModifier:
                 self.initializer.append(initializer_tensor)
                 self.initializer_name2module[init_name] = initializer_tensor
 
+    def shape_inference(self):
+        inferred_shape_info = get_infered_shape(copy.deepcopy(self.model_proto))
+
+        del self.graph.value_info[:]
+        del self.graph.output[:]
+        for info in inferred_shape_info:
+            if "out_" + info.name in self.graph_output_names:
+                self.graph.output.append(info)
+            else:
+                self.graph.value_info.append(info)
+    
+                
     def post_process(self, kwargs):
         
         def get_tail_outputs():
@@ -302,25 +310,12 @@ class onnxModifier:
             del self.initializer[:]
             self.graph.node.extend(graph_connected_nodes)
             self.initializer.extend(graph_connected_initializers)
-            
-        def shape_inference():
-            inferred_shape_info = shape_inference_using_onnx_tool(
-                                        copy.deepcopy(self.model_proto))
-
-            del self.graph.value_info[:]
-            del self.graph.output[:]
-            for info in inferred_shape_info:
-                if "out_" + info.name in self.graph_output_names:
-                    self.graph.output.append(info)
-                else:
-                    self.graph.value_info.append(info)
 
         useShapeInference = kwargs.pop("shapeInf", False)
         useCleanUp = kwargs.pop("cleanUp", False)
         
         if useShapeInference:
-            print("[EXPERIMENTAL] Do shape inference automatically...")
-            shape_inference()
+            self.shape_inference()
         if useCleanUp:
             print("[EXPERIMENTAL] Remove idle nodes...")
             remove_isolated_nodes()
