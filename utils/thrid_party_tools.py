@@ -31,10 +31,13 @@ def shape_inference_primitive(model_proto):
 def get_infered_shape(model_proto):
     inferred_value_info = None
     print("[EXPERIMENTAL] Do shape inference automatically...")
-    try:
-        inferred_value_info = shape_inference_using_onnx_tool(copy.deepcopy(model_proto))
-    except:
-        print("shape inference using onnx-tool fails, fallback to primitive ONNX Python API.")
-        inferred_value_info = shape_inference_primitive(copy.deepcopy(model_proto))
+    reset_model_proto = copy.deepcopy(model_proto)
+    del reset_model_proto.graph.value_info[:]
+    del reset_model_proto.graph.output[:]
+    # try:
+    #     inferred_value_info = shape_inference_using_onnx_tool(reset_model_proto)
+    # except:
+    print("shape inference using onnx-tool fails, fallback to primitive ONNX Python API.")
+    inferred_value_info = shape_inference_primitive(reset_model_proto)
     
     return inferred_value_info

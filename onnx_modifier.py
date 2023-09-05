@@ -40,6 +40,7 @@ class onnxModifier:
         self.graph = self.model_proto.graph
         self.initializer = self.model_proto.graph.initializer
 
+        self.need_topsort = False
         self.gen_name2module_map()
 
     def gen_name2module_map(self):
@@ -139,6 +140,8 @@ class onnxModifier:
         for input_name in self.graph_input_names:
             if not input_name in remained_inputs:
                 self.graph.input.remove(self.node_name2module[input_name])
+        
+        self.need_topsort = True
 
     def modify_node_io_name(self, node_renamed_io):
         for node_name in node_renamed_io.keys():
@@ -180,6 +183,8 @@ class onnxModifier:
             # update the node_name2module
             del self.node_name2module[node_name]
             self.node_name2module[node_name] = attr_changed_node
+            
+        self.need_topsort = True
 
     def add_nodes(self, nodes_info, node_states):
         for node_info in nodes_info.values():
@@ -188,11 +193,10 @@ class onnxModifier:
             # print(node_info)
             node = make_new_node(node_info)
             # print(node)
-
             self.graph.node.append(node)
-
             # update the node_name2module
             self.node_name2module[node.name] = node
+        self.need_topsort = True
 
     def add_outputs(self, outputs):
         # https://github.com/onnx/onnx/issues/3277#issuecomment-1050600445
@@ -247,7 +251,56 @@ class onnxModifier:
             else:
                 self.graph.value_info.append(info)
     
-                
+    def toposort(self):
+        # inspired by graphsurgeon
+        # https://github1s.com/NVIDIA/TensorRT/blob/master/tools/onnx-graphsurgeon/onnx_graphsurgeon/ir/graph.py
+        def get_tensor2producer_map():
+            tensor2producer_map = dict()
+            for node in self.graph.node:
+                for output in node.output:
+                    tensor2producer_map[output] = node
+            for inp in self.graph.input:
+                tensor2producer_map[inp.name] = None
+
+            return tensor2producer_map
+                        
+        def get_input_nodes_map():
+            input_nodes = dict()
+            for node in self.graph.node:
+                if node.name not in input_nodes.keys():
+                    input_nodes[node.name] = []
+                for inp in node.input:
+                    # weights are not in tensor2producer_map
+                    if inp in tensor2producer_map.keys():
+                        producer = tensor2producer_map[inp]
+                        input_nodes[node.name].append(producer)
+
+            return input_nodes
+            
+        def get_hierarchy_level(node):
+            if not node: return 0 # for input node
+            if node.name in node_name2hierarchy:
+                return node_name2hierarchy[node.name]
+
+            # The level of a node is the level of it's highest input + 1.
+            max_input_level = max([get_hierarchy_level(input_node) for input_node in input_nodes_map[node.name]] + [-1])
+
+            return max_input_level + 1
+        
+        node_name2hierarchy = dict()
+        tensor2producer_map = get_tensor2producer_map()
+        input_nodes_map = get_input_nodes_map()
+        for node in self.graph.node:
+            node_name2hierarchy[node.name] = get_hierarchy_level(node)
+        # print(node_name2hierarchy)
+        
+        sorted_node_names = [v[0] for v in sorted(node_name2hierarchy.items(), key=lambda x:x[1])]
+        sorted_nodes = []
+        for node_name in sorted_node_names:
+            sorted_nodes.append(copy.deepcopy(self.node_name2module[node_name]))
+        del self.graph.node[:]
+        self.graph.node.extend(sorted_nodes)
+  
     def post_process(self, kwargs):
         
         def get_tail_outputs():
@@ -310,6 +363,7 @@ class onnxModifier:
             del self.initializer[:]
             self.graph.node.extend(graph_connected_nodes)
             self.initializer.extend(graph_connected_initializers)
+            self.need_topsort = True
 
         useShapeInference = kwargs.pop("shapeInf", False)
         useCleanUp = kwargs.pop("cleanUp", False)
@@ -319,6 +373,8 @@ class onnxModifier:
         if useCleanUp:
             print("[EXPERIMENTAL] Remove idle nodes...")
             remove_isolated_nodes()
+        if self.need_topsort:
+            self.toposort()
 
     def modify(self, modify_info):
         '''
@@ -350,10 +406,7 @@ class onnxModifier:
             os.mkdir(save_dir)
         save_path = os.path.join(save_dir, 'modified_' + self.model_name)
 
-        # adding new node like self.add_nodes() and self.modify_node_attr() can not guarantee the nodes are topologically sorted
-        # so `onnx.onnx_cpp2py_export.checker.ValidationError: Nodes in a graph must be topologically sorted` will be invoked
-        # I turn off the onnx checker as a workaround.
-        # onnx.checker.check_model(self.model_proto)
+        onnx.checker.check_model(self.model_proto)
         onnx.save(self.model_proto, save_path)
         print("model saved in {} !".format(save_dir))
 
