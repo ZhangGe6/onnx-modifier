@@ -1,6 +1,6 @@
 <img src="./docs/onnx_modifier_logo.png" style="zoom: 60%;" />
 
-简体中文 | [English](readme.md)
+简体中文 | [English](README.md)
 
 `ONNX`(Open Neural Network Exchange) 是一种针对机器学习所设计的开放式的文件格式，经常作为不同框架模型转化的中间文件。有时我们拿到ONNX文件，想将它进行一些修改，比如：
 
@@ -61,9 +61,10 @@
 
 - `Download`：保存编辑后的模型文件到本地。按钮右边的两个复选框（**对应功能可能还不够鲁棒**）
   - 如果选中`shape inferece`，则会在保存模型时自动做[形状推导](https://github.com/onnx/onnx/blob/main/docs/ShapeInference.md)
+    
     > 当前形状推导功能基于[onnx-tool](https://github.com/ThanatosShinji/onnx-tool)实现。
   - 如果选中`clean up`，则会在保存时自动删掉无用节点 (类似[ONNX GraphSurgeon](https://docs.nvidia.com/deeplearning/tensorrt/onnx-graphsurgeon/docs/ir/graph.html#onnx_graphsurgeon.Graph.cleanup))。
-
+  
 - `Add node`：向当前模型中，添加新节点。
 
 节点层级的操作都在节点侧边栏里，点击某一节点后即可弹出。
