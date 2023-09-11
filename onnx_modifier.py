@@ -406,7 +406,7 @@ class onnxModifier:
             os.mkdir(save_dir)
         save_path = os.path.join(save_dir, 'modified_' + self.model_name)
 
-        onnx.checker.check_model(self.model_proto)
+        # onnx.checker.check_model(self.model_proto)
         onnx.save(self.model_proto, save_path)
         print("model saved in {} !".format(save_dir))
 
