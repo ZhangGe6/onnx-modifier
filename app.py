@@ -25,9 +25,9 @@ def modify_and_download_model():
     # print(modify_info)
     onnx_modifier.reload()   # allow downloading for multiple times
     onnx_modifier.modify(modify_info)
-    onnx_modifier.check_and_save_model()
+    save_path = onnx_modifier.check_and_save_model()
 
-    return 'OK', 200
+    return save_path
 
 def parse_args():
     parser = argparse.ArgumentParser()

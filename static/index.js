@@ -249,22 +249,18 @@ host.BrowserHost = class {
                     'changed_initializer' : this.mapToObjectRec(this._view.modifier.initializerEditInfo),
                     'postprocess_args' : {'shapeInf' : this._view.modifier.downloadWithShapeInf, 'cleanUp' : this._view.modifier.downloadWithCleanUp}
                 })
-            }).then(function (response) {
-                return response.text();
-            }).then(function (text) {
-                console.log('POST response: ');
-                // Should be 'OK' if everything was successful
-                console.log(text);
-                if (text == 'OK') {
-                    // alert("Modified model has been successfuly saved in ./modified_onnx/");
-                    swal("Success!", "Modified model has been successfuly saved in ./modified_onnx/", "success");
-                }
-                else {
-                    // swal("Error happens!", "You are kindly to create an issue on https://github.com/ZhangGe6/onnx-modifier", "error");
+            }).then((response) => {
+                // https://devpress.csdn.net/python/62f517797e66823466189f02.html
+                if (response.status == '200') {
+                    response.text().then(data => {
+                        if (data != "NULL") {
+                            swal("Success!", "Modified model has been successfuly saved in:\n" + data, "success");
+                        }
+                    })
+                } else {
                     swal("Error happens!", "You are kindly to check the log and create an issue on https://github.com/ZhangGe6/onnx-modifier", "error");
-                    // alert('Error happens, you can find it out or create an issue on https://github.com/ZhangGe6/onnx-modifier')
                 }
-            });
+            })
         });
 
         const addNodeButton = this.document.getElementById('add-node');

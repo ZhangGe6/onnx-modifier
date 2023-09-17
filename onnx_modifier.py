@@ -7,6 +7,7 @@ import os
 import copy
 import struct
 import warnings
+import platform
 import numpy as np
 import onnx
 from onnx import numpy_helper
@@ -402,13 +403,32 @@ class onnxModifier:
 
     def check_and_save_model(self, save_dir='./modified_onnx'):
         print("saving model...")
-        if not os.path.exists(save_dir):
-            os.mkdir(save_dir)
-        save_path = os.path.join(save_dir, 'modified_' + self.model_name)
-
+        import tkinter
+        from tkinter import filedialog
+        
         # onnx.checker.check_model(self.model_proto)
-        onnx.save(self.model_proto, save_path)
-        print("model saved in {} !".format(save_dir))
+        if platform.system() == "Windows":
+            window = tkinter.Tk()
+            window.wm_attributes('-topmost', True)
+            window.withdraw()
+            save_path = filedialog.asksaveasfilename(
+                parent=window,
+                initialfile="modified_" + self.model_name,
+                defaultextension=".onnx",
+                filetypes=(("ONNX file", "*.onnx"),("All Files", "*.*"))
+            )
+        else:
+            if not os.path.exists(save_dir):
+                os.mkdir(save_dir)
+            save_path = os.path.join(save_dir, 'modified_' + self.model_name)
+            
+        if save_path:
+            onnx.save(self.model_proto, save_path)
+            print("model saved in {} !".format(save_dir))
+            return save_path
+        else:
+            return "NULL"
+
 
     def inference(self, input_shape=[1, 3, 224, 224], x=None, output_names=None):
         import onnxruntime as rt
