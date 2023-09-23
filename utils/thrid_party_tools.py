@@ -4,7 +4,7 @@ import onnx
 try:
     import onnx_tool
 except ModuleNotFoundError:
-    os.system("pip install onnx-tool==0.6.4")
+    os.system("pip install onnx-tool")
     import onnx_tool
 
 def shape_inference_using_onnx_tool(model_proto):
@@ -34,10 +34,10 @@ def get_infered_shape(model_proto):
     reset_model_proto = copy.deepcopy(model_proto)
     del reset_model_proto.graph.value_info[:]
     del reset_model_proto.graph.output[:]
-    # try:
-    #     inferred_value_info = shape_inference_using_onnx_tool(reset_model_proto)
-    # except:
-    print("shape inference using onnx-tool fails, fallback to primitive ONNX Python API.")
-    inferred_value_info = shape_inference_primitive(reset_model_proto)
+    try:
+        inferred_value_info = shape_inference_using_onnx_tool(reset_model_proto)
+    except:
+        print("shape inference using onnx-tool fails, fallback to primitive ONNX Python API.")
+        inferred_value_info = shape_inference_primitive(reset_model_proto)
     
     return inferred_value_info
