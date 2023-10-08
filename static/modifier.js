@@ -98,40 +98,6 @@ modifier.Modifier = class {
         this.name2ViewNode.get(node_name).element.style.opacity = 1;
     }
 
-    changeNodeInputOutput(modelNodeName, parameterName, param_type, param_index, arg_index, targetValue) {
-        if (this.addedNode.has(modelNodeName)) {  // for custom added node 
-            if (this.addedNode.get(modelNodeName).inputs.has(parameterName)) {
-                var arg_name = this.addedNode.get(modelNodeName).inputs.get(parameterName)[arg_index][0];  // [arg.name, arg.is_optional]
-                // update the corresponding initializer name
-                if (this.initializerEditInfo.has(arg_name)) {
-                    var init_val = this.initializerEditInfo.get(arg_name);
-                    this.initializerEditInfo.set(targetValue, init_val);
-                    this.initializerEditInfo.delete(arg_name);
-                }
-                this.addedNode.get(modelNodeName).inputs.get(parameterName)[arg_index][0] = targetValue;
-            }
-            // console.log(this.initializerEditInfo)
-
-            if (this.addedNode.get(modelNodeName).outputs.has(parameterName)) {
-                this.addedNode.get(modelNodeName).outputs.get(parameterName)[arg_index][0] = targetValue;
-            }
-        }
-        // console.log(this.addedNode)
-
-        else {    // for the nodes in the original model
-            var orig_arg_name = this.getOriginalName(param_type, modelNodeName, param_index, arg_index);
-            // console.log(orig_arg_name)
-
-            if (!this.renameMap.get(modelNodeName)) {
-                this.renameMap.set(modelNodeName, new Map());
-            }
-            this.renameMap.get(modelNodeName).set(orig_arg_name, targetValue);
-            // console.log(this.modifier.renameMap)
-        }
-
-        this.applyAndUpdateView();
-    }
-
     getOriginalName(param_type, modelNodeName, param_index, arg_index) {
         if (param_type == 'model_input') {
             var orig_arg_name = this.name2ModelNode.get(modelNodeName).arguments[0].original_name;
@@ -396,6 +362,7 @@ modifier.Modifier = class {
                 }
             }
         }
+        this.namedEdges = new Map();
     }
 
     refreshNodeAttributes() {
@@ -452,10 +419,11 @@ modifier.Modifier = class {
 
             }
         }
-        this.renameMap = new Map();
+        this.namedEdges = new Map();
         this.changedAttributes = new Map();
-        this.reBatchInfo = new Map();
         this.initializerEditInfo = new Map();
+        this.renameMap = new Map();
+        this.reBatchInfo = new Map();
 
         // clear custom added nodes
         this.addedNode = new Map();
