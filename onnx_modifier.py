@@ -395,8 +395,8 @@ class onnxModifier:
         self.modify_initializer(modify_info['changed_initializer'])
         self.change_batch_size(modify_info['rebatch_info'])
         self.add_outputs(modify_info['added_outputs'])
-        self.remove_node_by_node_states(modify_info['node_states'])
         self.modify_node_io_name(modify_info['node_renamed_io'])
+        self.remove_node_by_node_states(modify_info['node_states'])
         self.modify_node_attr(modify_info['node_changed_attr'])
 
         self.post_process(modify_info['postprocess_args'])
