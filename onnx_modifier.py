@@ -32,7 +32,7 @@ class onnxModifier:
         # https://leimao.github.io/blog/ONNX-IO-Stream/
         print("loading model...")
         stream.seek(0)
-        model_proto = onnx.load_model(stream, onnx.ModelProto, load_external_data=False)
+        model_proto = onnx.load_model(stream, "protobuf", load_external_data=False)
         print("load done!")
         return cls(name, model_proto)
 
