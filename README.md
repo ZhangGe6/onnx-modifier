@@ -14,14 +14,14 @@ Then `onnx-modifier` comes. With it, we can focus on editing the model graph in 
 
 Currently, the following editing operations are supported:
 
-:white_check_mark: [Delete/recover nodes](#Delete_or_recover_nodes)<br>
-:white_check_mark: [Add new nodes](#Add_new_nodes)<br>
-:white_check_mark: [Rename the node inputs/outputs](#Rename_the_node_inputs_and_outputs)<br>
-:white_check_mark: [Rename the model inputs/outputs](#Rename_the_model_inputs_and_outputs)<br>
-:white_check_mark: [Add new model outputs](#Add_new_model_outputs)<br>
-:white_check_mark: [Edit attribute of nodes](#Edit_attribute_of_nodes)<br>
-:white_check_mark: [Edit batch size](#Edit_batch_size)<br>
-:white_check_mark: [Edit model initializers](#Edit_model_initializers)<br>
+:white_check_mark: [Delete nodes](#delete-nodes)<br>
+:white_check_mark: [Add new nodes](#add-new-nodes)<br>
+:white_check_mark: [Rename the node inputs and outputs](#rename-the-node-inputs-and-outputs)<br>
+:white_check_mark: [Rename the model inputs and outputs](#rename-the-model-inputs-and-outputs)<br>
+:white_check_mark: [Add new model outputs](#add-new-model-outputs)<br>
+:white_check_mark: [Edit attribute of nodes](#edit-attribute-of-nodes)<br>
+:white_check_mark: [Edit batch size](#edit-batch-size)<br>
+:white_check_mark: [Edit model initializers](#edit-model-initializers)<br>
 
 Here is the [update log](./docs/update_log.md) and [TODO list](./docs/todo_list.md).
 
@@ -107,7 +107,7 @@ Node-level-operation elements are all in the sidebar, which can be invoked by cl
 
 Let's take a closer look.
 
-## Delete/recover nodes<a id='Delete_or_recover_nodes'></a>
+## Delete nodes
 There are two modes for deleting node: `Delete With Children` and `Delete Single Node`. `Delete Single Node` only deletes the clicked node, while `Delete With Children` also deletes all the node rooted on the clicked node, which is convenient and natural if we want to delete a long path of nodes.
 
 > The implementation of `Delete With Children` is based on the backtracking algorithm.
@@ -118,7 +118,7 @@ The following figure shows a typical deleting process:
 
 <img src="./docs/delete_node.gif" style="zoom:75%;" />
 
-## Add new nodes<a id='Add_new_nodes'></a>
+## Add new nodes
 Sometimes we want to add new nodes into the existed model. `onnx-modifier` supports this feature experimentally now.
 
 Note there is an `Add node` button, following with a selector elements on the top-left of the index page. To do this, what we need to do is as easy as 3 steps:
@@ -143,7 +143,7 @@ The following are some notes for this feature:
 
 4. For the `Inputs/Outputs` with type `list`, it is forced to be at most 8 elements in the current version. If the actual inputs/outputs number is less than 8, we can leave the unused items with the name starting with `list_custom`, and they will be automatically omitted.
 
-## Rename the name of node inputs/outputs<a id='Rename_the_node_inputs_and_outputs'></a>
+## Rename the node inputs and outputs
 
 By changing the input/output name of nodes, we can change the model forward path. It can also be helpful if we want to rename the model output(s).
 
@@ -161,12 +161,12 @@ The process is shown in the following figure:
 
 <img src="./docs/rename_io.gif" style="zoom:75%;" />
 
-## Rename the model inputs/outputs<a id='Rename_the_model_inputs_and_outputs'></a>
+## Rename the model inputs and outputs
 Click the model input/output node, type a new name in the sidebar, then we are done.
 
 ![rename_model_io](./docs/rename_model_io.gif)
 
-## Add new model outputs<a id='Add_new_model_outputs'></a>
+## Add new model outputs
 
 Sometimes we want to add/extract the output of a certain node as model output. For example, we want to add a new model output after the old one was deleted, or extract intermediate layer output for fine-grained analysis. In `onnx-modifier`, we can achieve this by simply clicking the `Add Output` button in the sidebar of the corresponding node. Then we can get a new model output node following the corresponding node. Its name is the same as the output of the corresponding node.  
 
@@ -174,7 +174,7 @@ In the following example, we add 2 new model outputs, which are the outputs of t
 
 ![add_new_outputs](./docs/add_new_outputs.gif)
 
-## Edit attribute of nodes<a id='Edit_attribute_of_nodes'></a>
+## Edit attribute of nodes
 
 Change the original attribute to a new value, then we are done.
 
@@ -182,7 +182,7 @@ Change the original attribute to a new value, then we are done.
 
 <img src="./docs/change_attr.gif" style="zoom:75%;" />
 
-## Edit batch size<a id='Edit_batch_size'></a>
+## Edit batch size
 `onnx-modifier` supports editing batch size now. Both `Dynamic batch size` and `Fixed batch size` modes are supported.
 - `Dynamic batch size`: Click the `Dynamic batch size` button, then we get a model which supports dynamic batch size inferece;
 - `Fixed batch size`: Input the fixed batch size we want, then we are done;
@@ -193,12 +193,16 @@ Note the differences between `fixed batch size inference` and `dynamic batch siz
 > - When running a model with only fixed dimensions, the ONNX Runtime will prepare and optimize the graph for execution when constructing the Inference Session.
 > -  when the model has dynamic dimensions like batch size, the ONNX Runtime may instead cache optimized graphs for specific batch sizes when inputs are first encountered for that batch size.
 
-## Edit model initializers<a id='Edit_model_initializers'></a>
-Sometimes we want to edit the values which are stored in model initializers, such as the weight/bias of a convolution layer and the shape parameter of a `Reshape` node. `onnx-modifier` supports this feature now! Input a new value for the initializer in the invoked sidebar and click Download, then we are done.
+## Edit model initializers
+Sometimes we want to edit the values which are stored in model initializers, such as the weight/bias of a convolution layer or the shape parameter of a `Reshape` node. `onnx-modifier` supports this feature now! Input a new value for the initializer in the invoked sidebar and click Download, then we are done.
 
 <img src="./docs/edit_initializer.gif" style="zoom:75%;" />
 
 > Note: For the newly added node, we should also input the datatype of the initializer. (If we are not sure what the datatype is, click `NODE PROPERTIES->type->?`, we may get some clues.)
+
+> The latest version (after 2023.12.10) supports reading initializer values from numpy file! Just click the "Open *.npy" button and select the numpy file, the values will be parsed and shown in the above placeholder. The valus can be furtherly editted.
+
+<img src="./docs/edit_initializer_from_npy.png" style="zoom:50%;" />
 
 # Sample models
 

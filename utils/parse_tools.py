@@ -27,6 +27,7 @@ def parse_str2np(tensor_str, tensor_type):
     # preprocess for tensor_str: remove blank and newline character
     tensor_str = tensor_str.replace(" ", "")
     tensor_str = tensor_str.replace("\n", "")
+    tensor_str = tensor_str.replace("\t", "")
     # preprocess for tensor_type: extract type info in case users input type+shape, like `float32[1,3,1,1]``
     tensor_type = tensor_type.split("[")[0]
     # for vector
@@ -58,12 +59,9 @@ def parse_str2np(tensor_str, tensor_type):
     try:
         return np.array(val, getattr(np, tensor_type))
     except:
-        raise RuntimeError("Type {} is not supported.\n \
-                            You can check all supported datatypes in \
-                                https://numpy.org/doc/stable/user/basics.types.html or \
-                                https://www.tutorialspoint.com/numpy/numpy_data_types.htm . \
-                            If the problem still exists, \
-                            you are kindly to report an issue. Thanks!".format(tensor_type))
+        raise RuntimeError("Parse tensor fails!" + \
+                          f"tensor type: {tensor_type}" + \
+                          f"tensor value: {val}")
     
 # parse Python or onnx built-in values from string
 def parse_str2val(val_str, val_type):
@@ -101,12 +99,12 @@ def parse_str2val(val_str, val_type):
         return getattr(TensorProto, val_str.upper())
         
     else:
-        raise RuntimeError("type {} is not considered in current version.\n \
-                            Current supported types are: int, int32, int64, int[], int32[], int64[], \
-                            float, float32, float64 and float[], float32[], float64[].\n \
-                            You are kindly to report an issue for this problem. Thanks!".format(val_type))
-
-
+        raise RuntimeError(f"type {val_type} is not considered in current version.\n" + \
+                            "Currently supported types are:\n" + \
+                            " - int, int32, int64, int[], int32[], int64[]\n" + \
+                            " - float, float32, float64 and float[], float32[], float64[].\n" + \
+                            "You are kindly to report an issue for this problem. Thanks!")
+        
 # map np datatype to onnx datatype
 # https://github.com/onnx/onnx/blob/8669fad0247799f4d8683550eec749974b4f5338/onnx/helper.py#L1177
 def np2onnxdtype(np_dtype):

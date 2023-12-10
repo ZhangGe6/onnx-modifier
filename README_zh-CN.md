@@ -164,6 +164,10 @@
 
 > 如果要修改我们**新增加的**节点的initializer，除了键入其数值之外，还要键入其数据类型。（如果我们不确定数据类型，可以点击`NODE PROPERTIES->type->?`，在弹出的节点的详细介绍界面中，可能会找到线索。）
 
+> 当前版本已支持从numpy文件中读取initializer数据。点击“Open *.npy”按钮，在弹出的对话框中选择numpy文件，数据便会自动解析并呈现在上方的输入框中，也支持在读取的数据基础上进一步编辑。
+
+<img src="./docs/edit_initializer_from_npy.png" style="zoom:50%;" />
+
 `onnx-modifer`正在活跃地更新中:hammer_and_wrench:。 欢迎使用，提issue，如果有帮助的话，感谢给个:star:~
 
 # 示例模型文件

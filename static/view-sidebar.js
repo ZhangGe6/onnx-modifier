@@ -1,6 +1,7 @@
 
 var sidebar = sidebar || {};
 var base = base || require('./base');
+var npyjs = npyjs || require('./npyjs');
 
 sidebar.Sidebar = class {
 
@@ -922,12 +923,54 @@ sidebar.ArgumentView = class {
                         // [type, value]
                         inputInitializerVal.innerHTML = this._host._view.modifier.initializerEditInfo.get(orig_arg_name)[1];
                     }
-
                     inputInitializerVal.addEventListener('input', (e) => {
                         // console.log(e.target.value)
-                        this._host._view.modifier.changeInitializer(this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, this._argument.type._dataType, e.target.value);
+                        this._host._view.modifier.changeInitializer(this._modelNodeName, this._parameterName, this._param_type, this._param_index,
+                                                                    this._arg_index, this._argument.type._dataType, e.target.value);
                     });
                     this._element.appendChild(inputInitializerVal);
+
+                    const editInitializerNumpyVal = this._host.document.createElement('div');
+                    editInitializerNumpyVal.className = 'sidebar-view-item-value-line-border';
+                    editInitializerNumpyVal.innerHTML = 'Or import from a *.npy file:';
+                    this._element.appendChild(editInitializerNumpyVal);
+
+                    const openFileButton_ = this._host.document.createElement('button');
+                    openFileButton_.setAttribute("display", "none");
+                    openFileButton_.innerHTML = "Open *.npy"
+                    const openFileDialog_ = this._host.document.createElement('input');
+                    openFileDialog_.setAttribute("type", "file");
+
+                    openFileButton_.addEventListener('click', () => {
+                        openFileDialog_.value = '';
+                        openFileDialog_.click();
+                    });
+                    
+                    openFileDialog_.addEventListener('change', (e) => {
+                        if (e.target && e.target.files && e.target.files.length > 0) {
+                            var reader = new FileReader();
+                            var context = this;
+                            reader.onload = function() {
+                                var npLoader = new npyjs.Npyjs();
+                                npLoader.load(reader.result, (out) => {
+                                    // `array` is a one-dimensional array of the raw data
+                                    // `shape` is a one-dimensional array that holds a numpy-style shape.
+                                    // console.log(
+                                    //     `You loaded an array with ${out.shape} \nelements: ${out.data}.`
+                                    // );
+                                    var fmt_tensor = npLoader.format_np(out.data, out.shape);
+                                    context._host._view.modifier.changeInitializer(context._modelNodeName, context._parameterName, context._param_type, context._param_index,
+                                                                                   context._arg_index, context._argument.type._dataType, fmt_tensor);
+                                    // [type, value]
+                                    inputInitializerVal.innerHTML = context._host._view.modifier.initializerEditInfo.get(orig_arg_name)[1];
+                                    inputInitializerVal.setAttribute("tab-size", '10px');
+                                });
+                            };
+                            reader.readAsArrayBuffer(e.target.files[0]);
+                        }
+                    });
+                    this._element.appendChild(openFileButton_);
+                    // this._element.appendChild(openFileDialog_);
                 }
 
                 if (this._argument.is_custom_added) {
