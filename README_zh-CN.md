@@ -20,6 +20,7 @@
 :white_check_mark: [修改节点输入输出名](#Rename_the_node_inputs_and_outputs)<br>
 :white_check_mark: [修改模型输入输出名](#Rename_the_model_inputs_and_outputs)<br>
 :white_check_mark: [增加模型输出节点](#Add_new_model_outputs)<br>
+:white_check_mark: [增加模型输入节点](#Add_new_model_inputs)<br>
 :white_check_mark: [修改节点属性值](#Edit_attribute_of_nodes)<br>
 :white_check_mark: [修改模型batch size](#Edit_batch_size)<br>
 :white_check_mark: [修改模型initializers](#Edit_model_initializers)<br>
@@ -126,7 +127,7 @@
 
 <img src="./docs/rename_io.gif" style="zoom:75%;" />
 
-## 修改模型输入输出名称s<a id='Rename_the_model_inputs_and_outputs'></a>
+## 修改模型输入输出名称<a id='Rename_the_model_inputs_and_outputs'></a>
 
 点击模型输入或输出节点，在弹出的侧边栏中，为模型输入输出键入新的名称即可。
 
@@ -141,6 +142,17 @@
 如下图，我们增加了两个模型输出节点，分别为第一个卷积层的输出和第二个卷积层的输出。
 
 ![add_new_outputs](./docs/add_new_outputs.gif)
+
+## 增加模型输入节点<a id='Add_new_model_inputs'></a>
+
+有时我们需要给模型增加输入。典型的场景是从一个模型中抽取出一个子模型后，这个子模型缺少输入节点。基于onnx-modifier，我们可以通过以下步骤实现：
+
+1. 点击要增加输入的节点，在弹出的侧边栏中，点击“Add Input”按钮；
+2. 此时会弹出对话框。从其中的下拉选择框中选择要增加的输入名称，在下面的输入框中填入shape信息。然后点击confirm按钮即可。
+
+![add_new_inputs](./docs/add_new_inputs_v2.gif)
+
+> 注：输入的shape信息格式应为"dtype[dim0, dim1, ...]"，比如"float32[1,3, 224,224]". 如果输入不符合这种格式，则会在下方显示红色警告信息，同时"confirm"按钮也会失效。有时候，shape信息已经被预先填好了，对应的信息是从模型分析得到的（一般是可以直接使用的）。如果没有被预先填充，则需要我们手工填入。
 
 ## 修改节点属性值<a id='Edit_batch_size'></a>
 
@@ -191,3 +203,4 @@
 - [onnx-utils](https://github.com/saurabh-shandilya/onnx-utils)
 - [sweetalert](https://github.com/t4t5/sweetalert)
 - [onnx-tool](https://github.com/ThanatosShinji/onnx-tool) 👍
+- [Ascend/ait](https://gitee.com/ascend/ait)

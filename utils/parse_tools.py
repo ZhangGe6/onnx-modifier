@@ -12,7 +12,7 @@ def parse_str2np(tensor_str, tensor_type):
             return float(value_str)
         else:
             raise RuntimeError("type {} is not considered in current version.\n \
-                                You are kindly to report an issue for this problem. Thanks!".format(value_type))
+                                Please report an issue for this problem. Thanks!".format(value_type))
 
     def extract_val():
         num_str = ""
@@ -103,12 +103,33 @@ def parse_str2val(val_str, val_type):
                             "Currently supported types are:\n" + \
                             " - int, int32, int64, int[], int32[], int64[]\n" + \
                             " - float, float32, float64 and float[], float32[], float64[].\n" + \
-                            "You are kindly to report an issue for this problem. Thanks!")
+                            "Please report an issue for this problem. Thanks!")
         
 # map np datatype to onnx datatype
 # https://github.com/onnx/onnx/blob/8669fad0247799f4d8683550eec749974b4f5338/onnx/helper.py#L1177
 def np2onnxdtype(np_dtype):
     return cast(int, NP_TYPE_TO_TENSOR_TYPE[np_dtype])
+
+def str2onnxdtype(str_dtype):
+    STR_TYPE_TO_TENSOR_TYPE = {
+        'float32' : int(TensorProto.FLOAT),
+        'uint8'   : int(TensorProto.UINT8),
+        'int8'    : int(TensorProto.INT8),
+        'uint16'  : int(TensorProto.UINT16),
+        'int16' : int(TensorProto.INT16),
+        'int32' : int(TensorProto.INT32),
+        'int64' : int(TensorProto.INT64),
+        'bool' : int(TensorProto.BOOL),
+        'float16': int(TensorProto.FLOAT16),
+        'bfloat16' : int(TensorProto.BFLOAT16), 
+        'float64': int(TensorProto.DOUBLE),
+        'complex64': int(TensorProto.COMPLEX64),
+        'complex128': int(TensorProto.COMPLEX128),
+        'uint32' : int(TensorProto.UINT32),
+        'uint64' : int(TensorProto.UINT64),
+        'string': int(TensorProto.STRING)
+    }
+    return STR_TYPE_TO_TENSOR_TYPE[str_dtype]
 
 if __name__ == "__main__":
     

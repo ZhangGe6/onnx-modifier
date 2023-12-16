@@ -432,6 +432,7 @@ onnx.Graph = class {
         this._outputs = [];
         this._name = graph.name || null;
         this._description = graph.doc_string || '';
+        this._value_info = graph.value_info || null;
 
         context = new onnx.GraphContext(context, graph.node);
         this._context = context;
@@ -440,6 +441,7 @@ onnx.Graph = class {
         this._custom_added_node = []
         this._custom_added_outputs = []
         this._custom_deleted_outputs = []
+        this._custom_added_inputs = []
         
         // model parameter assignment here!
         // console.log(graph)
@@ -503,7 +505,8 @@ onnx.Graph = class {
     }
 
     get inputs() {
-        return this._inputs;
+        var all_inputs = this._inputs.concat(this._custom_added_inputs);
+        return all_inputs;
     }
 
     get outputs() {
@@ -671,9 +674,34 @@ onnx.Graph = class {
         this._custom_deleted_outputs = [];
     }
 
+    reset_custom_modified_inputs() {
+        this._custom_added_inputs = [];
+    }
+
     add_output(name) {
         const argument = this._context.argument(name);
         this._custom_added_outputs.push(new onnx.Parameter(name, [ argument ]));
+    }
+
+    add_input(name_shape_type) {
+        // [name, type[shape]]
+        var name = name_shape_type[0];
+        var shape_type = name_shape_type[1];
+        // valid shape format: dtype[shape], like float32[1,3,224,224]
+        var dtype = shape_type.split("[")[0];
+        var shape_str = shape_type.split("[")[1].split("]")[0];
+        
+        var shape = [];
+        for (const dim of shape_str.split(",")) {
+            shape.push(parseInt(dim));
+        }
+        // console.log(dtype, shape);
+
+        const tensor = this._context.tensor(name);
+        tensor.type = new onnx.TensorType(dtype, new onnx.TensorShape(shape));
+
+        const argument = this._context.argument(name);
+        this._custom_added_inputs.push(new onnx.Parameter(name, [ argument ]));
     }
 
     delete_output(name) {

@@ -11,7 +11,8 @@ import platform
 import numpy as np
 import onnx
 from onnx import numpy_helper
-from utils import parse_str2np, np2onnxdtype
+from utils import parse_str2np, parse_str2val
+from utils import np2onnxdtype, str2onnxdtype
 from utils import make_new_node, make_attr_changed_node
 from utils import get_infered_shape
 
@@ -199,6 +200,20 @@ class onnxModifier:
             self.node_name2module[node.name] = node
         self.need_topsort = True
 
+    def add_inputs(self, inputs):
+        for name_shape in inputs.values():
+            # ['input.4', 'float32[1,8,96,96]']
+            name = name_shape[0]
+            dtype = name_shape[1].split("[")[0]
+            onnx_dtype = str2onnxdtype(dtype)
+            shape_str = name_shape[1].split("[")[1].split("]")[0]
+            shape = parse_str2val(shape_str, "int[]")
+            value_info = onnx.helper.make_tensor_value_info(
+                                        name, onnx_dtype, shape)
+            self.graph.input.append(value_info)
+            self.graph_input_names.append(value_info.name)
+            self.node_name2module[value_info.name] = value_info 
+        
     def add_outputs(self, outputs):
         # https://github.com/onnx/onnx/issues/3277#issuecomment-1050600445
         output_names = outputs.values()
@@ -393,6 +408,7 @@ class onnxModifier:
 
         self.add_nodes(modify_info['added_node_info'], modify_info['node_states'])
         self.modify_initializer(modify_info['changed_initializer'])
+        self.add_inputs(modify_info['added_inputs'])
         self.change_batch_size(modify_info['rebatch_info'])
         self.add_outputs(modify_info['added_outputs'])
         self.modify_node_io_name(modify_info['node_renamed_io'])
@@ -403,24 +419,11 @@ class onnxModifier:
 
     def check_and_save_model(self, save_dir='./modified_onnx'):
         print("saving model...")
-        import tkinter
-        from tkinter import filedialog
         
         # onnx.checker.check_model(self.model_proto)
-        if platform.system() == "Windows":
-            window = tkinter.Tk()
-            window.wm_attributes('-topmost', True)
-            window.withdraw()
-            save_path = filedialog.asksaveasfilename(
-                parent=window,
-                initialfile="modified_" + self.model_name,
-                defaultextension=".onnx",
-                filetypes=(("ONNX file", "*.onnx"),("All Files", "*.*"))
-            )
-        else:
-            if not os.path.exists(save_dir):
-                os.mkdir(save_dir)
-            save_path = os.path.join(save_dir, 'modified_' + self.model_name)
+        if not os.path.exists(save_dir):
+            os.mkdir(save_dir)
+        save_path = os.path.join(save_dir, 'modified_' + self.model_name)
             
         if save_path:
             onnx.save(self.model_proto, save_path)

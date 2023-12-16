@@ -212,8 +212,10 @@ sidebar.NodeSidebar = class {
         this.add_separator(this._elements, 'sidebar-view-separator')
         this._addButton('Enter');
     
-        this._addHeader('Output adding helper');
+        this._addHeader('Model Input Output editing helper');
         this._addButton('Add Output');
+        this.add_span();
+        this._addButton('Add Input');
     }
 
     add_separator(elment, className) {
@@ -313,6 +315,73 @@ sidebar.NodeSidebar = class {
         if (title === 'Add Output') {
             buttonElement.addEventListener('click', () => {
                 this._host._view.modifier.addModelOutput(this._modelNodeName);
+            });   
+        }
+        if (title === 'Add Input') {
+            buttonElement.addEventListener('click', () => {
+                // show dialog
+                let select_elem = document.getElementById('add-input-dropdown');
+                select_elem.options.length = 0;
+                for (var input of this._node.inputs) {
+                    for (var arg of input.arguments) {
+                        if (arg.initializer) continue;
+                        select_elem.appendChild(new Option(arg.name));
+                    }
+                }
+                
+                let shape_elem = document.getElementById('add-input-shape-placeholder');
+                var default_shape = this._host._view.modifier.getShapeInfo(select_elem.options[0].value);
+                if (!default_shape) {
+                    shape_elem.classList.add('input_error');
+                    document.getElementById('confirm-enable').disabled = 'disabled';
+                } else {
+                    // shape_elem.classList.add('input_info');
+                    shape_elem.classList.remove('input_error');
+                    document.getElementById('confirm-enable').disabled = '';
+                }
+                shape_elem.value = default_shape;
+                select_elem.addEventListener('click', (e) => {
+                    // this._raise('change', this._values[e.target.selectedIndex]);
+                    // console.log(select_elem.options[select_elem.selectedIndex].value);
+                    var default_shape = this._host._view.modifier.getShapeInfo(
+                                            select_elem.options[select_elem.selectedIndex].value);
+                    if (!default_shape) {
+                        shape_elem.classList.add('input_error');
+                        document.getElementById('confirm-enable').disabled = 'disabled';
+                    } else {
+                        // shape_elem.classList.add('input_info');
+                        shape_elem.classList.remove('input_error');
+                        document.getElementById('confirm-enable').disabled = '';
+                    }
+                    // console.log(default_shape);
+                    shape_elem.value = default_shape;
+                });
+                // console.log(shape_elem.value, !(shape_elem.value));
+
+                shape_elem.addEventListener('input', (e) => {
+                    let value = e.target.value.trim();
+                    // match pattern like: float32[1,3,224,224]
+                    const shape_pattern = /^[floatuintbooleanstring]+[321684]+\[[0-9,\ ]+\]/;
+                    const regexp = new RegExp(shape_pattern);
+                    // console.log(value, regexp.test(value));
+                    if (regexp.test(value)) {
+                        shape_elem.classList.remove('input_error');
+                        document.getElementById('confirm-enable').disabled = '';
+                    } else {
+                        shape_elem.classList.add('input_error');
+                        document.getElementById('confirm-enable').disabled = 'disabled';
+                    }
+                  });
+                // https://gitee.com/ascend/ait
+                let dialog = document.getElementById('addinput-dialog');
+                dialog.getElementsByClassName('message')[0].innerText = `Choose a input of Node ${this._modelNodeName} :`;
+                this._host.show_confirm_dialog(dialog).then((is_not_cancel) => {
+                    if (!is_not_cancel) return;
+                    let input_name = select_elem.options[select_elem.selectedIndex].value;
+                    let input_shape_type = shape_elem.value;
+                    
+                    this._host._view.modifier.addModelInput(input_name, input_shape_type);
+                });
             });   
         }
     }

@@ -226,8 +226,6 @@ host.BrowserHost = class {
 
         const downloadButton = this.document.getElementById('download-graph');
         downloadButton.addEventListener('click', () => {
-
-            // console.log(this._view._graph._addedNode)
             // console.log(this._view._graph._renameMap)
             // // https://healeycodes.com/talking-between-languages
             fetch('/download', {
@@ -245,6 +243,8 @@ host.BrowserHost = class {
                         this._view.modifier.initializerEditInfo)),
                     'added_outputs' : this.arrayToObject(this.process_added_outputs(this._view.modifier.addedOutputs, 
                         this._view.modifier.renameMap, this._view.modifier.name2NodeStates)),
+                    'added_inputs' :  this.arrayToObject(this.process_added_inputs(this._view.modifier.addedInputs, 
+                        this._view.modifier.renameMap, this._view.modifier.name2NodeStates)),
                     'rebatch_info' : this.mapToObjectRec(this._view.modifier.reBatchInfo),
                     'changed_initializer' : this.mapToObjectRec(this._view.modifier.initializerEditInfo),
                     'postprocess_args' : {'shapeInf' : this._view.modifier.downloadWithShapeInf, 'cleanUp' : this._view.modifier.downloadWithCleanUp}
@@ -258,7 +258,7 @@ host.BrowserHost = class {
                         }
                     })
                 } else {
-                    swal("Error happens!", "You are kindly to check the log and create an issue on https://github.com/ZhangGe6/onnx-modifier", "error");
+                    swal("Error happens!", "Please check the log and create an issue on https://github.com/ZhangGe6/onnx-modifier", "error");
                 }
             })
         });
@@ -416,6 +416,30 @@ host.BrowserHost = class {
     environment(name) {
         return this._environment.get(name);
     }
+
+    show_confirm_dialog(dialogElem) {
+        return new Promise((resolve) => {
+          let btns = dialogElem.getElementsByTagName('button');
+          let listener = [];
+          let remove_listener = () => {
+            for (const [btn, cancel_listener] of listener) {
+              btn.removeEventListener('click', cancel_listener);
+            }
+          };
+    
+          for (const btn of btns) {
+            listener.push([
+              btn,
+              btn.addEventListener('click', () => {
+                dialogElem.close();
+                remove_listener();
+                resolve(btn.dataset.value);
+              }),
+            ]);
+          }
+          dialogElem.showModal();
+        });
+      }
 
     error(message, detail) {
         alert((message == 'Error' ? '' : message + ' ') + detail);
@@ -720,6 +744,24 @@ host.BrowserHost = class {
             }
         }
         return processed;
+    }
+
+    process_added_inputs(addedInputs, renameMap, modelNodeName2State) {
+        var processed = [];
+        for (var name_shape_type of addedInputs) {
+            // [name, type[shape]]
+            var name = name_shape_type[0];
+            if (modelNodeName2State.get(name) == "Exist") {
+                processed.push(name_shape_type);
+            }
+        }
+        for (let i = 0; i < processed.length; ++i) {
+            var name = processed[i][0];
+            if (renameMap.get(name)) {
+                processed[i][0] = renameMap.get(name).get(name);
+            }
+        }
+        return processed;  
     }
 
     // https://stackoverflow.com/a/4215753/10096987

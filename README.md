@@ -19,6 +19,7 @@ Currently, the following editing operations are supported:
 :white_check_mark: [Rename the node inputs and outputs](#rename-the-node-inputs-and-outputs)<br>
 :white_check_mark: [Rename the model inputs and outputs](#rename-the-model-inputs-and-outputs)<br>
 :white_check_mark: [Add new model outputs](#add-new-model-outputs)<br>
+:white_check_mark: [Add new model inputs](#add-new-model-inputs)<br>
 :white_check_mark: [Edit attribute of nodes](#edit-attribute-of-nodes)<br>
 :white_check_mark: [Edit batch size](#edit-batch-size)<br>
 :white_check_mark: [Edit model initializers](#edit-model-initializers)<br>
@@ -168,11 +169,22 @@ Click the model input/output node, type a new name in the sidebar, then we are d
 
 ## Add new model outputs
 
-Sometimes we want to add/extract the output of a certain node as model output. For example, we want to add a new model output after the old one was deleted, or extract intermediate layer output for fine-grained analysis. In `onnx-modifier`, we can achieve this by simply clicking the `Add Output` button in the sidebar of the corresponding node. Then we can get a new model output node following the corresponding node. Its name is the same as the output of the corresponding node.  
+Sometimes we want to set the output of a certain node as model output. For example, we want to extract intermediate layer output for fine-grained analysis. In `onnx-modifier`, we can achieve this by simply clicking the `Add Output` button in the sidebar of the corresponding node. Then we can get a new model output node following the corresponding node. Its name is the same as the output of the corresponding node.  
 
 In the following example, we add 2 new model outputs, which are the outputs of the 1st `Conv` node and 2nd `Conv` node, respectively.
 
 ![add_new_outputs](./docs/add_new_outputs.gif)
+
+## Add new model inputs
+
+Sometimes we need to add inputs to a model (such as a sub-model extracted from an original model). In `onnx-modifier`, we can achieve it by:
+1. Clicking the node to add input, and click the "Add Input" button in the invoked sidebar.
+2. In the poped dialog, choose the input name in the selector, and input its shape. Then cilck "confirm".
+3. We are done.
+
+![add_new_inputs](./docs/add_new_inputs_v2.gif)
+
+> Note: The input shape is supposed in "dtype[dim0, dim1, ...]" format, like "float32[1,3, 224,224]". Otherwise Warning shows and the "confirm" button is disabled. In addition, sometimes the input shape can be pre-filled by analysing the model (we can trust it). If not, we should set it manually.
 
 ## Edit attribute of nodes
 
@@ -200,7 +212,7 @@ Sometimes we want to edit the values which are stored in model initializers, suc
 
 > Note: For the newly added node, we should also input the datatype of the initializer. (If we are not sure what the datatype is, click `NODE PROPERTIES->type->?`, we may get some clues.)
 
-> The latest version (after 2023.12.10) supports reading initializer values from numpy file! Just click the "Open *.npy" button and select the numpy file, the values will be parsed and shown in the above placeholder. The valus can be furtherly editted.
+> The latest version (after 2023.12.10) supports reading initializer values from numpy file! Just click the "Open *.npy" button and select the numpy file, the values will be parsed and shown in the above placeholder. The values can be furtherly editted.
 
 <img src="./docs/edit_initializer_from_npy.png" style="zoom:50%;" />
 
@@ -228,3 +240,4 @@ For quick testing, some typical sample models are provided as following. Most of
 - [sweetalert](https://github.com/t4t5/sweetalert)
 - [flaskwebgui](https://github.com/ClimenteA/flaskwebgui)
 - [onnx-tool](https://github.com/ThanatosShinji/onnx-tool) 👍
+- [Ascend/ait](https://gitee.com/ascend/ait)

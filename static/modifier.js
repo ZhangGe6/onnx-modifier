@@ -11,6 +11,7 @@ modifier.Modifier = class {
         this.namedEdges = new Map();
 
         this.addedOutputs = new Set();
+        this.addedInputs = new Set();
         this.addedNode = new Map();
         this.addNodeKey = 0;
         this.changedAttributes = new Map();
@@ -44,6 +45,23 @@ modifier.Modifier = class {
         }
     }
 
+    getShapeInfo(name) {
+        for (var value_info of this.graph._value_info) {
+            if (value_info.name == name && value_info.type && value_info.type.tensor_type) {
+                var tensor_type = value_info.type.tensor_type;
+                let shape = [];
+                if (tensor_type.shape && tensor_type.shape.dim) {
+                    shape = tensor_type.shape.dim.map((dim) => dim.dim_param ? dim.dim_param : dim.dim_value ? dim.dim_value : null);
+                }
+                var shape_info = this.graph._context.createTensorType(tensor_type.elem_type, shape).toString();
+                return shape_info;
+            }
+            break;
+        }
+        return null;
+    }
+    
+
     // ======= Record modified info =======> //
     addNode(op_domain, op_type) {
         var node_id = (this.addNodeKey++).toString();  // in case input (onnx) node has no name
@@ -67,6 +85,11 @@ modifier.Modifier = class {
         } else {
             this.addedOutputs.add(output_name);
         }
+        this.applyAndUpdateView();
+    }
+
+    addModelInput(input_name, input_shape_type) {
+        this.addedInputs.add([input_name, input_shape_type]);
         this.applyAndUpdateView();
     }
 
@@ -219,9 +242,14 @@ modifier.Modifier = class {
     }
 
     refreshModelInputOutput() {
-        // console.log(this.modifier.renameMap)
-        for (var input of this.graph._inputs) {
+        this.graph.reset_custom_modified_inputs();
+        for (var input_name_shape of this.addedInputs) {
+            this.graph.add_input(input_name_shape);
+        }
+        // console.log(this.renameMap)
+        for (var input of this.graph.inputs) {
             var input_orig_name = input.arguments[0].original_name;
+            // console.log(input_orig_name)
             if (this.renameMap.get(input_orig_name)) {
                 var new_name = this.renameMap.get(input_orig_name).get(input_orig_name);
                 var arg_with_new_name = this.graph._context.argument(new_name, input_orig_name);
@@ -229,7 +257,7 @@ modifier.Modifier = class {
                 input.arguments[0] = arg_with_new_name;
 
                 // change all the name of node input linked with model input meanwhile
-                for (var node of this.graph._nodes) {
+                for (var node of this.graph.nodes) {
                     for (var node_input of node.inputs) {
                         for (const [index, element] of node_input.arguments.entries()) {
                             if (element.original_name == input_orig_name) {
@@ -269,7 +297,7 @@ modifier.Modifier = class {
                 output.arguments[0] = arg_with_new_name;
 
                 // change all the name of node output linked with the model output meanwhile
-                for (var node of this.graph._nodes) {
+                for (var node of this.graph.nodes) {
                     for (var node_output of node.outputs) {
                         for (const [index, element] of node_output.arguments.entries()) {
                             if (element.original_name == output_orig_name) {
@@ -430,6 +458,8 @@ modifier.Modifier = class {
         this.graph.reset_custom_added_node();
         this.addedOutputs = new Set();
         this.graph.reset_custom_modified_outputs();
+        this.addedInputs = new Set();
+        this.graph.reset_custom_modified_inputs();
 
         // reset load location
         var container = this.view._getElementById('graph');

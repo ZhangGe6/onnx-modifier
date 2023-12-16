@@ -124,6 +124,109 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
     left: 2px;
     top: 135px;
 }
+.graph-add-input-dropdown {
+    font-size: 15px;
+}
+.dialog {min-width: 544px}
+.message-box {  
+    border: none !important;
+    border-radius: 10px;
+    box-shadow: 0 0 #0000, 0 0 #0000, 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    padding: 1.6rem;
+    max-width: 400px;
+}
+.message-box h1 {text-align: center; }
+.message-box div {font-size: 16px;}
+.message-box .footer {text-align: right; padding-top: 24px;}
+.message-box .center-item {text-align: center;}
+.dialog .text {text-align: center;}
+
+
+.message-box .title {
+    border-bottom: 1px solid;
+    padding: 16px 0;
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 24px;
+    margin: 0;
+}
+
+.message-box .message {
+    margin: 24px 0;
+}
+
+.message-box .dialog-content {
+    margin: 10px 0;
+}
+
+.message-box .content-item {
+    margin: 8px 0;
+}
+.message-box .content-item .item-title {
+    float: left;
+    margin: 0;
+}
+
+.message-box .content-item .input {
+    margin: 0 0 0 80px ;
+}
+.message-box .content-item .input > input:not([type="checkbox"]),select {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.message-box-disappear {
+    animation: disaple 10s cubic-bezier(0.99, 0.01, 0.01, 0.99);
+}
+
+.error-message-box {
+    animation-play-state: paused;
+}
+
+.success-message-box {
+    animation-play-state: paused;
+}
+
+@keyframes disaple {
+    from {
+        opacity : 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+#show-message-info {
+    border-style: hidden;
+    position: fixed;
+    bottom: 0px;
+    margin-right: 10px;
+    max-width: 40vw;
+    background: transparent;  
+    z-index: 10;
+    max-height: 90vh;
+    overflow: auto;
+}
+
+#show-message-info .message-box {
+    padding: 10px;
+    margin: 5px 0;
+    border-width: 1px;
+}
+
+err_msg {
+    display: none;
+}
+
+err_msg::before {
+    content: "Please follow the `dtype[dim0,dim1,...]` format, like: float32[1,3,224,224]";
+    color: red;
+}
+
+.input_error + err_msg {
+    display: block;
+}
+
 .icon .border { stroke: #fff; }
 .icon .stroke { stroke: #808080; }
 .icon:hover .stroke { stroke: #000000; }
@@ -353,5 +456,29 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
     <div style="font-weight: bold; color: rgba(0, 0, 0, 0.01); user-select: none;">.</div>
     <div style="font-weight: bold; color: rgba(0, 0, 0, 0.01); user-select: none;">.</div>
 </div>
+
+<dialog id="addinput-dialog" class="dialog message-box">
+    <p class="title"> Add New Input </p>
+    <div class="dialog-content">
+        <div class="message"> Please choose input </div>
+        <div class="content-item">
+            <p class="item-title"> input: </p>
+            <div class="input">
+                <select id="add-input-dropdown" class="graph-add-input-dropdown">
+                </select>
+            </div>
+            <p class="item-title"> shape: </p>
+            <div class="input">
+                <input id="add-input-shape-placeholder">
+                <err_msg> </err_msg>
+            </div>
+        </div>
+    </div>
+    <div class="footer">
+        <button data-value="">Cancel</button>
+        <button id="confirm-enable" data-value="Confirm">Confirm</button>
+    </div>
+</dialog>
+
 </body>
 </html>
