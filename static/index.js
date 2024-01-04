@@ -239,12 +239,13 @@ host.BrowserHost = class {
                     'node_states' : this.mapToObjectRec(this._view.modifier.name2NodeStates),
                     'node_renamed_io' : this.mapToObjectRec(this._view.modifier.renameMap),
                     'node_changed_attr' : this.mapToObjectRec(this._view.modifier.changedAttributes),
-                    'added_node_info' : this.mapToObjectRec(this.parseAddedLightNodeInfo2Map(this._view.modifier.addedNode, 
+                    'added_node_info' : this.mapToObjectRec(this.parseAddedLightNodeInfo2Map(this._view.modifier.addedNode,
                         this._view.modifier.initializerEditInfo)),
-                    'added_outputs' : this.arrayToObject(this.process_added_outputs(this._view.modifier.addedOutputs, 
+                    'added_outputs' : this.arrayToObject(this.process_added_outputs(this._view.modifier.addedOutputs,
                         this._view.modifier.renameMap, this._view.modifier.name2NodeStates)),
-                    'added_inputs' :  this.arrayToObject(this.process_added_inputs(this._view.modifier.addedInputs, 
+                    'added_inputs' : this.arrayToObject(this.process_added_inputs(this._view.modifier.addedInputs,
                         this._view.modifier.renameMap, this._view.modifier.name2NodeStates)),
+                    'modifed_inputs_info' : this.arrayToObject(this.process_modified_inputs(this._view.modifier.newInputInfo, this._view.modifier.renameMap)),
                     'rebatch_info' : this.mapToObjectRec(this._view.modifier.reBatchInfo),
                     'changed_initializer' : this.mapToObjectRec(this._view.modifier.initializerEditInfo),
                     'postprocess_args' : {'shapeInf' : this._view.modifier.downloadWithShapeInf, 'cleanUp' : this._view.modifier.downloadWithCleanUp}
@@ -253,8 +254,11 @@ host.BrowserHost = class {
                 // https://devpress.csdn.net/python/62f517797e66823466189f02.html
                 if (response.status == '200') {
                     response.text().then(data => {
-                        if (data != "NULL") {
+                        if (data != "NULL" && data != "NULLPATH" ) {
                             swal("Success!", "Modified model has been successfuly saved in:\n" + data, "success");
+                        }
+                        else if(data == "NULL"){
+                            swal("Some error happens!", "You are kindly to check the python cmdline print ", "error");
                         }
                     })
                 } else {
@@ -262,7 +266,46 @@ host.BrowserHost = class {
                 }
             })
         });
-
+		const saveJsonButton = this.document.getElementById('save-json');
+        saveJsonButton.addEventListener('click', () => {
+			fetch('/jsondownload', {
+                // Declare what type of data we're sending
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                // Specify the method
+                method: 'POST',
+                body: JSON.stringify({
+                    'node_states' : this.mapToObjectRec(this._view.modifier.name2NodeStates),
+                    'node_renamed_io' : this.mapToObjectRec(this._view.modifier.renameMap),
+                    'node_changed_attr' : this.mapToObjectRec(this._view.modifier.changedAttributes),
+                    'added_node_info' : this.mapToObjectRec(this.parseAddedLightNodeInfo2Map(this._view.modifier.addedNode,
+                        this._view.modifier.initializerEditInfo)),
+                    'added_outputs' : this.arrayToObject(this.process_added_outputs(this._view.modifier.addedOutputs,
+                        this._view.modifier.renameMap, this._view.modifier.name2NodeStates)),
+                    'added_inputs' : this.arrayToObject(this.process_added_inputs(this._view.modifier.addedInputs,
+                        this._view.modifier.renameMap, this._view.modifier.name2NodeStates)),
+                    'modifed_inputs_info' : this.arrayToObject(this.process_modified_inputs(this._view.modifier.newInputInfo, this._view.modifier.renameMap)),
+                    'rebatch_info' : this.mapToObjectRec(this._view.modifier.reBatchInfo),
+                    'changed_initializer' : this.mapToObjectRec(this._view.modifier.initializerEditInfo),
+                    'postprocess_args' : {'shapeInf' : this._view.modifier.downloadWithShapeInf, 'cleanUp' : this._view.modifier.downloadWithCleanUp}
+                })
+            }).then((response) => {
+                // https://devpress.csdn.net/python/62f517797e66823466189f02.html
+                if (response.status == '200') {
+                    response.text().then(data => {
+                        if (data != "NULL" && data != "NULLPATH") {
+                            swal("Success!", "model json has been successfuly saved in:\n" + data, "success");
+                        }
+                        else if(data == "NULL"){
+                            swal("Some error happens!", "You are kindly to check the python cmdline print ", "error");
+                        }
+                    })
+                } else {
+                    swal("Error happens!", "You are kindly to check the log ", "error");
+                }
+            })
+		});
         const addNodeButton = this.document.getElementById('add-node');
         addNodeButton.addEventListener('click', () => {
             // this._view._graph.resetGraph();
@@ -334,8 +377,16 @@ host.BrowserHost = class {
 
                     if (file) {
                         this._open(file, files);
+                        this._view.modifier.clearGraph();
                     }
                 }
+            });
+        }
+        const openModelButton = this.document.getElementById('load-model');
+        if (openModelButton && openFileDialog) {
+            openModelButton.addEventListener('click', () => {
+                openFileDialog.value = '';
+                openFileDialog.click();
             });
         }
         const githubButton = this.document.getElementById('github-button');
@@ -374,6 +425,7 @@ host.BrowserHost = class {
                 });
                 if (file) {
                     this._open(file, files);
+                    this._view.modifier.clearGraph();
                 }
             }
         });
@@ -387,7 +439,7 @@ host.BrowserHost = class {
         // ============ to make webgui applications, the following code block shoud be added. ============ //
         // async function getRequest(url='') {
         //     const response = await fetch(url, {
-        //     method: 'GET', 
+        //     method: 'GET',
         //     cache: 'no-cache'
         //     })
         //     return response.json()
@@ -408,7 +460,7 @@ host.BrowserHost = class {
         //     }
 
         //     setInterval(keep_alive_server, interval_request)
-        // } 
+        // }
         // ============ to make webgui applications, the above code block shoud be added. ============ //
 
     }
@@ -426,7 +478,7 @@ host.BrowserHost = class {
               btn.removeEventListener('click', cancel_listener);
             }
           };
-    
+
           for (const btn of btns) {
             listener.push([
               btn,
@@ -643,7 +695,6 @@ host.BrowserHost = class {
             this._view.error(error, null, null);
         });
     }
-
     _openGist(gist) {
         this._view.show('welcome spinner');
         const url = 'https://api.github.com/gists/' + gist;
@@ -726,11 +777,11 @@ host.BrowserHost = class {
         }
         return lo
     }
-    
+
     // this function does 2 things:
     // 1. rename the addedOutputs with their new names using renameMap. Because addedOutputs are stored in lists,
     //    it may be not easy to rename them while editing. (Of course there may be a better way to do this)
-    // 2. filter out the custom output which is added, but deleted later 
+    // 2. filter out the custom output which is added, but deleted later
     process_added_outputs(addedOutputs, renameMap, modelNodeName2State) {
         var processed = []
         for (var out of addedOutputs) {
@@ -748,11 +799,10 @@ host.BrowserHost = class {
 
     process_added_inputs(addedInputs, renameMap, modelNodeName2State) {
         var processed = [];
-        for (var name_shape_type of addedInputs) {
-            // [name, type[shape]]
-            var name = name_shape_type[0];
+        for (const [name, shape_type] of addedInputs) {
+            // name: type[shape]
             if (modelNodeName2State.get(name) == "Exist") {
-                processed.push(name_shape_type);
+                processed.push([name, shape_type]);
             }
         }
         for (let i = 0; i < processed.length; ++i) {
@@ -761,9 +811,28 @@ host.BrowserHost = class {
                 processed[i][0] = renameMap.get(name).get(name);
             }
         }
-        return processed;  
+        return processed;
     }
-
+    // process_added_inputs(addedInputs) {
+    //     var processed = []
+    //     for (var inp of addedInputs) {
+    //         processed.push(inp);
+    //     }
+    //     return processed;
+    // }
+    process_modified_inputs(Inputs_info, renameMap) {
+        var processed = []
+        for (const [name, shape_type] of Inputs_info) {
+            processed.push([name, shape_type]);
+        }
+        for (let i = 0; i < processed.length; ++i) {
+            var name = processed[i][0];
+            if (renameMap.get(name)) {
+                processed[i][0] = renameMap.get(name).get(name);
+            }
+        }
+        return processed;
+    }
     // https://stackoverflow.com/a/4215753/10096987
     arrayToObject(arr) {
         var rv = {};
@@ -790,7 +859,7 @@ host.BrowserHost = class {
                 var filtered_arg_list = []
                 for (var arg of arg_list) {
                     var arg_name = arg[0], arg_optional = arg[1];
-                    if (arg_optional) { 
+                    if (arg_optional) {
                         if (!initializer_info.get(arg_name) || initializer_info.get(arg_name) == "") {
                             continue;
                         }
@@ -809,7 +878,7 @@ host.BrowserHost = class {
                 var filtered_arg_list = []
                 for (var arg of arg_list) {
                     var arg_name = arg[0], arg_optional = arg[1];
-                    if (arg_optional) { 
+                    if (arg_optional) {
                         if (!initializer_info.get(arg_name) || initializer_info.get(arg_name) == "") {
                             continue;
                         }
@@ -819,9 +888,9 @@ host.BrowserHost = class {
                 if (filtered_arg_list.length > 0) {
                     outputs.set(output_name, filtered_arg_list)
                 }
-            }       
+            }
             node_info_map.set('outputs', outputs)
-            
+
             res_map.set(modelNodeName, node_info_map)
         }
         // console.log(res_map)
@@ -1054,7 +1123,7 @@ host.BrowserHost.BrowserFileContext = class {
         if (base !== undefined) {
             return this._host.request(file, encoding, base);
         }
-        const blob = this._blobs[file];        
+        const blob = this._blobs[file];
         if (!blob) {
             return Promise.reject(new Error("File not found '" + file + "'."));
         }

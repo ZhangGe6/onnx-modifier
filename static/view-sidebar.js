@@ -133,6 +133,9 @@ sidebar.NodeSidebar = class {
         this._attributes = [];
         this._inputs = [];
         this._outputs = [];
+        this.tmp_ch = 0;
+        this.tmp_dtype = "float32";
+        this.tmp_shape = "undefined";
         // console.log(node)  // onnx.Node
 
         if (node.type) {
@@ -211,7 +214,8 @@ sidebar.NodeSidebar = class {
         this._addButton('Recover Node');
         this.add_separator(this._elements, 'sidebar-view-separator')
         this._addButton('Enter');
-    
+
+
         this._addHeader('Model Input Output editing helper');
         this._addButton('Add Output');
         this.add_span();
@@ -228,7 +232,7 @@ sidebar.NodeSidebar = class {
         const span = this._host.document.createElement('span');
         span.innerHTML = "&nbsp;&nbsp;&nbsp;"; // (if this doesn't work, try " ")
         span.className = className;
-        this._elements.push(span); 
+        this._elements.push(span);
     }
 
     render() {
@@ -271,7 +275,7 @@ sidebar.NodeSidebar = class {
             const item = new sidebar.NameValueView(this._host, name, view);
             this._inputs.push(item);
             this._elements.push(item.render());
-    
+
         }
     }
 
@@ -291,7 +295,7 @@ sidebar.NodeSidebar = class {
         if (title == "Enter") {buttonElement.className = "sidebar-view-button-bold"}
         buttonElement.innerText = title;
         this._elements.push(buttonElement);
-        
+
         if (title === 'Delete Single Node') {
             buttonElement.addEventListener('click', () => {
                 this._host._view.modifier.deleteSingleNode(this._modelNodeName);
@@ -315,8 +319,15 @@ sidebar.NodeSidebar = class {
         if (title === 'Add Output') {
             buttonElement.addEventListener('click', () => {
                 this._host._view.modifier.addModelOutput(this._modelNodeName);
-            });   
+            });
         }
+        // if (title === 'As New Input') {
+        //     buttonElement.addEventListener('click', () => {
+        //         var addedInputType = this._host._view.modifier.getNodeUpdateInputType(this._modelNodeName, this.tmp_ch);
+        //         if (addedInputType)this.tmp_dtype = addedInputType;
+        //         this._host._view.modifier.addModelInput(this._modelNodeName, this.tmp_ch, this.tmp_dtype+this.tmp_shape);
+        //     });
+        // }
         if (title === 'Add Input') {
             buttonElement.addEventListener('click', () => {
                 // show dialog
@@ -328,7 +339,7 @@ sidebar.NodeSidebar = class {
                         select_elem.appendChild(new Option(arg.name));
                     }
                 }
-                
+
                 let shape_elem = document.getElementById('add-input-shape-placeholder');
                 var default_shape = this._host._view.modifier.getShapeInfo(select_elem.options[0].value);
                 if (!default_shape) {
@@ -345,6 +356,16 @@ sidebar.NodeSidebar = class {
                     // console.log(select_elem.options[select_elem.selectedIndex].value);
                     var default_shape = this._host._view.modifier.getShapeInfo(
                                             select_elem.options[select_elem.selectedIndex].value);
+                    const inputs = this._node.inputs;
+
+                    if (!default_shape && inputs.length && select_elem.selectedIndex < inputs[0].arguments.length) {
+                        if(inputs[0].arguments[select_elem.selectedIndex].type && inputs[0].arguments[select_elem.selectedIndex].type.shape)
+                        {
+                            default_shape = inputs[0].arguments[select_elem.selectedIndex].type.dataType.toLowerCase() +
+                                inputs[0].arguments[select_elem.selectedIndex].type.shape.toString();
+                            console.log(inputs[0].arguments[select_elem.selectedIndex].type.dataType.toLowerCase(), inputs[0].arguments[select_elem.selectedIndex].type.shape.toString(), default_shape);
+                        }
+                    }
                     if (!default_shape) {
                         shape_elem.classList.add('input_error');
                         document.getElementById('confirm-enable').disabled = 'disabled';
@@ -379,10 +400,10 @@ sidebar.NodeSidebar = class {
                     if (!is_not_cancel) return;
                     let input_name = select_elem.options[select_elem.selectedIndex].value;
                     let input_shape_type = shape_elem.value;
-                    
-                    this._host._view.modifier.addModelInput(input_name, input_shape_type);
+
+                    this._host._view.modifier.addModelInput(this._modelNodeName, select_elem.selectedIndex, input_shape_type);
                 });
-            });   
+            });
         }
     }
 
@@ -514,9 +535,9 @@ sidebar.NameValueView = class {
 
         const nameElement = this._host.document.createElement('div');
         nameElement.className = 'sidebar-view-item-name';
-        
+
         // ===> 这一段是input框前的名称，如attributte的pad，（不包含后面的小白块！！！）
-        // console.log(name)  
+        // console.log(name)
         const nameInputElement = this._host.document.createElement('input');
         nameInputElement.setAttribute('type', 'text');
         nameInputElement.setAttribute('value', name);
@@ -600,7 +621,7 @@ sidebar.ValueTextView = class {
         this._host = host;
         this._elements = [];
         const element = this._host.document.createElement('div');
-        element.className = 'sidebar-view-item-value';  
+        element.className = 'sidebar-view-item-value';
         this._elements.push(element);
 
         if (action) {
@@ -771,7 +792,7 @@ class NodeAttributeView {
                     val.push(parseInt(v))
                 }
                 return val
-            
+
             case "float32":
                 return parseFloat(value)
             case "float32[]":
@@ -780,7 +801,7 @@ class NodeAttributeView {
                     val.push(parseFloat(v))
                 }
                 return val
-            
+
             default:
                 return value
 
@@ -974,13 +995,13 @@ sidebar.ArgumentView = class {
                     location.innerHTML = 'location: ' + '<b>' + this._argument.location + '</b>';
                     this._element.appendChild(location);
                 }
-                
+
                 if (initializer) {
                     const editInitializerVal = this._host.document.createElement('div');
                     editInitializerVal.className = 'sidebar-view-item-value-line-border';
                     editInitializerVal.innerHTML = 'This is an initializer, you can input a new value for it here:';
                     this._element.appendChild(editInitializerVal);
-    
+
                     var inputInitializerVal = document.createElement("textarea");
                     inputInitializerVal.setAttribute("type", "text");
                     inputInitializerVal.rows = 8;
@@ -1014,7 +1035,7 @@ sidebar.ArgumentView = class {
                         openFileDialog_.value = '';
                         openFileDialog_.click();
                     });
-                    
+
                     openFileDialog_.addEventListener('change', (e) => {
                         if (e.target && e.target.files && e.target.files.length > 0) {
                             var reader = new FileReader();
@@ -1055,7 +1076,7 @@ sidebar.ArgumentView = class {
                     editInitializerVal.className = 'sidebar-view-item-value-line-border';
                     editInitializerVal.innerHTML = 'If this is an initializer, you can input new value for it here:';
                     this._element.appendChild(editInitializerVal);
-    
+
                     var inputInitializerVal = document.createElement("textarea");
                     inputInitializerVal.setAttribute("type", "text");
                     inputInitializerVal.rows = 8;
@@ -1067,13 +1088,13 @@ sidebar.ArgumentView = class {
                     });
                     this._element.appendChild(inputInitializerVal);
                     // <====== input value ======
-                    
+
                     // ====== input type ======>
                     const editInitializerType = this._host.document.createElement('div');
                     editInitializerType.className = 'sidebar-view-item-value-line-border';
                     editInitializerType.innerHTML = 'and input its type for it here <b>' + '(see properties->type->?' + '</b>' + ' for more info):';
                     this._element.appendChild(editInitializerType);
-    
+
                     var inputInitializerType = document.createElement("textarea");
                     inputInitializerType.setAttribute("type", "text");
                     inputInitializerType.rows = 1;
@@ -1083,7 +1104,7 @@ sidebar.ArgumentView = class {
                     if (this._host._view.modifier.initializerEditInfo.get(arg_name)) {
                         // [type, value]
                         inputInitializerType.innerHTML = this._host._view.modifier.initializerEditInfo.get(arg_name)[0];
-                        inputInitializerVal.innerHTML = this._host._view.modifier.initializerEditInfo.get(arg_name)[1];                      
+                        inputInitializerVal.innerHTML = this._host._view.modifier.initializerEditInfo.get(arg_name)[1];
                     }
 
                     inputInitializerType.addEventListener('input', (e) => {
@@ -1157,8 +1178,9 @@ sidebar.ModelSidebar = class {
         this._host = host;
         this._model = model;
         this._elements = [];
-        this.clicked_output_name = clicked_output_name
-
+        this.clicked_output_name = clicked_output_name;
+        this.tmp_shape = 'undefined';
+        this.tmp_type = 'float32';
         if (model.format) {
             this._addProperty('format', new sidebar.ValueTextView(this._host, model.format));
         }
@@ -1246,13 +1268,61 @@ sidebar.ModelSidebar = class {
         const separator = this._host.document.createElement('div');
         separator.className = 'sidebar-view-separator';
         this._elements.push(separator);
-        
+
         this._addHeader('Batch size changing helper');
         this._addRebatcher();
-        
+
         if (this.clicked_output_name) {
-            this._addHeader('Output deleting helper');
-            this._addButton('Delete the output');
+            if (this.clicked_output_name.indexOf("out_")!=-1) {
+                this._addHeader('Output deleting helper');
+                this._addButton('Delete the output');
+            }
+            else{
+                this._addHeader('Input edit helper');
+                this._addButton('Delete the input');
+                const separator_in = this._host.document.createElement('div');
+                separator_in.className = 'sidebar-view-separator-input0';
+                this._elements.push(separator_in);
+                var input_size_title = this._host.document.createElement('span');
+                input_size_title.innerHTML = "&nbsp;Use new shape&nbsp;";
+                input_size_title.setAttribute('style','font-size:14px');
+                this._elements.push(input_size_title);
+                var fixed_size_value = this._host.document.createElement("INPUT");
+                for (const [index, input] of graph.inputs.entries()){
+                    if(this.clicked_output_name == input.name)
+                        if(input.arguments.length > 0 && input.arguments[0].type && input.arguments[0].type.shape)
+                            this.tmp_shape = input.arguments[0].type.shape.toString();
+                }
+                fixed_size_value.setAttribute("type", "text");
+                fixed_size_value.setAttribute("size", "5");
+                fixed_size_value.setAttribute("value", this.tmp_shape);
+                fixed_size_value.addEventListener('input', (e) => {
+                    this.tmp_shape = e.target.value
+                });
+                this._elements.push(fixed_size_value);
+                this._addButton('Reshape Input');
+                const separator_in1 = this._host.document.createElement('div');
+                separator_in1.className = 'sidebar-view-separator-input1';
+                this._elements.push(separator_in1);
+                var input_type_title = this._host.document.createElement('span');
+                input_type_title.innerHTML = "&nbsp;Set new data type&nbsp;";
+                input_type_title.setAttribute('style','font-size:14px');
+                this._elements.push(input_type_title);
+                var fixed_type_value = this._host.document.createElement("INPUT");
+                for (const [index, input] of graph.inputs.entries()){
+                    if(this.clicked_output_name == input.name)
+                        if(input.arguments.length > 0 && input.arguments[0].type && input.arguments[0].type.dataType)
+                            this.tmp_type = input.arguments[0].type.dataType.toLowerCase();
+                }
+                fixed_type_value.setAttribute("type", "text");
+                fixed_type_value.setAttribute("size", "5");
+                fixed_type_value.setAttribute("value", this.tmp_type);
+                fixed_type_value.addEventListener('input', (e) => {
+                    this.tmp_type = e.target.value
+                });
+                this._elements.push(fixed_type_value);
+                this._addButton('ReType Input');
+            }
         }
     }
 
@@ -1296,7 +1366,7 @@ sidebar.ModelSidebar = class {
         buttonElement.className = 'sidebar-view-button';
         buttonElement.innerText = title;
         this._elements.push(buttonElement);
-        
+
         if (title === 'Dynamic batch size') {
             buttonElement.addEventListener('click', () => {
                 this._host._view.modifier.changeBatchSize("dynamic");
@@ -1306,6 +1376,21 @@ sidebar.ModelSidebar = class {
         if (title == 'Delete the output') {
             buttonElement.addEventListener('click', () => {
                 this._host._view.modifier.deleteModelOutput(this.clicked_output_name);
+            });
+        }
+        else if(title == 'Delete the input') {
+            buttonElement.addEventListener('click', () => {
+                this._host._view.modifier.deleteModelInput(this.clicked_output_name);
+            });
+        }
+        else if(title == 'Reshape Input') {
+            buttonElement.addEventListener('click', () => {
+                this._host._view.modifier.reshapeModelInput(this.clicked_output_name, this.tmp_shape);
+            });
+        }
+        else if(title == 'ReType Input') {
+            buttonElement.addEventListener('click', () => {
+                this._host._view.modifier.retypeModelInput(this.clicked_output_name, this.tmp_type);
             });
         }
     }

@@ -128,7 +128,7 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
     font-size: 15px;
 }
 .dialog {min-width: 544px}
-.message-box {  
+.message-box {
     border: none !important;
     border-radius: 10px;
     box-shadow: 0 0 #0000, 0 0 #0000, 0 25px 50px -12px rgba(0, 0, 0, 0.25);
@@ -202,7 +202,7 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
     bottom: 0px;
     margin-right: 10px;
     max-width: 40vw;
-    background: transparent;  
+    background: transparent;
     z-index: 10;
     max-height: 90vh;
     overflow: auto;
@@ -227,6 +227,32 @@ err_msg::before {
     display: block;
 }
 
+.graph-button-load {
+    cursor: pointer;
+    background-color: white;
+    border: 1px solid grey;
+    border-radius: 3px;
+    color: black;
+    font-family:"Oliviar Sans Light";
+    font-size: 20px;
+    position:absolute;
+    left: 2px;
+    top: 170px;
+}
+.graph-button-jsonsave {
+    cursor: pointer;
+    background-color: white;
+    border: 1px solid grey;
+    border-radius: 3px;
+    color: black;
+    font-family:"Oliviar Sans Light";
+    font-size: 20px;
+    position:absolute;
+    left: 2px;
+    top: 205px;
+}
+.graph-button-load:active {  background: #e7e7e7; }
+.graph-button-jsonsave:active {  background: #e7e7e7; }
 .icon .border { stroke: #fff; }
 .icon .stroke { stroke: #808080; }
 .icon:hover .stroke { stroke: #000000; }
@@ -395,13 +421,16 @@ err_msg::before {
 
     <button id="reset-graph" class="graph-op-button-reset">Reset</button>
     <button id="download-graph" class="graph-op-button-download">Download</button>
-    <input type="checkbox" id="shapeInference" class="download-checkbox-shapeInference"/> 
+    <input type="checkbox" id="shapeInference" class="download-checkbox-shapeInference"/>
     <input type="text" value="shape inference" class="download-anno-shapeInference" readonly/> </td>
-    <input type="checkbox" id="cleanUp" class="download-checkbox-cleanUp"/> 
+    <input type="checkbox" id="cleanUp" class="download-checkbox-cleanUp"/>
     <input type="text" value="clean up" class="download-anno-cleanUp" readonly/> </td>
     <button id="add-node" class="graph-op-button-addNode">Add node</button>
     <select id="add-node-dropdown" class="graph-op-add-node-dropdown">
     </select>
+	<button id="load-model" class="graph-button-load">LoadModel</button>
+	<button id="save-json" class="graph-button-jsonsave">SaveJson</button>
+
 
     <button id="back-button" class="toolbar-back-button" title="Back">
         &#x276E;
