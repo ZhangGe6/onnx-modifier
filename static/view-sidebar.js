@@ -357,13 +357,21 @@ sidebar.NodeSidebar = class {
                     var default_shape = this._host._view.modifier.getShapeInfo(
                                             select_elem.options[select_elem.selectedIndex].value);
                     const inputs = this._node.inputs;
-
-                    if (!default_shape && inputs.length && select_elem.selectedIndex < inputs[0].arguments.length) {
-                        if(inputs[0].arguments[select_elem.selectedIndex].type && inputs[0].arguments[select_elem.selectedIndex].type.shape)
-                        {
-                            default_shape = inputs[0].arguments[select_elem.selectedIndex].type.dataType.toLowerCase() +
-                                inputs[0].arguments[select_elem.selectedIndex].type.shape.toString();
-                            console.log(inputs[0].arguments[select_elem.selectedIndex].type.dataType.toLowerCase(), inputs[0].arguments[select_elem.selectedIndex].type.shape.toString(), default_shape);
+                    if (!default_shape)
+                    {
+                        for (var input of inputs) {
+                            for (var arg of input.arguments) {
+                                if (arg.initializer) continue;
+                                if (arg.name == select_elem.options[select_elem.selectedIndex].value)
+                                {
+                                    if (arg.type && arg.type.shape)
+                                    {
+                                        default_shape = arg.type.dataType.toLowerCase() + arg.type.shape.toString();
+                                        // console.log(default_shape);
+                                        break;
+                                    }
+                                }
+                            }
                         }
                     }
                     if (!default_shape) {

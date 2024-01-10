@@ -741,10 +741,6 @@ onnx.Graph = class {
         this._custom_deleted_inputs = [];
     }
 
-    add_input(name) {
-        const argument = this._context.argument(name);
-        this._custom_added_inputs.push(new onnx.Parameter(name, [ argument ]));
-    }
 
     delete_input(name) {
         this._custom_deleted_inputs.push(name);

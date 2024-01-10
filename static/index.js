@@ -235,31 +235,18 @@ host.BrowserHost = class {
                 },
                 // Specify the method
                 method: 'POST',
-                body: JSON.stringify({
-                    'node_states' : this.mapToObjectRec(this._view.modifier.name2NodeStates),
-                    'node_renamed_io' : this.mapToObjectRec(this._view.modifier.renameMap),
-                    'node_changed_attr' : this.mapToObjectRec(this._view.modifier.changedAttributes),
-                    'added_node_info' : this.mapToObjectRec(this.parseAddedLightNodeInfo2Map(this._view.modifier.addedNode,
-                        this._view.modifier.initializerEditInfo)),
-                    'added_outputs' : this.arrayToObject(this.process_added_outputs(this._view.modifier.addedOutputs,
-                        this._view.modifier.renameMap, this._view.modifier.name2NodeStates)),
-                    'added_inputs' : this.arrayToObject(this.process_added_inputs(this._view.modifier.addedInputs,
-                        this._view.modifier.renameMap, this._view.modifier.name2NodeStates)),
-                    'modifed_inputs_info' : this.arrayToObject(this.process_modified_inputs(this._view.modifier.newInputInfo, this._view.modifier.renameMap)),
-                    'rebatch_info' : this.mapToObjectRec(this._view.modifier.reBatchInfo),
-                    'changed_initializer' : this.mapToObjectRec(this._view.modifier.initializerEditInfo),
-                    'postprocess_args' : {'shapeInf' : this._view.modifier.downloadWithShapeInf, 'cleanUp' : this._view.modifier.downloadWithCleanUp}
-                })
+                body: this._convertModification2json()
             }).then((response) => {
                 // https://devpress.csdn.net/python/62f517797e66823466189f02.html
                 if (response.status == '200') {
                     response.text().then(data => {
-                        if (data != "NULL" && data != "NULLPATH" ) {
+                        if (data != "NULL" && data != "NULLPATH") {
                             swal("Success!", "Modified model has been successfuly saved in:\n" + data, "success");
                         }
-                        else if(data == "NULL"){
+                        else if (data == "NULL") {
                             swal("Some error happens!", "You are kindly to check the python cmdline print ", "error");
                         }
+                        //skip data == "NULLPATH" (may caused by cancellation of save operation)
                     })
                 } else {
                     swal("Error happens!", "Please check the log and create an issue on https://github.com/ZhangGe6/onnx-modifier", "error");
@@ -275,21 +262,7 @@ host.BrowserHost = class {
                 },
                 // Specify the method
                 method: 'POST',
-                body: JSON.stringify({
-                    'node_states' : this.mapToObjectRec(this._view.modifier.name2NodeStates),
-                    'node_renamed_io' : this.mapToObjectRec(this._view.modifier.renameMap),
-                    'node_changed_attr' : this.mapToObjectRec(this._view.modifier.changedAttributes),
-                    'added_node_info' : this.mapToObjectRec(this.parseAddedLightNodeInfo2Map(this._view.modifier.addedNode,
-                        this._view.modifier.initializerEditInfo)),
-                    'added_outputs' : this.arrayToObject(this.process_added_outputs(this._view.modifier.addedOutputs,
-                        this._view.modifier.renameMap, this._view.modifier.name2NodeStates)),
-                    'added_inputs' : this.arrayToObject(this.process_added_inputs(this._view.modifier.addedInputs,
-                        this._view.modifier.renameMap, this._view.modifier.name2NodeStates)),
-                    'modifed_inputs_info' : this.arrayToObject(this.process_modified_inputs(this._view.modifier.newInputInfo, this._view.modifier.renameMap)),
-                    'rebatch_info' : this.mapToObjectRec(this._view.modifier.reBatchInfo),
-                    'changed_initializer' : this.mapToObjectRec(this._view.modifier.initializerEditInfo),
-                    'postprocess_args' : {'shapeInf' : this._view.modifier.downloadWithShapeInf, 'cleanUp' : this._view.modifier.downloadWithCleanUp}
-                })
+                body: this._convertModification2json()
             }).then((response) => {
                 // https://devpress.csdn.net/python/62f517797e66823466189f02.html
                 if (response.status == '200') {
@@ -297,7 +270,7 @@ host.BrowserHost = class {
                         if (data != "NULL" && data != "NULLPATH") {
                             swal("Success!", "model json has been successfuly saved in:\n" + data, "success");
                         }
-                        else if(data == "NULL"){
+                        else if (data == "NULL") {
                             swal("Some error happens!", "You are kindly to check the python cmdline print ", "error");
                         }
                     })
@@ -599,6 +572,27 @@ host.BrowserHost = class {
         }
     }
 
+    _convertModification2json()
+    {
+        console.log(this._view.modifier.name2NodeStates);
+        return JSON.stringify({
+            'node_states' : this.mapToObjectRec(this._view.modifier.name2NodeStates),
+            'node_renamed_io' : this.mapToObjectRec(this._view.modifier.renameMap),
+            'node_changed_attr' : this.mapToObjectRec(this._view.modifier.changedAttributes),
+            'added_node_info' : this.mapToObjectRec(this.parseAddedLightNodeInfo2Map(this._view.modifier.addedNode,
+                this._view.modifier.initializerEditInfo)),
+            'added_outputs' : this.arrayToObject(this.process_added_outputs(this._view.modifier.addedOutputs,
+                this._view.modifier.renameMap, this._view.modifier.name2NodeStates)),
+            // 'added_inputs' : this.arrayToObject(this.process_added_inputs(this._view.modifier.addedInputs,
+            //     this._view.modifier.renameMap, this._view.modifier.name2NodeStates)),
+            'modifed_inputs_info' : this.arrayToObject(this.process_modified_inputs(this._view.modifier.inputModificationForSave,
+                this._view.modifier.renameMap, this._view.modifier.name2NodeStates)),
+            'rebatch_info' : this.mapToObjectRec(this._view.modifier.reBatchInfo),
+            'changed_initializer' : this.mapToObjectRec(this._view.modifier.initializerEditInfo),
+            'postprocess_args' : {'shapeInf' : this._view.modifier.downloadWithShapeInf, 'cleanUp' : this._view.modifier.downloadWithCleanUp}
+        })
+    }
+
     _request(url, headers, encoding, timeout) {
         return new Promise((resolve, reject) => {
             const request = new XMLHttpRequest();
@@ -797,9 +791,9 @@ host.BrowserHost = class {
         return processed;
     }
 
-    process_added_inputs(addedInputs, renameMap, modelNodeName2State) {
+    process_modified_inputs(inputsInfo, renameMap, modelNodeName2State) {
         var processed = [];
-        for (const [name, shape_type] of addedInputs) {
+        for (const [name, shape_type] of inputsInfo) {
             // name: type[shape]
             if (modelNodeName2State.get(name) == "Exist") {
                 processed.push([name, shape_type]);
@@ -813,26 +807,7 @@ host.BrowserHost = class {
         }
         return processed;
     }
-    // process_added_inputs(addedInputs) {
-    //     var processed = []
-    //     for (var inp of addedInputs) {
-    //         processed.push(inp);
-    //     }
-    //     return processed;
-    // }
-    process_modified_inputs(Inputs_info, renameMap) {
-        var processed = []
-        for (const [name, shape_type] of Inputs_info) {
-            processed.push([name, shape_type]);
-        }
-        for (let i = 0; i < processed.length; ++i) {
-            var name = processed[i][0];
-            if (renameMap.get(name)) {
-                processed[i][0] = renameMap.get(name).get(name);
-            }
-        }
-        return processed;
-    }
+
     // https://stackoverflow.com/a/4215753/10096987
     arrayToObject(arr) {
         var rv = {};

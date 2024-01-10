@@ -22,30 +22,25 @@ def open_model():
 
     return 'OK', 200
 
-@app.route('/download', methods=['POST'])
-def modify_and_download_model():
+def modify_and_download_model_informat(ext):
     modify_info = request.get_json()
     global onnx_modifier
-    # print(modify_info)
     onnx_modifier.reload()   # allow downloading for multiple times
     ret = onnx_modifier.modify(modify_info)
     if not ret:
         return 'NULL'
-    save_path = onnx_modifier.check_and_save_model()
+    save_path = onnx_modifier.check_and_save_model(ext)
 
     return save_path
+
+@app.route('/download', methods=['POST'])
+def modify_and_download_onnx():
+    return modify_and_download_model_informat('.onnx')
 
 @app.route('/jsondownload', methods=['POST'])
-def download_json_model():
-    modify_info = request.get_json()
-    global onnx_modifier
-    onnx_modifier.reload()   # allow downloading for multiple times
-    ret = onnx_modifier.modify(modify_info)
-    if not ret:
-        return 'NULL'
-    save_path = onnx_modifier.check_and_save_json()
+def modify_and_download_json():
+    return modify_and_download_model_informat('.json')
 
-    return save_path
 
 def parse_args():
     parser = argparse.ArgumentParser()

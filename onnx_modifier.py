@@ -141,7 +141,7 @@ class onnxModifier:
                     self.graph.output.remove(self.node_name2module[node_name])
                     self.graph_output_names = [n for n in self.graph_output_names if n != node_name]
                     self.node_name2module.pop(node_name, None)
-                elif node_name not in self.graph_input_names:
+                elif  not node_name in self.graph_input_names:
                     # print('removing node {} ...'.format(node_name))
                     self.graph.node.remove(self.node_name2module[node_name])
                     self.node_name2module.pop(node_name, None)
@@ -158,7 +158,7 @@ class onnxModifier:
         # remove the (model) inputs related to deleted nodes
         # https://github.com/ZhangGe6/onnx-modifier/issues/12
         for input_name in self.graph_input_names:
-            if not input_name in remained_inputs:
+            if not input_name in remained_inputs or (input_name in node_states.keys() and node_states[input_name] == 'Deleted'):
                 self.graph.input.remove(self.node_name2module[input_name])
                 self.node_name2module.pop(input_name, None)
 
@@ -237,19 +237,6 @@ class onnxModifier:
             self.node_name2module[node.name] = node
         self.need_topsort = True
 
-    def add_inputs(self, inputs):
-        for name_shape in inputs.values():
-            # ['input.4', 'float32[1,8,96,96]']
-            name = name_shape[0]
-            dtype = name_shape[1].split("[")[0]
-            onnx_dtype = str2onnxdtype(dtype)
-            shape_str = name_shape[1].split("[")[1].split("]")[0]
-            shape = parse_str2val(shape_str, "int[]")
-            value_info = onnx.helper.make_tensor_value_info(
-                                        name, onnx_dtype, shape)
-            self.graph.input.append(value_info)
-            self.graph_input_names.append(value_info.name)
-            self.node_name2module[value_info.name] = value_info
     def modify_inputs(self, modefied_inputs):
         for name_shape in modefied_inputs.values():
             # ['input.4', 'float32[1,8,96,96]']
@@ -260,20 +247,25 @@ class onnxModifier:
             shape = parse_str2val(shape_str, "int[]")
             value_info = onnx.helper.make_tensor_value_info(
                                         name, onnx_dtype, shape)
+            exist = False
             for id, input_item in enumerate(self.graph.input):
                 if input_item.name == name:
                     self.graph.input.remove(self.node_name2module[name])
-                    self.node_name2module[name] = value_info
-                    self.graph.input.append(value_info)
+                    exist = True
                     break
+            if not exist:
+                #newly added inputs， otherwise original inputs
+                self.graph_input_names.append(name)
+            self.graph.input.append(value_info)
+            self.node_name2module[name] = value_info
+
     def add_outputs(self, outputs):
         # https://github.com/onnx/onnx/issues/3277#issuecomment-1050600445
         output_names = outputs.values()
         accepted = []
         if len(output_names) == 0: return True
         ## sort nodes to  get_infered_shape correctly
-        if self.need_topsort:
-            self.toposort()
+        self.toposort()
         inferred_value_info = get_infered_shape(self.model_proto)
 
         for info in inferred_value_info:
@@ -483,11 +475,11 @@ class onnxModifier:
         self.add_nodes(modify_info['added_node_info'], modify_info['node_states'])
         self.modify_initializer(modify_info['changed_initializer'])
         self.change_batch_size(modify_info['rebatch_info'])
-        self.modify_node_io_name(modify_info['node_renamed_io'], modify_info['added_inputs'])
+        #move remove_node_by_node_states before modify_node_io_name to cope with delete after rename
         self.remove_node_by_node_states(modify_info['node_states'])
-        #added inputs here to avoid input remove cause by newly created input has the same name with deleted one
-        self.add_inputs(modify_info['added_inputs'])
-        #modify_inputs added after add_inputs to accept modification to newly added inputs
+        self.modify_node_io_name(modify_info['node_renamed_io'], modify_info['modifed_inputs_info'])
+        #added inputs here after remove_node_by_node_states to avoid input remove cause by newly created input has the same name with deleted one
+        #merge added inputs into  modify_inputs
         self.modify_inputs(modify_info['modifed_inputs_info'])
         #mv add_outputs after modify_inputs to facilitate get_infered_shape which needs new input shape
         status = self.add_outputs(modify_info['added_outputs'])
@@ -496,7 +488,7 @@ class onnxModifier:
         self.post_process(modify_info['postprocess_args'])
         return status
 
-    def check_and_save_model(self, save_dir='./modified_onnx'):
+    def check_and_save_model(self, ext, save_dir='./modified_onnx'):
         print("saving model...")
         import tkinter
         from tkinter import filedialog
@@ -508,49 +500,25 @@ class onnxModifier:
             window.withdraw()
             save_path = filedialog.asksaveasfilename(
                 parent=window,
-                initialfile="modified_" + self.model_name[:-4]+'onnx',
-                defaultextension=".onnx",
-                filetypes=(("ONNX file", "*.onnx"),("All Files", "*.*"))
+                initialfile="modified_" + os.path.splitext(self.model_name)[0] + ext,
+                defaultextension = ext,
+                filetypes=((ext.split('.')[1].upper() + " file", "*" + ext),("All Files", "*.*"))
             )
         else:
             if not os.path.exists(save_dir):
                 os.mkdir(save_dir)
-            save_path = os.path.join(save_dir, 'modified_' + self.model_name[:-4]+'onnx')
+            save_path = os.path.join(save_dir, 'modified_' + os.path.splitext(self.model_name)[0] + ext)
 
         if save_path:
-            onnx.save(self.model_proto, save_path)
-            print("model saved in {} !".format(save_dir))
-            return save_path
-        else:
-            print("quit saving")
-            return "NULLPATH"
-
-
-    def check_and_save_json(self, save_dir='./modified_onnx'):
-        print("saving json...")
-        import tkinter
-        from tkinter import filedialog
-        if platform.system() == "Windows":
-            window = tkinter.Tk()
-            window.wm_attributes('-topmost', True)
-            window.withdraw()
-            save_path = filedialog.asksaveasfilename(
-                parent=window,
-                initialfile="modified_" + self.model_name[:-4]+'json',
-                defaultextension=".json",
-                filetypes=(("JSON file", "*.json"),("All Files", "*.*"))
-            )
-        else:
-            if not os.path.exists(save_dir):
-                os.mkdir(save_dir)
-            save_path = os.path.join(save_dir, 'modified_' + self.model_name[:-4]+'json')
-
-
-        if save_path:
-            onnx.checker.check_model(self.model_proto)
-            message = MessageToJson(self.model_proto)
-            with open(save_path, "w") as fo:
-                fo.write(message)
+            if ext == '.onnx':
+                onnx.save(self.model_proto, save_path)
+            elif ext == '.json':
+                message = MessageToJson(self.model_proto)
+                with open(save_path, "w") as fo:
+                    fo.write(message)
+            else:
+                print("model saved in {} is not supported !".format(ext))
+                return "NULLPATH"
             print("model saved in {} !".format(save_dir))
             return save_path
         else:

@@ -18,7 +18,7 @@ modifier.Modifier = class {
         this.initializerEditInfo = new Map();
         this.renameMap = new Map();
         this.reBatchInfo = new Map();
-        this.newInputInfo = new Map();
+        this.inputModificationForSave = new Map();
 
         this.downloadWithShapeInf = false;
         this.downloadWithCleanUp = false;
@@ -114,12 +114,6 @@ modifier.Modifier = class {
         this.applyAndUpdateView();
     }
 
-    //addModelInput(input_name, input_shape_type) {
-    //    this.addedInputs.add([input_name, input_shape_type]);
-    //    this.applyAndUpdateView();
-    //}
-
-
     addModelInput(node_name, ch, type_shape) {
         if (!this.graph) return; //skip init empty reload
         var type = type_shape.split("[")[0];
@@ -135,7 +129,7 @@ modifier.Modifier = class {
                 arg_with_name._type._dataType = type
                 arg_with_name._type._shape._dimensions = Array.from(value.replace(']','').replace('[','').split(',')).map(Number)
                 modelNode.inputs[0].arguments[ch] = arg_with_name;
-                this.newInputInfo.set(input_name,type_shape);
+                this.inputModificationForSave.set(input_name,type_shape);
             }
             else{
                 var inputNodeExists = false;
@@ -154,8 +148,10 @@ modifier.Modifier = class {
                 }
                 if(!inputNodeExists){
                     //use dict to avoid multi-add for the same input_name
+                    this.inputModificationForSave.set(input_name, type_shape);
                     this.addedInputs.set(input_name, type_shape);
                     var arg_with_name = this.graph._context.createNewArgument(input_name, type, value);
+
                 }
                 else{
                     swal("Some error happens!", "You are kindly to check the node's input whether it exists already!", "error");
@@ -164,27 +160,29 @@ modifier.Modifier = class {
         }
         this.applyAndUpdateView();
     }
+
     reshapeModelInput(input_name, value){
         if (!this.graph) return; //skip init empty reload
         var arg_with_name = this.graph._context.argument(input_name);
         arg_with_name._type._shape._dimensions = Array.from(value.replace(']','').replace('[','').split(',')).map(Number);
-        if (this.newInputInfo.has(input_name)){
-            this.newInputInfo.set(input_name, this.newInputInfo.get(input_name).split('[')[0]+value);
+        if (this.inputModificationForSave.has(input_name)){
+            this.inputModificationForSave.set(input_name, this.inputModificationForSave.get(input_name).split('[')[0]+value);
         }
         else{
-            this.newInputInfo.set(input_name, arg_with_name._type._dataType.toString()+value);
+            this.inputModificationForSave.set(input_name, arg_with_name._type._dataType.toString()+value);
         }
         this.applyAndUpdateView();
     }
+
     retypeModelInput(input_name, value){
         if (!this.graph) return; //skip init empty reload
         var arg_with_name = this.graph._context.argument(input_name);
         arg_with_name._type._dataType = value;
-        if (this.newInputInfo.has(input_name)){
-            this.newInputInfo.set(input_name,value+'['+this.newInputInfo.get(input_name).split('[')[1]);
+        if (this.inputModificationForSave.has(input_name)){
+            this.inputModificationForSave.set(input_name,value+'['+this.inputModificationForSave.get(input_name).split('[')[1]);
         }
         else{
-            this.newInputInfo.set(input_name, value+arg_with_name._type._shape.toString());
+            this.inputModificationForSave.set(input_name, value+arg_with_name._type._shape.toString());
         }
         this.applyAndUpdateView();
     }
@@ -196,11 +194,12 @@ modifier.Modifier = class {
 
     deleteInputOps(input_name)
     {
-        if (this.addedInputs.has(input_name))
+        if (this.inputModificationForSave.has(input_name))
         {
-            this.addedInputs.delete(input_name)
+            this.inputModificationForSave.delete(input_name)
         }
-        else{
+        if (this.name2NodeStates.has(input_name))
+        {
             this.name2NodeStates.set(input_name, 'Deleted');
         }
     }
@@ -292,11 +291,6 @@ modifier.Modifier = class {
                 this.addedNode.get(modelNodeName).outputs.get(parameterName)[arg_index][0] = targetValue;
             }
         }
-        // if (this.addedInputs.has(modelNodeName))
-        // {
-
-        // }
-        // console.log(this.addedNode)
 
         else {    // for the nodes in the original model
             var orig_arg_name = this.getOriginalName(param_type, modelNodeName, param_index, arg_index);
@@ -385,9 +379,9 @@ modifier.Modifier = class {
             this.graph.add_output(output_name);
         }
         for (var input of this.addedInputs) {
-            this.graph.add_input(input[0]);
+            this.graph.add_input(input);
         }
-        for (var input of this.graph._inputs) {
+        for (var input of this.graph.inputs) {
             var input_orig_name = input.arguments[0].original_name;
             if (this.renameMap.get(input_orig_name)) {
                 var new_name = this.renameMap.get(input_orig_name).get(input_orig_name);
@@ -547,6 +541,32 @@ modifier.Modifier = class {
         }
     }
 
+    clearInfo() {
+        this.namedEdges = new Map();
+        this.changedAttributes = new Map();
+        this.initializerEditInfo = new Map();
+        this.renameMap = new Map();
+        this.reBatchInfo = new Map();
+        this.InputInfo = new Map();
+        // clear custom added nodes
+        this.addedNode = new Map();
+        this.addedInputs = new Map();
+        this.addedOutputs = new Set();
+        if (this.graph)
+        {
+            this.graph.reset_custom_added_node();
+            this.graph.reset_custom_modified_outputs();
+            this.graph.reset_custom_modified_inputs();
+        }
+        // reset load location
+        var container = this.view._getElementById('graph');
+        container.scrollLeft = 0;
+        container.scrollTop = 0;
+        this.view._zoom = 1;
+        this.addNodeKey = 0;
+        this.applyAndUpdateView();
+    }
+
     resetGraph() {
         // reset node states
         this.name2NodeStates = new Map();
@@ -589,59 +609,14 @@ modifier.Modifier = class {
 
             }
         }
-        this.namedEdges = new Map();
-        this.changedAttributes = new Map();
-        this.initializerEditInfo = new Map();
-        this.renameMap = new Map();
-        this.reBatchInfo = new Map();
-
-        // clear custom added nodes
-        this.addedNode = new Map();
-        this.graph.reset_custom_added_node();
-        this.addedOutputs = new Set();
-        this.graph.reset_custom_modified_outputs();
-        this.newInputInfo = new Map();
-        this.addedInputs = new Map();
-        this.graph.reset_custom_modified_inputs();
-
-        // reset load location
-        var container = this.view._getElementById('graph');
-        container.scrollLeft = 0;
-        container.scrollTop = 0;
-        this.view._zoom = 1;
-        this.addNodeKey = 0;
-        this.applyAndUpdateView();
+        this.clearInfo();
     }
 
     clearGraph() {
         this.name2NodeStates = new Map();
-        this.namedEdges = new Map();
-        this.changedAttributes = new Map();
-        this.initializerEditInfo = new Map();
-        this.renameMap = new Map();
-        this.reBatchInfo = new Map();
-        this.newInputInfo = new Map();
-
-        // clear custom added nodes
-        this.addedNode = new Map();
-        this.addedInputs = new Map();
-        this.addedOutputs = new Set();
         this.name2ModelNode = new Map();
         this.name2ViewNode = new Map();
-        if (this.graph)
-        {
-            this.graph.reset_custom_added_node();
-            this.graph.reset_custom_modified_outputs();
-            this.graph.reset_custom_modified_inputs();
-        }
-
-        // reset load location
-        var container = this.view._getElementById('graph');
-        container.scrollLeft = 0;
-        container.scrollTop = 0;
-        this.view._zoom = 1;
-        this.addNodeKey = 0;
-        this.applyAndUpdateView();
+        this.clearInfo();
     }
 
     applyAndUpdateView() {
