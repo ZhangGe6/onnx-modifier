@@ -14,20 +14,20 @@ def make_new_node(node_info):
             continue
         attributes[attr_name] = parse_str2val(attr_value, attr_type)
     # print(attributes)
-    
+
     inputs = []
     for key in node_info['inputs'].keys():
         for inp in node_info['inputs'][key]:
-            # filter out the un-filled io in list 
+            # filter out the un-filled io in list
             if not inp.startswith('list_custom'):
                 inputs.append(inp)
     outputs = []
     for key in node_info['outputs'].keys():
         for out in node_info['outputs'][key]:
-            # filter out the un-filled io in list 
+            # filter out the un-filled io in list
             if not out.startswith('list_custom'):
                 outputs.append(out)
-    
+
     # https://github.com/onnx/onnx/blob/main/onnx/helper.py#L82
     node = onnx.helper.make_node(
         op_type=op_type,
@@ -36,9 +36,9 @@ def make_new_node(node_info):
         name=name,
         **attributes
     )
-    
+
     # print(node)
-    
+
     return node
 
 def make_attr_changed_node(node, attr_change_info):
@@ -62,18 +62,18 @@ def make_attr_changed_node(node, attr_change_info):
         else:
             raise RuntimeError("type {} is not considered in current version. \
                                You can kindly report an issue for this problem. Thanks!".format(attr_type))
-        
+
     new_attr = dict()
     for attr in node.attribute:
         # print(onnx.helper.get_attribute_value(attr))
-        if attr.name in attr_change_info.keys():            
+        if attr.name in attr_change_info.keys():
             # attr_change_info: {attr: [value, type]}
             new_attr[attr.name] = make_type_value(attr_change_info[attr.name][0], attr.type)
         else:
             # https://github.com/onnx/onnx/blob/4e24b635c940801555bee574b4eb3a34cab9acd5/onnx/helper.py#L548
             new_attr[attr.name] = onnx.helper.get_attribute_value(attr)
     # print(new_attr)
-        
+
     node = onnx.helper.make_node(
         op_type=node.op_type,
         inputs=node.input,
@@ -81,7 +81,7 @@ def make_attr_changed_node(node, attr_change_info):
         name=node.name,
         **new_attr
     )
-    
+
     # print(node)
-    
+
     return node

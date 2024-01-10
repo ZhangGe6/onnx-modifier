@@ -22,7 +22,7 @@ grapher.Graph = class {
     }
 
     setNode(node) {
-        const key = node.name;  // node id 
+        const key = node.name;  // node id
         const value = this._nodes.get(key);
         if (value) {
             value.label = node;
@@ -144,7 +144,7 @@ grapher.Graph = class {
         const edgePathGroup = createGroup('edge-paths');
         const edgeLabelGroup = createGroup('edge-labels');
         const nodeGroup = createGroup('nodes');
-        
+
         // ====> 显示 边上的箭头
         const edgePathGroupDefs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
         edgePathGroup.appendChild(edgePathGroupDefs);
@@ -167,13 +167,13 @@ grapher.Graph = class {
         edgePathGroupDefs.appendChild(marker("arrowhead-vee"));
         edgePathGroupDefs.appendChild(marker("arrowhead-vee-select"));
         // <==== 显示 边上的箭头
-        
+
         for (const nodeId of this.nodes.keys()) {
             const node = this.node(nodeId);
             if (this.children(nodeId).length == 0) {
                 if (this.modifier.name2NodeStates.get(node.label.modelNodeName) == 'Exist') {
                     // console.log("build", node.label.modelNodeName)
-                    node.label.build(document, nodeGroup);  
+                    node.label.build(document, nodeGroup);
                 }
             }
 
@@ -203,7 +203,7 @@ grapher.Graph = class {
             {
                 edge.label.build(document, edgePathGroup, edgeLabelGroup);
             }
-            
+
         }
     }
 
@@ -288,7 +288,7 @@ grapher.Node = class {
             block.build(document, this.element);
         }
 
-        this.layout();  
+        this.layout();
     }
 
     layout() {
@@ -302,8 +302,8 @@ grapher.Node = class {
         }
 
         // 这一行画每个节点的框边界
-        this.border.setAttribute('d', grapher.Node.roundedRect(0, 0, width, height, true, true, true, true));  
-        
+        this.border.setAttribute('d', grapher.Node.roundedRect(0, 0, width, height, true, true, true, true));
+
         const nodeBox = this.element.getBBox();
         this.width = nodeBox.width;
         this.height = nodeBox.height;
@@ -314,9 +314,9 @@ grapher.Node = class {
         // 没有这一行，所有节点都左对齐到左上角
         // 这一行对所有节点框进行平移
         this.element.setAttribute('transform', 'translate(' + (this.x - (this.width / 2)) + ',' + (this.y - (this.height / 2)) + ')');
-        
+
         // 设定不透明度
-        this.element.style.opacity = 1; 
+        this.element.style.opacity = 1;
     }
 
 
@@ -619,7 +619,7 @@ grapher.Edge = class {
         }
         this.element.setAttribute('class', this.class ? 'edge-path ' + this.class : 'edge-path');
         edgePathGroupElement.appendChild(this.element);
-        
+
         // 生成label对应的element
         if (this.label) {
             const tspan = createElement('tspan');

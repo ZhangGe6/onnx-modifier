@@ -11,13 +11,14 @@ modifier.Modifier = class {
         this.namedEdges = new Map();
 
         this.addedOutputs = new Set();
-        this.addedInputs = new Set();
+        this.addedInputs = new Map();
         this.addedNode = new Map();
         this.addNodeKey = 0;
         this.changedAttributes = new Map();
         this.initializerEditInfo = new Map();
         this.renameMap = new Map();
         this.reBatchInfo = new Map();
+        this.inputModificationForSave = new Map();
 
         this.downloadWithShapeInf = false;
         this.downloadWithCleanUp = false;
@@ -29,7 +30,17 @@ modifier.Modifier = class {
         this.graphs = graphs;
         this.graph = this.graphs[0];
         // this.analyzeModelGraph();
-
+        this.originInputs = new Set();
+        for (var inp of this.graph.inputs) {
+            var input_orig_name = inp.arguments[0].original_name;
+            this.originInputs.add(input_orig_name)
+        }
+        this.name2NodeStatesOrig = new Map();
+        //make a name2NodeStates copy for reset, to cope with fault caused by removing mistake added ops
+        for (const name of this.name2NodeStates.keys())
+        {
+            this.name2NodeStatesOrig.set(name, 'Exist');
+        }
         this.updateAddNodeDropDown();
     }
 
@@ -60,13 +71,28 @@ modifier.Modifier = class {
         }
         return null;
     }
-    
 
-    // ======= Record modified info =======> //
-    addNode(op_domain, op_type) {
+    randomString(length, chars) {
+        var result = '';
+        for (var i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
+        return result;
+    }
+
+
+    try_get_node_name(op_type)
+    {
         var node_id = (this.addNodeKey++).toString();  // in case input (onnx) node has no name
         var modelNodeName = 'custom_added_' + op_type + node_id;
 
+        if(this.addedNode.has(modelNodeName) || this.name2NodeStates.get(modelNodeName) ){
+            modelNodeName = this.randomString(16, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
+        }
+        return modelNodeName;
+    }
+    // ======= Record modified info =======> //
+    addNode(op_domain, op_type) {
+        //avoid to add a existed name node
+        var modelNodeName = this.try_get_node_name(op_type);
         var properties = new Map();
         properties.set('domain', op_domain);
         properties.set('op_type', op_type);
@@ -88,8 +114,76 @@ modifier.Modifier = class {
         this.applyAndUpdateView();
     }
 
-    addModelInput(input_name, input_shape_type) {
-        this.addedInputs.add([input_name, input_shape_type]);
+    addModelInput(node_name, ch, type_shape) {
+        if (!this.graph) return; //skip init empty reload
+        var type = type_shape.split("[")[0];
+        var value = "["+type_shape.split("[")[1];
+        var modelNode = this.name2ModelNode.get(node_name);
+        if (modelNode && modelNode.inputs && modelNode.inputs[0].arguments && ch < modelNode.inputs[0].arguments.length){
+            var input_name = modelNode.inputs[0].arguments[ch].name;
+            if (this.originInputs.has(input_name))
+            {
+                this.recoverSingleNode(input_name);
+                //get ref and reset type & shape
+                var arg_with_name = this.graph._context.argument(input_name);
+                arg_with_name._type._dataType = type
+                arg_with_name._type._shape._dimensions = Array.from(value.replace(']','').replace('[','').split(',')).map(Number)
+                modelNode.inputs[0].arguments[ch] = arg_with_name;
+                this.inputModificationForSave.set(input_name,type_shape);
+            }
+            else{
+                var inputNodeExists = false;
+                for (var node of this.graph._nodes) {
+                    for (var node_output of node.outputs) {
+                        for (const [index, element] of node_output.arguments.entries()) {
+                            //if new input is still other nodes output, skip this add operation
+                            if (element.original_name == input_name && this.name2NodeStates.get(node.modelNodeName) == 'Exist') {
+                                inputNodeExists = true;
+                                break;
+                            }
+                        }
+                        if(inputNodeExists)break;
+                    }
+                    if(inputNodeExists)break;
+                }
+                if(!inputNodeExists){
+                    //use dict to avoid multi-add for the same input_name
+                    this.inputModificationForSave.set(input_name, type_shape);
+                    this.addedInputs.set(input_name, type_shape);
+                    var arg_with_name = this.graph._context.createNewArgument(input_name, type, value);
+
+                }
+                else{
+                    swal("Some error happens!", "You are kindly to check the node's input whether it exists already!", "error");
+                }
+            }
+        }
+        this.applyAndUpdateView();
+    }
+
+    reshapeModelInput(input_name, value){
+        if (!this.graph) return; //skip init empty reload
+        var arg_with_name = this.graph._context.argument(input_name);
+        arg_with_name._type._shape._dimensions = Array.from(value.replace(']','').replace('[','').split(',')).map(Number);
+        if (this.inputModificationForSave.has(input_name)){
+            this.inputModificationForSave.set(input_name, this.inputModificationForSave.get(input_name).split('[')[0]+value);
+        }
+        else{
+            this.inputModificationForSave.set(input_name, arg_with_name._type._dataType.toString()+value);
+        }
+        this.applyAndUpdateView();
+    }
+
+    retypeModelInput(input_name, value){
+        if (!this.graph) return; //skip init empty reload
+        var arg_with_name = this.graph._context.argument(input_name);
+        arg_with_name._type._dataType = value;
+        if (this.inputModificationForSave.has(input_name)){
+            this.inputModificationForSave.set(input_name,value+'['+this.inputModificationForSave.get(input_name).split('[')[1]);
+        }
+        else{
+            this.inputModificationForSave.set(input_name, value+arg_with_name._type._shape.toString());
+        }
         this.applyAndUpdateView();
     }
 
@@ -98,9 +192,27 @@ modifier.Modifier = class {
         this.applyAndUpdateView();
     }
 
+    deleteInputOps(input_name)
+    {
+        if (this.inputModificationForSave.has(input_name))
+        {
+            this.inputModificationForSave.delete(input_name)
+        }
+        if (this.name2NodeStates.has(input_name))
+        {
+            this.name2NodeStates.set(input_name, 'Deleted');
+        }
+    }
+
+    deleteModelInput(input_name) {
+        this.deleteInputOps(input_name);
+        this.applyAndUpdateView();
+    }
+
     deleteSingleNode(node_name) {
         this.name2NodeStates.set(node_name, 'Deleted');
         this.name2ViewNode.get(node_name).element.style.opacity = 0.3;
+        // this.deleteInputbyNode(node_name)
     }
 
     deleteNodeWithChildren(node_name) {
@@ -108,6 +220,7 @@ modifier.Modifier = class {
 
         this.name2NodeStates.set(node_name, 'Deleted');
         this.name2ViewNode.get(node_name).element.style.opacity = 0.3;
+        // this.deleteInputbyNode(node_name)
 
         if (!this.namedEdges.has(node_name)) return; // for leaf node
 
@@ -145,8 +258,23 @@ modifier.Modifier = class {
         return orig_arg_name;
     }
 
+    getNodeUpdateInputType(modelNodeName, arg_index){
+        var outType = undefined
+        if (this.addedNode.has(modelNodeName)) { // for custom added node
+            var parameterName = Array.from(this.addedNode.get(modelNodeName).inputs.keys())[arg_index]
+            if (this.addedNode.get(modelNodeName).inputs.has(parameterName)) {
+                var arg_name = this.addedNode.get(modelNodeName).inputs.get(parameterName)[arg_index][0];  // [arg.name, arg.is_optional]
+                // update the corresponding initializer name
+                if (this.initializerEditInfo.has(arg_name)) {
+                    outType = this.initializerEditInfo.get(arg_name)[0];
+                }
+            }
+        }
+        return outType;
+    }
+
     changeNodeInputOutput(modelNodeName, parameterName, param_type, param_index, arg_index, targetValue) {
-        if (this.addedNode.has(modelNodeName)) {  // for custom added node 
+        if (this.addedNode.has(modelNodeName)) {  // for custom added node
             if (this.addedNode.get(modelNodeName).inputs.has(parameterName)) {
                 var arg_name = this.addedNode.get(modelNodeName).inputs.get(parameterName)[arg_index][0];  // [arg.name, arg.is_optional]
                 // update the corresponding initializer name
@@ -163,7 +291,6 @@ modifier.Modifier = class {
                 this.addedNode.get(modelNodeName).outputs.get(parameterName)[arg_index][0] = targetValue;
             }
         }
-        // console.log(this.addedNode)
 
         else {    // for the nodes in the original model
             var orig_arg_name = this.getOriginalName(param_type, modelNodeName, param_index, arg_index);
@@ -242,18 +369,23 @@ modifier.Modifier = class {
     }
 
     refreshModelInputOutput() {
+        if(!this.graph)return;
+        // console.log(this.modifier.renameMap)
+        // console.log(this.graph.outputs)
+        // create and add new in/output to graph
+        this.graph.reset_custom_modified_outputs();
         this.graph.reset_custom_modified_inputs();
-        for (var input_name_shape of this.addedInputs) {
-            this.graph.add_input(input_name_shape);
+        for (var output_name of this.addedOutputs) {
+            this.graph.add_output(output_name);
         }
-        // console.log(this.renameMap)
+        for (var input of this.addedInputs) {
+            this.graph.add_input(input);
+        }
         for (var input of this.graph.inputs) {
             var input_orig_name = input.arguments[0].original_name;
-            // console.log(input_orig_name)
             if (this.renameMap.get(input_orig_name)) {
                 var new_name = this.renameMap.get(input_orig_name).get(input_orig_name);
                 var arg_with_new_name = this.graph._context.argument(new_name, input_orig_name);
-
                 input.arguments[0] = arg_with_new_name;
 
                 // change all the name of node input linked with model input meanwhile
@@ -278,12 +410,6 @@ modifier.Modifier = class {
                     }
                 }
             }
-        }
-        // console.log(this.graph.outputs)
-        // create and add new output to graph
-        this.graph.reset_custom_modified_outputs();
-        for (var output_name of this.addedOutputs) {
-            this.graph.add_output(output_name);
         }
         // console.log(this.graph.outputs)
         for (var output of this.graph.outputs) {
@@ -320,17 +446,24 @@ modifier.Modifier = class {
                 }
             }
         }
-        
+
         for (var output of this.graph.outputs) {
             var output_orig_name = output.arguments[0].original_name;
             if (this.name2NodeStates.get('out_' + output_orig_name) == "Deleted") {
                 this.graph.delete_output(output_orig_name);
             }
         }
+        for (var inp of this.graph.inputs) {
+            var input_orig_name = inp.arguments[0].original_name;
+            if (this.name2NodeStates.get(input_orig_name) == "Deleted") {
+                this.graph.delete_input(input_orig_name);
+            }
+        }
     }
 
     // re-generate the added node according to addedNode according to the latest addedNode
     refreshAddedNode() {
+        if(!this.graph)return;
         this.graph.reset_custom_added_node();
         // for (const node_info of this.addedNode.values()) {
         // for (const [modelNodeName, node_info] of this.lastViewGraph.addedNode) {
@@ -360,6 +493,7 @@ modifier.Modifier = class {
 
     // re-fresh node arguments in case the node inputs/outputs are changed
     refreshNodeArguments() {
+        if(!this.graph)return;
         for (var node of this.graph._nodes) {
             // if (this.modifier.renameMap.get(node.modelNodeName)) {
             if (this.renameMap.get(node.modelNodeName)) {
@@ -407,9 +541,37 @@ modifier.Modifier = class {
         }
     }
 
+    clearInfo() {
+        this.namedEdges = new Map();
+        this.changedAttributes = new Map();
+        this.initializerEditInfo = new Map();
+        this.renameMap = new Map();
+        this.reBatchInfo = new Map();
+        this.InputInfo = new Map();
+        // clear custom added nodes
+        this.addedNode = new Map();
+        this.addedInputs = new Map();
+        this.addedOutputs = new Set();
+        if (this.graph)
+        {
+            this.graph.reset_custom_added_node();
+            this.graph.reset_custom_modified_outputs();
+            this.graph.reset_custom_modified_inputs();
+        }
+        // reset load location
+        var container = this.view._getElementById('graph');
+        container.scrollLeft = 0;
+        container.scrollTop = 0;
+        this.view._zoom = 1;
+        this.addNodeKey = 0;
+        this.applyAndUpdateView();
+    }
+
     resetGraph() {
         // reset node states
-        for (const name of this.name2NodeStates.keys()) {
+        this.name2NodeStates = new Map();
+        for (const name of this.name2NodeStatesOrig.keys())
+        {
             this.name2NodeStates.set(name, 'Exist');
         }
 
@@ -447,27 +609,14 @@ modifier.Modifier = class {
 
             }
         }
-        this.namedEdges = new Map();
-        this.changedAttributes = new Map();
-        this.initializerEditInfo = new Map();
-        this.renameMap = new Map();
-        this.reBatchInfo = new Map();
+        this.clearInfo();
+    }
 
-        // clear custom added nodes
-        this.addedNode = new Map();
-        this.graph.reset_custom_added_node();
-        this.addedOutputs = new Set();
-        this.graph.reset_custom_modified_outputs();
-        this.addedInputs = new Set();
-        this.graph.reset_custom_modified_inputs();
-
-        // reset load location
-        var container = this.view._getElementById('graph');
-        container.scrollLeft = 0;
-        container.scrollTop = 0;
-        this.view._zoom = 1;
-
-        this.applyAndUpdateView();
+    clearGraph() {
+        this.name2NodeStates = new Map();
+        this.name2ModelNode = new Map();
+        this.name2ViewNode = new Map();
+        this.clearInfo();
     }
 
     applyAndUpdateView() {

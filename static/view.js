@@ -472,9 +472,9 @@ view.View = class {
             this._model = model;
             this._graphs = graphs;
         }
-        this.lastViewGraph = this._graph; 
+        this.lastViewGraph = this._graph;
         const graph = this.activeGraph;
-        
+
         return this._timeout(100).then(() => {
             if (graph && graph != lastGraphs[0]) {
                 const nodes = graph.nodes;
@@ -571,8 +571,8 @@ view.View = class {
                     this.lastScrollLeft = container.scrollLeft;
                     this.lastScrollTop = container.scrollTop;
                 }
-                
-                viewGraph.add(graph);
+
+                viewGraph.add(graph);//draw a graph in view
 
                 // Workaround for Safari background drag/zoom issue:
                 // https://stackoverflow.com/questions/40887193/d3-js-zoom-is-not-working-with-mousewheel-in-safari
@@ -593,7 +593,7 @@ view.View = class {
                 return this._timeout(20).then(() => {
 
                     viewGraph.update();
-                    
+
                     const elements = Array.from(canvas.getElementsByClassName('graph-input') || []);
                     if (elements.length === 0) {
                         const nodeElements = Array.from(canvas.getElementsByClassName('graph-node') || []);
@@ -623,8 +623,8 @@ view.View = class {
                         // console.log("scrolling")
                         this._updateZoom(this._zoom);
                         container.scrollTo({ left: this.lastScrollLeft, top: this.lastScrollTop, behavior: 'auto' });
-                    } 
-                    else {   
+                    }
+                    else {
                         this._zoom = 1;
                         this._updateZoom(this._zoom);
 
@@ -855,7 +855,7 @@ view.Graph = class extends grapher.Graph {
         this.model = model;
         this._arguments = new Map();
         this._nodeKey = 0;
-        
+
         // the node key of custom added node
         this._add_nodeKey = 0;
     }
@@ -872,14 +872,14 @@ view.Graph = class extends grapher.Graph {
     }
 
     createInput(input) {
-        var show_name = input.name; 
+        var show_name = input.name;
         if (this.modifier.renameMap.get(input.name)) {
             var show_name = this.modifier.renameMap.get(input.name).get(input.name);
         }
         const value = new view.Input(this, input, show_name);
         // value.name = (this._nodeKey++).toString();
 
-        value.name = input.name; 
+        value.name = input.name;
         // console.log(value.name)
         input.modelNodeName = input.name;
         this.setNode(value);
@@ -893,7 +893,7 @@ view.Graph = class extends grapher.Graph {
             var show_name = this.modifier.renameMap.get(modelNodeName).get(output.name);
         }
         const value = new view.Output(this, output, modelNodeName, show_name);
-        // value.name = (this._nodeKey++).toString();  
+        // value.name = (this._nodeKey++).toString();
         value.name = "out_" + output.name;   // output nodes should have name
         output.modelNodeName = "out_" + output.name;
         this.setNode(value);
@@ -931,7 +931,7 @@ view.Graph = class extends grapher.Graph {
                 }
             }
         }
-        
+
         for (const input of graph.inputs) {
             const viewInput = this.createInput(input);
             for (const argument of input.arguments) {
@@ -940,14 +940,16 @@ view.Graph = class extends grapher.Graph {
         }
 
         for (var node of graph.nodes) {
+            if (this.modifier.name2NodeStates.get(node._name) == 'Deleted')
+                continue;
             // console.log(node)  // type: onnx.Node
             var viewNode = this.createNode(node);
 
             var inputs = node.inputs;
             for (var input of inputs) {
                 for (var argument of input.arguments) {
-                    if (argument.name != '' && !argument.initializer) { 
-                        this.createArgument(argument).to(viewNode);    
+                    if (argument.name != '' && !argument.initializer) {
+                        this.createArgument(argument).to(viewNode);
                     }
                 }
             }
@@ -1031,7 +1033,7 @@ view.Node = class extends grapher.Node {
 
     // 这里的value是一个onnx.Node，这里正在构建的是view.Node
     // context 是指Graph
-    constructor(context, value, modelNodeName) {    
+    constructor(context, value, modelNodeName) {
         super();
         this.context = context;
         this.value = value;
@@ -1055,7 +1057,7 @@ view.Node = class extends grapher.Node {
 
     _add(node) {
 
-        // header 
+        // header
         const header =  this.header();
         const styles = [ 'node-item-type' ];
         const type = node.type;
@@ -1139,7 +1141,7 @@ view.Node = class extends grapher.Node {
             if (hiddenInitializers) {
                 list.add(null, '\u3008' + '\u2026' + '\u3009', '', null, '');
             }
-            
+
             // 节点属性（侧边栏显示）
             for (const attribute of sortedAttributes) {
                 if (attribute.visible) {
@@ -1196,7 +1198,7 @@ view.Input = class extends grapher.Node {
         }
         const header = this.header();
         const title = header.add(null, [ 'graph-item-input' ], name, types);
-        title.on('click', () => this.context.view.showModelProperties());
+        title.on('click', () => this.context.view.showModelProperties(this.modelNodeName));
         this.id = 'input-' + (name ? 'name-' + name : 'id-' + (view.Input.counter++).toString());
     }
 
@@ -1290,7 +1292,7 @@ view.Argument = class {
                 }
                 const edge = this.context.createEdge(this._from, to);
                 edge.v = this._from.name;
-                edge.w = to.name;             
+                edge.w = to.name;
                 if (content) {
                     edge.label = content;
                 }
@@ -1301,7 +1303,7 @@ view.Argument = class {
                 this.context.setEdge(edge);
                 this._edges.push(edge);
                 // console.log(this.context._namedEdges);
-                
+
                 // this argument occurs in both sides of the edge, so it is a `path` argument
                 // this.context._pathArgumentNames.add(this._argument.name);
             }
@@ -1462,7 +1464,8 @@ view.ModelContext = class {
                 const skip =
                     signatures.some((signature) => signature.length <= stream.length && stream.peek(signature.length).every((value, index) => signature[index] === undefined || signature[index] === value)) ||
                     (Array.from(this._tags).some((pair) => pair[0] !== 'flatbuffers' && pair[1].size > 0) && type !== 'pb+') ||
-                    Array.from(this._content.values()).some((obj) => obj !== undefined);
+                    Array.from(this._content.values()).some((obj) => obj !== undefined) ||
+                    (stream.length < 0x7ffff000 && json.TextReader.open(stream));
                 if (!skip) {
                     try {
                         switch (type) {
@@ -1585,7 +1588,7 @@ view.ModelFactoryService = class {
         this._host = host;
         this._extensions = new Set([ '.zip', '.tar', '.tar.gz', '.tgz', '.gz' ]);
         this._factories = [];
-        this.register('./onnx', [ '.onnx', '.onn', '.pb', '.onnxtxt', '.pbtxt', '.prototxt', '.txt', '.model', '.pt', '.pth', '.pkl', '.ort', '.ort.onnx' ]);
+        this.register('./onnx', [ '.onnx', '.onn', '.pb', '.onnxtxt', '.pbtxt', '.prototxt', '.txt', '.model', '.pt', '.pth', '.pkl', '.ort', '.ort.onnx', '.json' ]);
     }
 
     register(id, factories, containers) {

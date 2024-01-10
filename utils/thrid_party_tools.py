@@ -10,7 +10,7 @@ except ModuleNotFoundError:
 def shape_inference_using_onnx_tool(model_proto):
     g = onnx_tool.Graph(model_proto.graph, verbose=False)
     g.shape_infer()
-    
+
     inferred_value_info = []
     for key in g.dynamics:
         tensor = g.tensormap[key]
@@ -25,19 +25,22 @@ def shape_inference_using_onnx_tool(model_proto):
 def shape_inference_primitive(model_proto):
     shape_info = onnx.shape_inference.infer_shapes(model_proto)
     inferred_value_info = [v for v in shape_info.graph.value_info]
-    
+
     return inferred_value_info
 
 def get_infered_shape(model_proto):
     inferred_value_info = None
     print("[EXPERIMENTAL] Do shape inference automatically...")
     reset_model_proto = copy.deepcopy(model_proto)
+    value_info_bak = copy.deepcopy(reset_model_proto.graph.value_info)
     del reset_model_proto.graph.value_info[:]
-    del reset_model_proto.graph.output[:]
+    # del reset_model_proto.graph.output[:]
     try:
         inferred_value_info = shape_inference_using_onnx_tool(reset_model_proto)
     except:
         print("shape inference using onnx-tool fails, fallback to primitive ONNX Python API.")
+        # avoid empty value_info for onnx.shape_inference.infer_shapes
+        reset_model_proto.graph.value_info.extend(value_info_bak)
         inferred_value_info = shape_inference_primitive(reset_model_proto)
-    
+
     return inferred_value_info
