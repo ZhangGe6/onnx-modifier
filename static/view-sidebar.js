@@ -321,13 +321,6 @@ sidebar.NodeSidebar = class {
                 this._host._view.modifier.addModelOutput(this._modelNodeName);
             });
         }
-        // if (title === 'As New Input') {
-        //     buttonElement.addEventListener('click', () => {
-        //         var addedInputType = this._host._view.modifier.getNodeUpdateInputType(this._modelNodeName, this.tmp_ch);
-        //         if (addedInputType)this.tmp_dtype = addedInputType;
-        //         this._host._view.modifier.addModelInput(this._modelNodeName, this.tmp_ch, this.tmp_dtype+this.tmp_shape);
-        //     });
-        // }
         if (title === 'Add Input') {
             buttonElement.addEventListener('click', () => {
                 // show dialog
@@ -356,24 +349,24 @@ sidebar.NodeSidebar = class {
                     // console.log(select_elem.options[select_elem.selectedIndex].value);
                     var default_shape = this._host._view.modifier.getShapeInfo(
                                             select_elem.options[select_elem.selectedIndex].value);
-                    const inputs = this._node.inputs;
-                    if (!default_shape)
-                    {
-                        for (var input of inputs) {
-                            for (var arg of input.arguments) {
-                                if (arg.initializer) continue;
-                                if (arg.name == select_elem.options[select_elem.selectedIndex].value)
-                                {
-                                    if (arg.type && arg.type.shape)
-                                    {
-                                        default_shape = arg.type.dataType.toLowerCase() + arg.type.shape.toString();
-                                        // console.log(default_shape);
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    // const inputs = this._node.inputs;
+                    // if (!default_shape)
+                    // {
+                    //     for (var input of inputs) {
+                    //         for (var arg of input.arguments) {
+                    //             if (arg.initializer) continue;
+                    //             if (arg.name == select_elem.options[select_elem.selectedIndex].value)
+                    //             {
+                    //                 if (arg.type && arg.type.shape)
+                    //                 {
+                    //                     default_shape = arg.type.dataType.toLowerCase() + arg.type.shape.toString();
+                    //                     // console.log(default_shape);
+                    //                     break;
+                    //                 }
+                    //             }
+                    //         }
+                    //     }
+                    // }
                     if (!default_shape) {
                         shape_elem.classList.add('input_error');
                         document.getElementById('confirm-enable').disabled = 'disabled';
@@ -381,9 +374,8 @@ sidebar.NodeSidebar = class {
                         // shape_elem.classList.add('input_info');
                         shape_elem.classList.remove('input_error');
                         document.getElementById('confirm-enable').disabled = '';
+                        shape_elem.value = default_shape;
                     }
-                    // console.log(default_shape);
-                    shape_elem.value = default_shape;
                 });
                 // console.log(shape_elem.value, !(shape_elem.value));
 
@@ -400,7 +392,7 @@ sidebar.NodeSidebar = class {
                         shape_elem.classList.add('input_error');
                         document.getElementById('confirm-enable').disabled = 'disabled';
                     }
-                  });
+                });
                 // https://gitee.com/ascend/ait
                 let dialog = document.getElementById('addinput-dialog');
                 dialog.getElementsByClassName('message')[0].innerText = `Choose a input of Node ${this._modelNodeName} :`;
@@ -408,8 +400,8 @@ sidebar.NodeSidebar = class {
                     if (!is_not_cancel) return;
                     let input_name = select_elem.options[select_elem.selectedIndex].value;
                     let input_shape_type = shape_elem.value;
-
-                    this._host._view.modifier.addModelInput(this._modelNodeName, select_elem.selectedIndex, input_shape_type);
+                    // console.log(input_name, input_shape_type);
+                    this._host._view.modifier.addModelInput(input_name, input_shape_type);
                 });
             });
         }
@@ -1182,11 +1174,11 @@ sidebar.ArgumentView = class {
 
 sidebar.ModelSidebar = class {
 
-    constructor(host, model, graph, clicked_output_name) {
+    constructor(host, model, graph, clicked_input_output_name) {
         this._host = host;
         this._model = model;
         this._elements = [];
-        this.clicked_output_name = clicked_output_name;
+        this.clicked_input_output_name = clicked_input_output_name;
         this.tmp_shape = 'undefined';
         this.tmp_type = 'float32';
         if (model.format) {
@@ -1280,12 +1272,12 @@ sidebar.ModelSidebar = class {
         this._addHeader('Batch size changing helper');
         this._addRebatcher();
 
-        if (this.clicked_output_name) {
-            if (this.clicked_output_name.indexOf("out_")!=-1) {
+        if (this.clicked_input_output_name) {
+            if (this.clicked_input_output_name.indexOf("out_")!=-1) {
                 this._addHeader('Output deleting helper');
                 this._addButton('Delete the output');
             }
-            else{
+            else {
                 this._addHeader('Input edit helper');
                 this._addButton('Delete the input');
                 const separator_in = this._host.document.createElement('div');
@@ -1297,7 +1289,7 @@ sidebar.ModelSidebar = class {
                 this._elements.push(input_size_title);
                 var fixed_size_value = this._host.document.createElement("INPUT");
                 for (const [index, input] of graph.inputs.entries()){
-                    if(this.clicked_output_name == input.name)
+                    if(this.clicked_input_output_name == input.name)
                         if(input.arguments.length > 0 && input.arguments[0].type && input.arguments[0].type.shape)
                             this.tmp_shape = input.arguments[0].type.shape.toString();
                 }
@@ -1318,7 +1310,7 @@ sidebar.ModelSidebar = class {
                 this._elements.push(input_type_title);
                 var fixed_type_value = this._host.document.createElement("INPUT");
                 for (const [index, input] of graph.inputs.entries()){
-                    if(this.clicked_output_name == input.name)
+                    if(this.clicked_input_output_name == input.name)
                         if(input.arguments.length > 0 && input.arguments[0].type && input.arguments[0].type.dataType)
                             this.tmp_type = input.arguments[0].type.dataType.toLowerCase();
                 }
@@ -1383,22 +1375,22 @@ sidebar.ModelSidebar = class {
 
         if (title == 'Delete the output') {
             buttonElement.addEventListener('click', () => {
-                this._host._view.modifier.deleteModelOutput(this.clicked_output_name);
+                this._host._view.modifier.deleteModelOutput(this.clicked_input_output_name);
             });
         }
         else if(title == 'Delete the input') {
             buttonElement.addEventListener('click', () => {
-                this._host._view.modifier.deleteModelInput(this.clicked_output_name);
+                this._host._view.modifier.deleteModelInput(this.clicked_input_output_name);
             });
         }
         else if(title == 'Reshape Input') {
             buttonElement.addEventListener('click', () => {
-                this._host._view.modifier.reshapeModelInput(this.clicked_output_name, this.tmp_shape);
+                this._host._view.modifier.reshapeModelInput(this.clicked_input_output_name, this.tmp_shape);
             });
         }
         else if(title == 'ReType Input') {
             buttonElement.addEventListener('click', () => {
-                this._host._view.modifier.retypeModelInput(this.clicked_output_name, this.tmp_type);
+                this._host._view.modifier.retypeModelInput(this.clicked_input_output_name, this.tmp_type);
             });
         }
     }

@@ -453,6 +453,7 @@ onnx.Graph = class {
         this._name = graph.name || null;
         this._description = graph.doc_string || '';
         this._value_info = graph.value_info || null;
+        this._graph = graph;
 
         context = new onnx.GraphContext(context, graph.node);
         this._context = context;
@@ -528,6 +529,7 @@ onnx.Graph = class {
     get inputs() {
         // return this._inputs;
         var all_inputs = this._inputs.concat(this._custom_added_inputs);
+        // console.log(all_inputs)
         var filtered_inputs = [];
         for (const inp of all_inputs) {
             if (this._custom_deleted_inputs.includes(inp.name)) continue;
@@ -701,13 +703,18 @@ onnx.Graph = class {
         this._custom_deleted_outputs = [];
     }
 
-    reset_custom_modified_inputs() {
-        this._custom_added_inputs = [];
-    }
-
     add_output(name) {
         const argument = this._context.argument(name);
         this._custom_added_outputs.push(new onnx.Parameter(name, [ argument ]));
+    }
+
+    delete_output(name) {
+        this._custom_deleted_outputs.push(name);
+    }
+
+    reset_custom_modified_inputs() {
+        this._custom_added_inputs = [];
+        this._custom_deleted_inputs = [];
     }
 
     add_input(name_shape_type) {
@@ -729,21 +736,21 @@ onnx.Graph = class {
 
         const argument = this._context.argument(name);
         this._custom_added_inputs.push(new onnx.Parameter(name, [ argument ]));
+        // console.log(this._custom_added_inputs);
+
+        // remove the input from the deleted list if it was deleted before
+        var deleted_inputs = [];
+        for (var input in this._custom_deleted_inputs) {
+            if (input.name != name) {
+                deleted_inputs.push(input);
+            }
+        }
+        this._custom_deleted_inputs = deleted_inputs;
     }
-
-    delete_output(name) {
-        this._custom_deleted_outputs.push(name);
-    }
-
-
-    reset_custom_modified_inputs() {
-        this._custom_added_inputs = [];
-        this._custom_deleted_inputs = [];
-    }
-
 
     delete_input(name) {
         this._custom_deleted_inputs.push(name);
+        // this._graph.value_info = [];
     }
 };
 

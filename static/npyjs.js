@@ -119,7 +119,7 @@ npyjs.Npyjs = class {
             nums = segs;
         }
         var nums_str = nums[0];
-        
+
         // now nums is in string format
         // get indent for each character
         var indent_num = new Array();
@@ -130,7 +130,7 @@ npyjs.Npyjs = class {
                 cur_indent += 1;
             } else if (nums_str[i] == "]") {
                 cur_indent -= 1;
-                indent_num.push(cur_indent); 
+                indent_num.push(cur_indent);
             } else{
                 indent_num.push(cur_indent);
             }
@@ -157,10 +157,10 @@ npyjs.Npyjs = class {
                     res_str += "    ".repeat(indent);
                 }
                 res_str += value;
-                if (i + 1 < nums_str.length && 
+                if (i + 1 < nums_str.length &&
                     !(this.is_numerix(nums_str[i + 1]) || nums_str[i + 1] == ",")) {
                     res_str += "\n";
-                }       
+                }
             }
         }
         return res_str;

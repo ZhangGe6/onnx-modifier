@@ -7,13 +7,13 @@ try:
 except ModuleNotFoundError:
     os.system("pip install flaskwebgui==0.3.5")
     from flaskwebgui import FlaskUI
-    
+
 from app import app
 
 FlaskUI(app, maximized=True, idle_interval=5).run()
 
 '''
-This script is used for generating excutable files. 
+This script is used for generating excutable files.
 The following are some notes about How I worked for it.
 
 1. How to make flaskwebgui work as expected:
@@ -31,7 +31,7 @@ The following are some notes about How I worked for it.
         - Then we can find the our target `.exe` file in the ./dist folder.
             - The icon will not show until we change it in another directory due to Windows Explorer caching.
                 - see here: https://stackoverflow.com/a/35783199/10096987
-                
+
     b. For Ubuntu (not done):
         - Run `pyinstaller -F -n onnx-modifier -i ./static/favicon.png --add-data "templates:templates" --add-data "static:static" app_desktop.py`
             - However, I get a file with size of 400+MB

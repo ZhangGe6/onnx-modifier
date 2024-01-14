@@ -1,9 +1,9 @@
-#!/usr/bin/env python3.8
 import argparse
 from flask import Flask, render_template, request
 from onnx_modifier import onnxModifier
 
 app = Flask(__name__)
+onnx_modifier = None
 
 @app.route('/')
 def index():
@@ -16,37 +16,40 @@ def open_model():
 
     global onnx_modifier
     try:
-        onnx_modifier = onnxModifier.from_name_stream(onnx_file.filename, onnx_file.stream)
+        onnx_modifier = onnxModifier.from_name_protobuf_stream(onnx_file.filename, onnx_file.stream)
     except:
-        onnx_modifier, _ =onnxModifier.from_model_json(onnx_file.filename, onnx_file.stream)
+        onnx_modifier = onnxModifier.from_name_json_stream(onnx_file.filename, onnx_file.stream)
 
     return 'OK', 200
 
-def modify_and_download_model_informat(ext):
+def modify_and_download_model_in_format(ext):
     modify_info = request.get_json()
+
     global onnx_modifier
     onnx_modifier.reload()   # allow downloading for multiple times
-    ret = onnx_modifier.modify(modify_info)
-    if not ret:
-        return 'NULL'
+    onnx_modifier.modify(modify_info)
     save_path = onnx_modifier.check_and_save_model(ext)
 
     return save_path
 
 @app.route('/download', methods=['POST'])
 def modify_and_download_onnx():
-    return modify_and_download_model_informat('.onnx')
+    return modify_and_download_model_in_format('.onnx')
 
 @app.route('/jsondownload', methods=['POST'])
 def modify_and_download_json():
-    return modify_and_download_model_informat('.json')
+    return modify_and_download_model_in_format('.json')
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--host', type=str, default='127.0.0.1', help='the hostname to listen on. Set this to "0.0.0.0" to have the server available externally as well')
-    parser.add_argument('--port', type=int, default=5000, help='the port of the webserver. Defaults to 5000.')
-    parser.add_argument('--debug', type=bool, default=False, help='enable or disable debug mode.')
+    parser.add_argument('--host', type=str, default='127.0.0.1',
+                        help='the hostname to listen on. \
+                              Set this to "0.0.0.0" to have the server available externally as well')
+    parser.add_argument('--port', type=int, default=5000,
+                        help='the port of the webserver. Defaults to 5000.')
+    parser.add_argument('--debug', type=bool, default=False,
+                        help='enable or disable debug mode.')
 
     args = parser.parse_args()
     return args

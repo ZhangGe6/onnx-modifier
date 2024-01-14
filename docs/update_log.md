@@ -1,5 +1,43 @@
 # onnx-modifier update log
 
+## 20231217
+- Support editing initializer by reading from numpy file
+- Support adding model input
+
+## 20231123
+- update onnx-metadata to support more advanced ops
+- Fix onnx.load_model after onnx 1.15.0
+
+## 20231030
+- fix model inputs missing issue after deleting nodes that take them as input
+- fix wrong backtrack when deleting nodes with changed outputs
+- fix python package versions in requirements.txt to avoid version related issues
+
+## 20230923
+- Get modified batch value using shape inference, rather than hard-coded
+- Add hyperlinks for the headers and reorder them
+- support topological sort of nodes as a post process
+- turn off onnx.checker.check_model by default
+- Fix issue of adding output which are missing or with incorrect shape
+
+## 20230819
+- fix the issue of unsuccessful adding output that was deleted before
+- fix issue of eddting scaler initializer
+
+## 20230531
+- fix adding node issue after resetting graph
+- add requirements.txt to avoid python package incompatibility issue
+- Use onnx-tool for more robust shape inference
+
+## 20230312
+- fix the issue that the newly added outputs are neglected
+- support delete model outputs
+
+## 20230222
+- fix the parsing issue for scalar initilizer
+- support more flexible numpy datatype parsing
+- set shape inference and clean up as optional functions
+
 ## 20230125
 - fix the model output lost issue due to incomplete shape_inference
 - refactor modify operations into modifier.js
@@ -44,7 +82,7 @@
 - add Windows executable file.
 
 ## 20220501
-- the first public version. 
+- the first public version.
 - support features:
     - delete/recover node.
     - rename the input and output of nodes.

@@ -235,7 +235,7 @@ host.BrowserHost = class {
                 },
                 // Specify the method
                 method: 'POST',
-                body: this._convertModification2json()
+                body: this._buildModificationInfo()
             }).then((response) => {
                 // https://devpress.csdn.net/python/62f517797e66823466189f02.html
                 if (response.status == '200') {
@@ -253,32 +253,32 @@ host.BrowserHost = class {
                 }
             })
         });
-		const saveJsonButton = this.document.getElementById('save-json');
-        saveJsonButton.addEventListener('click', () => {
-			fetch('/jsondownload', {
-                // Declare what type of data we're sending
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                // Specify the method
-                method: 'POST',
-                body: this._convertModification2json()
-            }).then((response) => {
-                // https://devpress.csdn.net/python/62f517797e66823466189f02.html
-                if (response.status == '200') {
-                    response.text().then(data => {
-                        if (data != "NULL" && data != "NULLPATH") {
-                            swal("Success!", "model json has been successfuly saved in:\n" + data, "success");
-                        }
-                        else if (data == "NULL") {
-                            swal("Some error happens!", "You are kindly to check the python cmdline print ", "error");
-                        }
-                    })
-                } else {
-                    swal("Error happens!", "You are kindly to check the log ", "error");
-                }
-            })
-		});
+		// const saveJsonButton = this.document.getElementById('save-json');
+        // saveJsonButton.addEventListener('click', () => {
+		// 	fetch('/jsondownload', {
+        //         // Declare what type of data we're sending
+        //         headers: {
+        //           'Content-Type': 'application/json'
+        //         },
+        //         // Specify the method
+        //         method: 'POST',
+        //         body: this._buildModificationInfo()
+        //     }).then((response) => {
+        //         // https://devpress.csdn.net/python/62f517797e66823466189f02.html
+        //         if (response.status == '200') {
+        //             response.text().then(data => {
+        //                 if (data != "NULL" && data != "NULLPATH") {
+        //                     swal("Success!", "model json has been successfuly saved in:\n" + data, "success");
+        //                 }
+        //                 else if (data == "NULL") {
+        //                     swal("Some error happens!", "You are kindly to check the python cmdline print ", "error");
+        //                 }
+        //             })
+        //         } else {
+        //             swal("Error happens!", "You are kindly to check the log ", "error");
+        //         }
+        //     })
+		// });
         const addNodeButton = this.document.getElementById('add-node');
         addNodeButton.addEventListener('click', () => {
             // this._view._graph.resetGraph();
@@ -572,21 +572,21 @@ host.BrowserHost = class {
         }
     }
 
-    _convertModification2json()
+    _buildModificationInfo()
     {
-        console.log(this._view.modifier.name2NodeStates);
+        // console.log(this._view.modifier.name2NodeStates);
         return JSON.stringify({
             'node_states' : this.mapToObjectRec(this._view.modifier.name2NodeStates),
             'node_renamed_io' : this.mapToObjectRec(this._view.modifier.renameMap),
             'node_changed_attr' : this.mapToObjectRec(this._view.modifier.changedAttributes),
             'added_node_info' : this.mapToObjectRec(this.parseAddedLightNodeInfo2Map(this._view.modifier.addedNode,
                 this._view.modifier.initializerEditInfo)),
-            'added_outputs' : this.arrayToObject(this.process_added_outputs(this._view.modifier.addedOutputs,
+            'added_outputs' : this.arrayToObject(this.processAddedOutputs(this._view.modifier.addedOutputs,
                 this._view.modifier.renameMap, this._view.modifier.name2NodeStates)),
-            // 'added_inputs' : this.arrayToObject(this.process_added_inputs(this._view.modifier.addedInputs,
+            'added_inputs' : this.arrayToObject(this.processAddedInputs(this._view.modifier.addedInputs,
+                this._view.modifier.renameMap, this._view.modifier.name2NodeStates)),
+            // 'modified_inputs_info' : this.arrayToObject(this.process_modified_inputs(this._view.modifier.inputModificationForSave,
             //     this._view.modifier.renameMap, this._view.modifier.name2NodeStates)),
-            'modifed_inputs_info' : this.arrayToObject(this.process_modified_inputs(this._view.modifier.inputModificationForSave,
-                this._view.modifier.renameMap, this._view.modifier.name2NodeStates)),
             'rebatch_info' : this.mapToObjectRec(this._view.modifier.reBatchInfo),
             'changed_initializer' : this.mapToObjectRec(this._view.modifier.initializerEditInfo),
             'postprocess_args' : {'shapeInf' : this._view.modifier.downloadWithShapeInf, 'cleanUp' : this._view.modifier.downloadWithCleanUp}
@@ -776,7 +776,7 @@ host.BrowserHost = class {
     // 1. rename the addedOutputs with their new names using renameMap. Because addedOutputs are stored in lists,
     //    it may be not easy to rename them while editing. (Of course there may be a better way to do this)
     // 2. filter out the custom output which is added, but deleted later
-    process_added_outputs(addedOutputs, renameMap, modelNodeName2State) {
+    processAddedOutputs(addedOutputs, renameMap, modelNodeName2State) {
         var processed = []
         for (var out of addedOutputs) {
             if (modelNodeName2State.get("out_" + out) == "Exist") {
@@ -791,7 +791,7 @@ host.BrowserHost = class {
         return processed;
     }
 
-    process_modified_inputs(inputsInfo, renameMap, modelNodeName2State) {
+    processAddedInputs(inputsInfo, renameMap, modelNodeName2State) {
         var processed = [];
         for (const [name, shape_type] of inputsInfo) {
             // name: type[shape]
@@ -874,7 +874,7 @@ host.BrowserHost = class {
     }
 
     // rename the initializer if its corresponding argument name is changed (for primitive nodes)
-    process_initializer(initializer_info, rename_map) {
+    processInitializer(initializer_info, rename_map) {
         for (const [node_name, rename_pair] of rename_map) {
             for (const [arg_orig_name, arg_new_name] of rename_pair) {
                 if (initializer_info.has(arg_orig_name)) {

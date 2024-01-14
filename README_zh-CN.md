@@ -32,16 +32,16 @@
 
 ## 源码+命令行启动
 
-- 拉取`onnx-modifier`，安装所需要的Python库 
+- 拉取`onnx-modifier`，安装所需要的Python库
 
   ```bash
   git clone git@github.com:ZhangGe6/onnx-modifier.git
   cd onnx-modifier
-  
+
   pip install -r requirements.txt
   ```
 
-- 运行 
+- 运行
 
   ```bash
   python app.py
@@ -62,10 +62,10 @@
 
 - `Download`：保存编辑后的模型文件到本地。按钮右边的两个复选框（**对应功能可能还不够鲁棒**）
   - 如果选中`shape inferece`，则会在保存模型时自动做[形状推导](https://github.com/onnx/onnx/blob/main/docs/ShapeInference.md)
-    
+
     > 当前形状推导功能基于[onnx-tool](https://github.com/ThanatosShinji/onnx-tool)实现。
   - 如果选中`clean up`，则会在保存时自动删掉无用节点 (类似[ONNX GraphSurgeon](https://docs.nvidia.com/deeplearning/tensorrt/onnx-graphsurgeon/docs/ir/graph.html#onnx_graphsurgeon.Graph.cleanup))。
-  
+
 - `Add node`：向当前模型中，添加新节点。
 
 节点层级的操作都在节点侧边栏里，点击某一节点后即可弹出。

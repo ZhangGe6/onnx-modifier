@@ -8,6 +8,7 @@ import copy
 import struct
 import warnings
 import platform
+import json
 import numpy as np
 import onnx
 from onnx import numpy_helper
@@ -15,8 +16,6 @@ from utils import parse_str2np, parse_str2val
 from utils import np2onnxdtype, str2onnxdtype
 from utils import make_new_node, make_attr_changed_node
 from utils import get_infered_shape
-import json
-from google.protobuf.json_format import Parse, MessageToJson
 
 class onnxModifier:
     def __init__(self, model_name, model_proto):
@@ -31,18 +30,17 @@ class onnxModifier:
         return cls(model_name, model_proto)
 
     @classmethod
-    def from_model_json(cls, name, stream):
-        print("loading model json..."+name)
+    def from_name_json_stream(cls, name, stream):
+        from google.protobuf.json_format import Parse
+        print(f"loading model from json {name} ...")
         stream.seek(0)
         onnx_json = json.load(stream)
         onnx_str = json.dumps(onnx_json)
         model_proto = Parse(onnx_str, onnx.ModelProto())
-        # onnx.save(model_proto, name[:-4]+"onnx")
-        # print("save model ..."+name[:-4]+"onnx")
-        return cls(name, model_proto), name[:-4]+"onnx"
+        return cls(name, model_proto)
 
     @classmethod
-    def from_name_stream(cls, name, stream):
+    def from_name_protobuf_stream(cls, name, stream):
         # https://leimao.github.io/blog/ONNX-IO-Stream/
         print("loading model...")
         stream.seek(0)
@@ -60,17 +58,15 @@ class onnxModifier:
 
     def gen_name2module_map(self):
         # node name => node
-        self.cont_node_outname2name = dict()
         self.node_name2module = dict()
-        node_idx = 0
-        for node in self.graph.node:
+        self.cst_node_outname2nodename = dict()
+        for i, node in enumerate(self.graph.node):
             if node.name == '':
-                node.name = str(node.op_type) + str(node_idx)
-            node_idx += 1
+                node.name = str(node.op_type) + str(i)
             self.node_name2module[node.name] = node
 
             if node.op_type == "Constant":
-                self.cont_node_outname2name[node.output[0]] = node.name
+                self.cst_node_outname2nodename[node.output[0]] = node.name
 
         for inp in self.graph.input:
             self.node_name2module[inp.name] = inp
@@ -132,7 +128,7 @@ class onnxModifier:
     def remove_node_by_node_states(self, node_states):
         # remove node from graph
         for node_name, node_state in node_states.items():
-            if not (node_name in self.node_name2module):
+            if not (node_name in self.node_name2module.keys()):
                 # for custom added node here
                 continue
             if node_state == 'Deleted':
@@ -141,7 +137,7 @@ class onnxModifier:
                     self.graph.output.remove(self.node_name2module[node_name])
                     self.graph_output_names = [n for n in self.graph_output_names if n != node_name]
                     self.node_name2module.pop(node_name, None)
-                elif  not node_name in self.graph_input_names:
+                elif not node_name in self.graph_input_names:
                     # print('removing node {} ...'.format(node_name))
                     self.graph.node.remove(self.node_name2module[node_name])
                     self.node_name2module.pop(node_name, None)
@@ -158,23 +154,18 @@ class onnxModifier:
         # remove the (model) inputs related to deleted nodes
         # https://github.com/ZhangGe6/onnx-modifier/issues/12
         for input_name in self.graph_input_names:
-            if not input_name in remained_inputs or (input_name in node_states.keys() and node_states[input_name] == 'Deleted'):
+            if input_name not in remained_inputs or \
+               (input_name in node_states.keys() and node_states[input_name] == 'Deleted'):
                 self.graph.input.remove(self.node_name2module[input_name])
                 self.node_name2module.pop(input_name, None)
 
         self.need_topsort = True
 
-    def modify_node_io_name(self, node_renamed_io, added_inputs):
+    def change_node_io_name(self, node_renamed_io):
+        # format of node_renamed_io : {node_name : {src_io_name : dst_io_name}}
         for node_name in node_renamed_io.keys():
             if node_name not in self.node_name2module.keys():
-                # added inputs
-                if node_renamed_io[node_name][node_name] in [name_shape[0] for name_shape in added_inputs.values()]:
-                    for key,val in self.node_name2module.items():
-                        if hasattr(val,'input'):
-                            for i in range(len(val.input)):
-                                if val.input[i] == node_name:
-                                    val.input[i] = node_renamed_io[node_name][node_name]
-                # added inputs + custom added nodes or custom added model outputs, or the deleted nodes
+                # custom added nodes or custom added model outputs, or the deleted nodes
                 continue
 
             renamed_ios = node_renamed_io[node_name]
@@ -182,11 +173,14 @@ class onnxModifier:
                 node = self.node_name2module[node_name]
                 if node_name in self.graph_input_names:
                     node.name = dst_name
-                    self.graph_input_names.remove(node_name)
+                    self.graph_input_names.remove(src_name)
                     self.graph_input_names.append(dst_name)
                     self.node_name2module[dst_name] = node
                 elif node_name in self.graph_output_names:
                     node.name = dst_name
+                    self.graph_output_names.remove("out_" + src_name)
+                    self.graph_output_names.append("out_" + dst_name)
+                    self.node_name2module["out_" + dst_name] = node
                 else:
                     # print(node.input, node.output)
                     for i in range(len(node.input)):
@@ -202,15 +196,14 @@ class onnxModifier:
                         init.name = dst_name
                         self.initializer_name2module[dst_name] = init
                         del self.initializer_name2module[src_name]
-                    # else rename output of the corresponding constant node and update cont_node_outname2name
-                    elif src_name in self.cont_node_outname2name.keys():
-                        cont = self.node_name2module[self.cont_node_outname2name[src_name]]
+                    # else rename output of the corresponding constant node and update cst_node_outname2nodename
+                    elif src_name in self.cst_node_outname2nodename.keys():
+                        cont = self.node_name2module[self.cst_node_outname2nodename[src_name]]
                         cont.output[0] = dst_name
-                        self.cont_node_outname2name[dst_name] = self.cont_node_outname2name[src_name]
-                        del self.cont_node_outname2name[src_name]
+                        self.cst_node_outname2nodename[dst_name] = self.cst_node_outname2nodename[src_name]
+                        del self.cst_node_outname2nodename[src_name]
 
-
-    def modify_node_attr(self, node_changed_attr):
+    def change_node_attr(self, node_changed_attr):
         # we achieve it by deleting the original node and make a (copied) new node
         # print(node_changed_attr)
         for node_name in node_changed_attr.keys():
@@ -237,8 +230,8 @@ class onnxModifier:
             self.node_name2module[node.name] = node
         self.need_topsort = True
 
-    def modify_inputs(self, modefied_inputs):
-        for name_shape in modefied_inputs.values():
+    def add_inputs(self, inputs):
+        for name_shape in inputs.values():
             # ['input.4', 'float32[1,8,96,96]']
             name = name_shape[0]
             dtype = name_shape[1].split("[")[0]
@@ -247,39 +240,36 @@ class onnxModifier:
             shape = parse_str2val(shape_str, "int[]")
             value_info = onnx.helper.make_tensor_value_info(
                                         name, onnx_dtype, shape)
-            exist = False
-            for id, input_item in enumerate(self.graph.input):
-                if input_item.name == name:
-                    self.graph.input.remove(self.node_name2module[name])
-                    exist = True
-                    break
-            if not exist:
-                #newly added inputs， otherwise original inputs
+
+            if name in self.graph_input_names:
+                self.graph.input.remove(self.node_name2module[name])
+                self.graph.input.append(value_info)
+            else:
+                # newly added inputs
                 self.graph_input_names.append(name)
-            self.graph.input.append(value_info)
+                self.graph.input.append(value_info)
+
             self.node_name2module[name] = value_info
 
     def add_outputs(self, outputs):
         # https://github.com/onnx/onnx/issues/3277#issuecomment-1050600445
         output_names = outputs.values()
-        accepted = []
         if len(output_names) == 0: return True
-        ## sort nodes to  get_infered_shape correctly
+        # sort nodes to get_infered_shape correctly
         self.toposort()
         inferred_value_info = get_infered_shape(self.model_proto)
+        inferred_name2value = {info.name : info for info in inferred_value_info}
 
-        for info in inferred_value_info:
-            if info.name in output_names:
-                accepted.append(info.name)
+        for name in output_names:
+            if name in inferred_name2value.keys():
+                info = inferred_name2value[name]
                 self.graph.output.append(info)
                 self.graph_output_names.append("out_" + info.name)
                 self.node_name2module["out_" + info.name] = info
-        if set(output_names) != set(accepted):
-            print("output:", list(set(output_names)-set(accepted))," not added! May caused by shape inference mismatch!")
-            return False
-        return True
+            else:
+                print(f"[Warning]: {name} is not added successfully!")
 
-    def modify_initializer(self, changed_initializer):
+    def change_initializer(self, changed_initializer):
         # print(changed_initializer)
         for init_name, meta in changed_initializer.items():
             # https://github.com/onnx/onnx/issues/2978
@@ -309,28 +299,31 @@ class onnxModifier:
                 self.initializer.append(initializer_tensor)
                 self.initializer_name2module[init_name] = initializer_tensor
                 # remove constant node replaced by initializer for some kind of node
-                if init_name in self.cont_node_outname2name.keys():
-                    self.graph.node.remove(self.node_name2module[self.cont_node_outname2name[init_name]])
-                    del self.node_name2module[self.cont_node_outname2name[init_name]]
+                if init_name in self.cst_node_outname2nodename.keys():
+                    cst_node_name = self.cst_node_outname2nodename[init_name]
+                    self.graph.node.remove(self.node_name2module[cst_node_name])
+                    del self.node_name2module[cst_node_name]
                     self.need_topsort = True
 
     def shape_inference(self):
-        #add toposort to get correct infered shape
-        if self.need_topsort:
-            self.toposort()
+        self.toposort()
         inferred_shape_info = get_infered_shape(copy.deepcopy(self.model_proto))
 
+        orig_output_info = copy.deepcopy(self.graph.output)
+        orig_output_num = len(self.graph.output)
         del self.graph.value_info[:]
-        output_info_bak = copy.deepcopy(self.graph.output)
         del self.graph.output[:]
+
         for info in inferred_shape_info:
             if "out_" + info.name in self.graph_output_names:
                 self.graph.output.append(info)
             else:
                 self.graph.value_info.append(info)
-        # avoid to get an empty output list
-        if len(self.graph.output) < 1:
-            self.graph.output.extend(output_info_bak)
+
+        # recover the original ouptuts, to avoid output missing due to unperfect shape inference
+        # TODO: this workaround can cause output shape mismatch if users change the input size
+        if len(self.graph.output) < orig_output_num:
+            self.graph.output.extend(orig_output_info)
 
     def toposort(self):
         # inspired by graphsurgeon
@@ -459,71 +452,47 @@ class onnxModifier:
 
     def modify(self, modify_info):
         '''
-        1. Some functions, such as modify_initializer(), should be placed
-        before modify_node_io_name(), to avoid name mismatch error.
+        1. Some functions, such as change_initializer(), should be placed
+           before change_node_io_name(), to avoid name mismatch error.
         2. add_nodes() should be placed at the first place, otherwise
-        remove_node_by_node_states() will delete the initializer of
-        newly added nodes by mistake.
+           remove_node_by_node_states() will delete the initializer of
+           newly added nodes by mistake.
         '''
-        # print(modify_info['node_states'])
-        # print(modify_info['node_renamed_io'])
-        # print(modify_info['node_changed_attr'])
-        # print(modify_info['added_node_info'])
-        # print(modify_info['added_outputs'])
-        #create a  return status to cope with output add failure
-        status = True
+        # print(modify_info)
+
         self.add_nodes(modify_info['added_node_info'], modify_info['node_states'])
-        self.modify_initializer(modify_info['changed_initializer'])
+        self.change_initializer(modify_info['changed_initializer'])
+        self.add_inputs(modify_info['added_inputs'])
+        # TODO: merge `change_batch_size()` and `change_inputs()` in the future
         self.change_batch_size(modify_info['rebatch_info'])
-        #move remove_node_by_node_states before modify_node_io_name to cope with delete after rename
+        # self.change_inputs(modify_info['changed_input_info'])
+        self.change_node_io_name(modify_info['node_renamed_io'])
         self.remove_node_by_node_states(modify_info['node_states'])
-        self.modify_node_io_name(modify_info['node_renamed_io'], modify_info['modifed_inputs_info'])
-        #added inputs here after remove_node_by_node_states to avoid input remove cause by newly created input has the same name with deleted one
-        #merge added inputs into  modify_inputs
-        self.modify_inputs(modify_info['modifed_inputs_info'])
-        #mv add_outputs after modify_inputs to facilitate get_infered_shape which needs new input shape
-        status = self.add_outputs(modify_info['added_outputs'])
-        self.modify_node_attr(modify_info['node_changed_attr'])
+        self.add_outputs(modify_info['added_outputs'])
+        self.change_node_attr(modify_info['node_changed_attr'])
 
         self.post_process(modify_info['postprocess_args'])
-        return status
 
-    def check_and_save_model(self, ext, save_dir='./modified_onnx'):
+    def check_and_save_model(self, ext=".onnx", save_dir='./modified_onnx'):
         print("saving model...")
-        import tkinter
-        from tkinter import filedialog
 
         # onnx.checker.check_model(self.model_proto)
-        if platform.system() == "Windows":
-            window = tkinter.Tk()
-            window.wm_attributes('-topmost', True)
-            window.withdraw()
-            save_path = filedialog.asksaveasfilename(
-                parent=window,
-                initialfile="modified_" + os.path.splitext(self.model_name)[0] + ext,
-                defaultextension = ext,
-                filetypes=((ext.split('.')[1].upper() + " file", "*" + ext),("All Files", "*.*"))
-            )
-        else:
-            if not os.path.exists(save_dir):
-                os.mkdir(save_dir)
-            save_path = os.path.join(save_dir, 'modified_' + os.path.splitext(self.model_name)[0] + ext)
+        if not os.path.exists(save_dir):
+            os.mkdir(save_dir)
+        save_path = os.path.join(save_dir, 'modified_' + os.path.splitext(self.model_name)[0] + ext)
 
-        if save_path:
-            if ext == '.onnx':
-                onnx.save(self.model_proto, save_path)
-            elif ext == '.json':
-                message = MessageToJson(self.model_proto)
-                with open(save_path, "w") as fo:
-                    fo.write(message)
-            else:
-                print("model saved in {} is not supported !".format(ext))
-                return "NULLPATH"
-            print("model saved in {} !".format(save_dir))
-            return save_path
+        if ext == '.onnx':
+            onnx.save(self.model_proto, save_path)
+        elif ext == '.json':
+            from google.protobuf.json_format import MessageToJson
+            message = MessageToJson(self.model_proto)
+            with open(save_path, "w") as fo:
+                fo.write(message)
         else:
-            print("quit saving")
+            print("model saved in {} is not supported !".format(ext))
             return "NULLPATH"
+        print("model saved in {} !".format(save_dir))
+        return save_path
 
     def inference(self, input_shape=[1, 3, 224, 224], x=None, output_names=None):
         import onnxruntime as rt

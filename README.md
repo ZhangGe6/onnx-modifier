@@ -24,7 +24,7 @@ Currently, the following editing operations are supported:
 :white_check_mark: [Edit batch size](#edit-batch-size)<br>
 :white_check_mark: [Edit model initializers](#edit-model-initializers)<br>
 
-Here is the [update log](./docs/update_log.md) and [TODO list](./docs/todo_list.md).
+Here is the [update log](./docs/update_log.md) and [TODO list](./docs/todo_list.md). Here is the [design overview](https://github.com/ZhangGe6/onnx-modifier/wiki), which may be helpful for someone who wants to contribute to this project.
 
 Hope it helps!
 
@@ -169,7 +169,7 @@ Click the model input/output node, type a new name in the sidebar, then we are d
 
 ## Add new model outputs
 
-Sometimes we want to set the output of a certain node as model output. For example, we want to extract intermediate layer output for fine-grained analysis. In `onnx-modifier`, we can achieve this by simply clicking the `Add Output` button in the sidebar of the corresponding node. Then we can get a new model output node following the corresponding node. Its name is the same as the output of the corresponding node.  
+Sometimes we want to set the output of a certain node as model output. For example, we want to extract intermediate layer output for fine-grained analysis. In `onnx-modifier`, we can achieve this by simply clicking the `Add Output` button in the sidebar of the corresponding node. Then we can get a new model output node following the corresponding node. Its name is the same as the output of the corresponding node.
 
 In the following example, we add 2 new model outputs, which are the outputs of the 1st `Conv` node and 2nd `Conv` node, respectively.
 

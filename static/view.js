@@ -758,10 +758,10 @@ view.View = class {
         }
     }
 
-    showModelProperties(clicked_output_name) {
+    showModelProperties(clicked_input_output_name) {
         if (this._model) {
             try {
-                const modelSidebar = new sidebar.ModelSidebar(this._host, this._model, this.activeGraph, clicked_output_name);
+                const modelSidebar = new sidebar.ModelSidebar(this._host, this._model, this.activeGraph, clicked_input_output_name);
                 modelSidebar.on('update-active-graph', (sender, graph) => {
                     this._updateActiveGraph(graph);
                 });
