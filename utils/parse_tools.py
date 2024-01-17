@@ -87,7 +87,9 @@ def parse_str2val(val_str, val_type):
         for v in preprocess(val_str).split(","):
             attr_val.append(float(v))
         return attr_val
-    elif val_type in ["string[]"]:
+    elif val_type == "string":
+        return str(val_type)
+    elif val_type == "string[]":
         attr_val = []
         for v in preprocess(val_str).split(","):
             attr_val.append(str(v))
@@ -102,7 +104,8 @@ def parse_str2val(val_str, val_type):
         raise RuntimeError(f"type {val_type} is not considered in current version.\n" + \
                             "Currently supported types are:\n" + \
                             " - int, int32, int64, int[], int32[], int64[]\n" + \
-                            " - float, float32, float64 and float[], float32[], float64[].\n" + \
+                            " - float, float32, float64 and float[], float32[], float64[]\n" + \
+                            " - string, string[]\n" + \
                             "Please report an issue for this problem. Thanks!")
 
 # map np datatype to onnx datatype
