@@ -56,7 +56,7 @@ modifier.Modifier = class {
         }
     }
 
-    getShapeInfo(name) {
+    getShapeTypeInfo(name) {
         for (var value_info of this.graph._value_info) {
             if (value_info.name == name && value_info.type && value_info.type.tensor_type) {
                 var tensor_type = value_info.type.tensor_type;
@@ -64,8 +64,8 @@ modifier.Modifier = class {
                 if (tensor_type.shape && tensor_type.shape.dim) {
                     shape = tensor_type.shape.dim.map((dim) => dim.dim_param ? dim.dim_param : dim.dim_value ? dim.dim_value : null);
                 }
-                var shape_info = this.graph._context.createTensorType(tensor_type.elem_type, shape).toString();
-                return shape_info;
+                var tensor_type = this.graph._context.createTensorType(tensor_type.elem_type, shape);
+                return [tensor_type.shape, tensor_type.dataType];
             }
             break;
         }

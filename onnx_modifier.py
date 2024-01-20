@@ -250,6 +250,7 @@ class onnxModifier:
                 self.graph.input.append(value_info)
 
             self.node_name2module[name] = value_info
+            self.shape_inference()
 
     def add_outputs(self, outputs):
         # https://github.com/onnx/onnx/issues/3277#issuecomment-1050600445

@@ -219,11 +219,24 @@ err_msg {
 }
 
 err_msg::before {
-    content: "Please follow the `dtype[dim0,dim1,...]` format, like: float32[1,3,224,224]";
+    content: "Please follow the `[dim0,dim1,...]` format, like: [1,3,224,224]";
     color: red;
 }
 
 .input_error + err_msg {
+    display: block;
+}
+
+warning_msg {
+    display: none;
+}
+
+warning_msg::before {
+    content: "Default to float32, change it if needed";
+    color: Aqua;
+}
+
+.input_warning + warning_msg {
     display: block;
 }
 
@@ -498,6 +511,12 @@ err_msg::before {
             <div class="input">
                 <input id="add-input-shape-placeholder">
                 <err_msg> </err_msg>
+            </div>
+            <p class="item-title"> dtype: </p>
+            <div class="input">
+                <select id="add-input-type-dropdown" class="graph-add-input-dropdown">
+                </select>
+                <warning_msg> </warning_msg>
             </div>
         </div>
     </div>
