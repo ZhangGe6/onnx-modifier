@@ -337,6 +337,7 @@ modifier.Modifier = class {
             if (this.renameMap.get(input_orig_name)) {
                 var new_name = this.renameMap.get(input_orig_name).get(input_orig_name);
                 var arg_with_new_name = this.graph._context.argument(new_name, input_orig_name);
+                arg_with_new_name.type = this.graph._context.argument(input_orig_name).type;
                 input.arguments[0] = arg_with_new_name;
 
                 // change all the name of node input linked with model input meanwhile

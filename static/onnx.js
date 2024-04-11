@@ -806,6 +806,10 @@ onnx.Argument = class {
         return this._type;
     }
 
+    set type(type) {
+        this._type = type;
+    }
+
     get description() {
         return this._description;
     }
@@ -1897,16 +1901,6 @@ onnx.GraphContext = class {
         //     this._arguments.set(name, new onnx.Argument(name, type, tensor.initializer, tensor.annotation, tensor.description, original_name));
         // }
         // return this._arguments.get(name);
-    }
-
-    createNewArgument(name, typeStr, shapeStr){
-        var tensor = this.tensor(name);
-        const shape = new onnx.TensorShape(Array.from(shapeStr.replace(']','').replace('[','').split(',')).map(Number));
-        const type = new onnx.TensorType(typeStr, shape, null);
-        //update tensor type info
-        tensor.type = type;
-        this._arguments.set(name, new onnx.Argument(name, type, null, null, null, name));
-        return this._arguments.get(name);
     }
 
     createType(type) {
