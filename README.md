@@ -36,7 +36,7 @@ We have three methods to launch `onnx-modifier` now.
 Clone the repo and install the required Python packages by
 
 ```bash
-git clone git@github.com:ZhangGe6/onnx-modifier.git
+git clone https://github.com/ZhangGe6/onnx-modifier.git
 cd onnx-modifier
 
 pip install -r requirements.txt

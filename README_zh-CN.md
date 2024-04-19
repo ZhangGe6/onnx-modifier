@@ -35,7 +35,7 @@
 - 拉取`onnx-modifier`，安装所需要的Python库
 
   ```bash
-  git clone git@github.com:ZhangGe6/onnx-modifier.git
+  git clone https://github.com/ZhangGe6/onnx-modifier.git
   cd onnx-modifier
 
   pip install -r requirements.txt
