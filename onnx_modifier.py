@@ -428,12 +428,16 @@ class onnxModifier:
 
             graph_connected_nodes = []
             graph_connected_initializers = []
+            # NOTE(yancong): The initializer could be shared by multiple nodes. We should check
+            # whether the initializer has been added to the initializer list before adding it.
+            visited_initializer_names = set()
             for node in self.graph.node:
                 if node in connected_nodes:
                     graph_connected_nodes.append(copy.deepcopy(self.node_name2module[node.name]))
                     for inp in node.input:
-                        if inp in self.initializer_name2module.keys():
+                        if inp in self.initializer_name2module.keys() and inp not in visited_initializer_names:
                             graph_connected_initializers.append(copy.deepcopy(self.initializer_name2module[inp]))
+                            visited_initializer_names.add(inp)
             del self.graph.node[:]
             del self.initializer[:]
             self.graph.node.extend(graph_connected_nodes)
