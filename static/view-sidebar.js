@@ -133,9 +133,6 @@ sidebar.NodeSidebar = class {
         this._attributes = [];
         this._inputs = [];
         this._outputs = [];
-        this.tmp_ch = 0;
-        this.tmp_dtype = "float32";
-        this.tmp_shape = "undefined";
         // console.log(node)  // onnx.Node
 
         if (node.type) {
@@ -202,9 +199,9 @@ sidebar.NodeSidebar = class {
             }
         }
 
-        this.add_separator(this._elements, 'sidebar-view-separator')
+        this.add_separator(this._elements, 'sidebar-view-separator');
         this._elements.push(this._host.document.createElement('hr'));
-        this.add_separator(this._elements, 'sidebar-view-separator')
+        this.add_separator(this._elements, 'sidebar-view-separator');
 
         this._addHeader('Node deleting helper');
         this._addButton('Delete With Children');
@@ -212,7 +209,7 @@ sidebar.NodeSidebar = class {
         this._addButton('Delete Single Node');
         this.add_span()
         this._addButton('Recover Node');
-        this.add_separator(this._elements, 'sidebar-view-separator')
+        this.add_separator(this._elements, 'sidebar-view-separator');
         this._addButton('Enter');
 
 
@@ -397,7 +394,7 @@ sidebar.NodeSidebar = class {
 
                 shape_elem.addEventListener('input', (e) => {
                     let value = e.target.value.trim();
-                    // match pattern like: float32[1,3,224,224]
+                    // match pattern like: [1,3,224,224]
                     // const shape_pattern = /^[floatuintbooleanstring]+[321684]+\[[0-9,\ ]+\]/;
                     const shape_pattern = /^\[[0-9,\ ]+\]/;
                     const regexp = new RegExp(shape_pattern);
@@ -1196,10 +1193,9 @@ sidebar.ModelSidebar = class {
     constructor(host, model, graph, clicked_input_output_name) {
         this._host = host;
         this._model = model;
+        this._graph = graph;
         this._elements = [];
         this.clicked_input_output_name = clicked_input_output_name;
-        this.tmp_shape = 'undefined';
-        this.tmp_type = 'float32';
         if (model.format) {
             this._addProperty('format', new sidebar.ValueTextView(this._host, model.format));
         }
@@ -1288,61 +1284,15 @@ sidebar.ModelSidebar = class {
         separator.className = 'sidebar-view-separator';
         this._elements.push(separator);
 
-        this._addHeader('Batch size changing helper');
-        this._addRebatcher();
+        this._addHeader('Input editing helper');
+        this._addButton('Change input shape (static)');
+        this.add_separator(this._elements, 'sidebar-view-separator')
+        this._addButton('Set dynamic batch size');
+        this.add_separator(this._elements, 'sidebar-view-separator')
+        this._addButton('Delete the input');
 
-        if (this.clicked_input_output_name) {
-            if (this.clicked_input_output_name.indexOf("out_")!=-1) {
-                this._addHeader('Output deleting helper');
-                this._addButton('Delete the output');
-            }
-            else {
-                this._addHeader('Input edit helper');
-                this._addButton('Delete the input');
-                // const separator_in = this._host.document.createElement('div');
-                // separator_in.className = 'sidebar-view-separator-input0';
-                // this._elements.push(separator_in);
-                // var input_size_title = this._host.document.createElement('span');
-                // input_size_title.innerHTML = "&nbsp;Use new shape&nbsp;";
-                // input_size_title.setAttribute('style','font-size:14px');
-                // this._elements.push(input_size_title);
-                // var fixed_size_value = this._host.document.createElement("INPUT");
-                // for (const [index, input] of graph.inputs.entries()){
-                //     if(this.clicked_input_output_name == input.name)
-                //         if(input.arguments.length > 0 && input.arguments[0].type && input.arguments[0].type.shape)
-                //             this.tmp_shape = input.arguments[0].type.shape.toString();
-                // }
-                // fixed_size_value.setAttribute("type", "text");
-                // fixed_size_value.setAttribute("size", "5");
-                // fixed_size_value.setAttribute("value", this.tmp_shape);
-                // fixed_size_value.addEventListener('input', (e) => {
-                //     this.tmp_shape = e.target.value
-                // });
-                // this._elements.push(fixed_size_value);
-                // this._addButton('Reshape Input');
-                // const separator_in1 = this._host.document.createElement('div');
-                // separator_in1.className = 'sidebar-view-separator-input1';
-                // this._elements.push(separator_in1);
-                // var input_type_title = this._host.document.createElement('span');
-                // input_type_title.innerHTML = "&nbsp;Set new data type&nbsp;";
-                // input_type_title.setAttribute('style','font-size:14px');
-                // this._elements.push(input_type_title);
-                // var fixed_type_value = this._host.document.createElement("INPUT");
-                // for (const [index, input] of graph.inputs.entries()){
-                //     if(this.clicked_input_output_name == input.name)
-                //         if(input.arguments.length > 0 && input.arguments[0].type && input.arguments[0].type.dataType)
-                //             this.tmp_type = input.arguments[0].type.dataType.toLowerCase();
-                // }
-                // fixed_type_value.setAttribute("type", "text");
-                // fixed_type_value.setAttribute("size", "5");
-                // fixed_type_value.setAttribute("value", this.tmp_type);
-                // fixed_type_value.addEventListener('input', (e) => {
-                //     this.tmp_type = e.target.value
-                // });
-                // this._elements.push(fixed_type_value);
-                // this._addButton('ReType Input');
-            }
-        }
+        this._addHeader('Output deleting helper');
+        this._addButton('Delete the output');
     }
 
     render() {
@@ -1386,30 +1336,69 @@ sidebar.ModelSidebar = class {
         buttonElement.innerText = title;
         this._elements.push(buttonElement);
 
-        if (title === 'Dynamic batch size') {
-            buttonElement.addEventListener('click', () => {
-                this._host._view.modifier.changeBatchSize("dynamic");
-            });
-        }
-
         if (title == 'Delete the output') {
             buttonElement.addEventListener('click', () => {
                 this._host._view.modifier.deleteModelOutput(this.clicked_input_output_name);
             });
         }
-        else if(title == 'Delete the input') {
+        if (title == 'Delete the input') {
             buttonElement.addEventListener('click', () => {
                 this._host._view.modifier.deleteModelInput(this.clicked_input_output_name);
             });
         }
-        else if(title == 'Reshape Input') {
+        if (title == 'Change input shape (static)') {
             buttonElement.addEventListener('click', () => {
-                this._host._view.modifier.reshapeModelInput(this.clicked_input_output_name, this.tmp_shape);
+                // console.log(this._graph)
+                var orig_type;
+                for (const inp of this._graph._inputs) {
+                    if (inp.modelNodeName == this.clicked_input_output_name) {
+                        var type = inp._arguments[0]._type;
+                        orig_type = type._dataType;
+                        break;
+                    }
+                }
+                // TODO: get original input shape and dtype
+                let select_arg_elem = document.getElementById('add-input-dropdown');
+                select_arg_elem.appendChild(new Option(this.clicked_input_output_name));
+                let select_type_elem = document.getElementById('add-input-type-dropdown');
+                select_type_elem.appendChild(new Option(orig_type));
+                let shape_elem = document.getElementById('add-input-shape-placeholder');
+                shape_elem.classList.add('input_error');
+                document.getElementById('confirm-enable').disabled = 'disabled';
+                shape_elem.value = "";
+                shape_elem.addEventListener('input', (e) => {
+                    let value = e.target.value.trim();
+                    // match pattern like: [1,3,224,224]
+                    // const shape_pattern = /^[floatuintbooleanstring]+[321684]+\[[0-9,\ ]+\]/;
+                    const shape_pattern = /^\[[0-9,\ ]+\]/;
+                    const regexp = new RegExp(shape_pattern);
+                    // console.log(value, regexp.test(value));
+                    if (regexp.test(value)) {
+                        shape_elem.classList.remove('input_error');
+                        document.getElementById('confirm-enable').disabled = '';
+                    } else {
+                        shape_elem.classList.add('input_error');
+                        document.getElementById('confirm-enable').disabled = 'disabled';
+                    }
+                });
+                let dialog = document.getElementById('addinput-dialog');
+                dialog.getElementsByClassName('title')[0].innerText = `Change input`;
+                dialog.getElementsByClassName('message')[0].innerText = ``;
+                this._host.show_confirm_dialog(dialog).then((is_not_cancel) => {
+                    if (!is_not_cancel) return;
+                    let input_name = select_arg_elem.options[select_arg_elem.selectedIndex].value;
+                    let input_shape = shape_elem.value;
+                    let input_type = select_type_elem.value; // replace with original dtype
+                    let input_shape_type = input_type + input_shape;
+                    // console.log(input_name, input_shape, input_type, input_shape_type);
+                    // this._host._view.modifier.addModelInput(input_name, input_shape_type);
+                    this._host._view.modifier.changeModelInput(input_name, input_shape_type);
+                });
             });
         }
-        else if(title == 'ReType Input') {
+        if (title === 'Set dynamic batch size') {
             buttonElement.addEventListener('click', () => {
-                this._host._view.modifier.retypeModelInput(this.clicked_input_output_name, this.tmp_type);
+                this._host._view.modifier.changeBatchSize("dynamic");
             });
         }
     }
@@ -1434,6 +1423,12 @@ sidebar.ModelSidebar = class {
                 callback(this, data);
             }
         }
+    }
+
+    add_separator(elment, className) {
+        const separator = this._host.document.createElement('div');
+        separator.className = className;
+        elment.push(separator);
     }
 };
 

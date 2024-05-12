@@ -20,8 +20,8 @@ Currently, the following editing operations are supported:
 :white_check_mark: [Rename the model inputs and outputs](#rename-the-model-inputs-and-outputs)<br>
 :white_check_mark: [Add new model outputs](#add-new-model-outputs)<br>
 :white_check_mark: [Add new model inputs](#add-new-model-inputs)<br>
+:white_check_mark: [Edit model input shape](#edit-model-input-shape)<br>
 :white_check_mark: [Edit attribute of nodes](#edit-attribute-of-nodes)<br>
-:white_check_mark: [Edit batch size](#edit-batch-size)<br>
 :white_check_mark: [Edit model initializers](#edit-model-initializers)<br>
 
 Here is the [update log](./docs/update_log.md) and [TODO list](./docs/todo_list.md). Here is the [design overview](https://github.com/ZhangGe6/onnx-modifier/wiki), which may be helpful for someone who wants to contribute to this project.
@@ -194,16 +194,10 @@ Change the original attribute to a new value, then we are done.
 
 <img src="./docs/change_attr.gif" style="zoom:75%;" />
 
-## Edit batch size
-`onnx-modifier` supports editing batch size now. Both `Dynamic batch size` and `Fixed batch size` modes are supported.
-- `Dynamic batch size`: Click the `Dynamic batch size` button, then we get a model which supports dynamic batch size inferece;
-- `Fixed batch size`: Input the fixed batch size we want, then we are done;
+## Edit model input shape
+`onnx-modifier` supports editting input shape now. Click the target model input, then click the `Change input shape (static)` button. In the popped dialog, set a new shape for the input and click "confirm". The downsrteam tensor shape will be updated in the downloaded modified model (rather than in the pannel instantly, as the shape inferece process is applied after "Download" is clicked).
 
-<img src="./docs/rebatch.gif" style="zoom:75%;" />
-
-Note the differences between `fixed batch size inference` and `dynamic batch size inference`, as [this blog](https://nietras.com/2021/05/24/set-dynamic-batch-size-using-onnx-sharp/) illustrates:
-> - When running a model with only fixed dimensions, the ONNX Runtime will prepare and optimize the graph for execution when constructing the Inference Session.
-> -  when the model has dynamic dimensions like batch size, the ONNX Runtime may instead cache optimized graphs for specific batch sizes when inputs are first encountered for that batch size.
+`onnx-modifier` supports also supports changing input to be dynamic. Currently only the batch dimension is supported. Just click the `Set dynamic batch size` button, then we get a model which supports dynamic batch size inferece.
 
 ## Edit model initializers
 Sometimes we want to edit the values which are stored in model initializers, such as the weight/bias of a convolution layer or the shape parameter of a `Reshape` node. `onnx-modifier` supports this feature now! Input a new value for the initializer in the invoked sidebar and click Download, then we are done.

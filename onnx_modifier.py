@@ -7,14 +7,13 @@ import os
 import copy
 import struct
 import warnings
-import platform
 import json
 import numpy as np
 import onnx
 from onnx import numpy_helper
-from utils import parse_str2np, parse_str2val
+from utils import str2np, str2val
 from utils import np2onnxdtype, str2onnxdtype
-from utils import make_new_node, make_attr_changed_node
+from utils import make_new_node, make_attr_changed_node, make_input
 from utils import get_infered_shape
 
 class onnxModifier:
@@ -81,49 +80,6 @@ class onnxModifier:
         self.initializer_name2module = dict()
         for initializer in self.initializer:
             self.initializer_name2module[initializer.name] = initializer
-
-    def change_batch_size(self, rebatch_info):
-        if not (rebatch_info): return
-        # https://github.com/onnx/onnx/issues/2182
-        rebatch_type = rebatch_info['type']
-        rebatch_value = rebatch_info['value']
-        # print(rebatch_type, rebatch_value)
-        if rebatch_type == 'fixed':
-            rebatch_value = int(rebatch_value)
-            for tensor in self.graph.input:
-                if type(rebatch_value) == str:
-                    tensor.type.tensor_type.shape.dim[0].dim_param = rebatch_value
-                elif type(rebatch_value) == int:
-                    tensor.type.tensor_type.shape.dim[0].dim_value = rebatch_value
-                else:
-                    warnings.warn('Unknown type {} for batch size. Fallback to dynamic batch size.'.format(type(rebatch_value)))
-                    tensor.type.tensor_type.shape.dim[0].dim_param = str(rebatch_value)
-
-            self.shape_inference()
-        else: # dynamic batch size
-            # Change batch size in input, output and value_info
-            for tensor in list(self.graph.input) + list(self.graph.value_info) + list(self.graph.output):
-                tensor.type.tensor_type.shape.dim[0].dim_param = rebatch_value
-            # print(type(rebatch_value), self.graph.input[0].type.tensor_type.shape.dim[0].dim_value)
-            # print(type(rebatch_value), self.graph.input[0].type.tensor_type.shape.dim[0].dim_param)
-
-            # handle reshapes
-            for node in self.graph.node:
-                if node.op_type != 'Reshape':
-                    continue
-                for init in self.graph.initializer:
-                    # node.input[1] is expected to be a reshape
-                    if init.name != node.input[1]:
-                        continue
-                    # Shape is stored as a list of ints
-                    if len(init.int64_data) > 0:
-                        # This overwrites bias nodes' reshape shape but should be fine
-                        init.int64_data[0] = -1
-                    # Shape is stored as bytes
-                    elif len(init.raw_data) > 0:
-                        shape = bytearray(init.raw_data)
-                        struct.pack_into('q', shape, 0, -1)
-                        init.raw_data = bytes(shape)
 
     def remove_node_by_node_states(self, node_states):
         # remove node from graph
@@ -230,27 +186,69 @@ class onnxModifier:
             self.node_name2module[node.name] = node
         self.need_topsort = True
 
-    def add_inputs(self, inputs):
-        for name_shape in inputs.values():
-            # ['input.4', 'float32[1,8,96,96]']
-            name = name_shape[0]
-            dtype = name_shape[1].split("[")[0]
-            onnx_dtype = str2onnxdtype(dtype)
-            shape_str = name_shape[1].split("[")[1].split("]")[0]
-            shape = parse_str2val(shape_str, "int[]")
-            value_info = onnx.helper.make_tensor_value_info(
-                                        name, onnx_dtype, shape)
+    def change_batch_size(self, rebatch_info):
+        if not rebatch_info: return
+        # https://github.com/onnx/onnx/issues/2182
+        rebatch_type = rebatch_info['type']
+        rebatch_value = rebatch_info['value']
+        # print(rebatch_type, rebatch_value)
+        if rebatch_type == 'fixed':
+            rebatch_value = int(rebatch_value)
+            for tensor in self.graph.input:
+                if type(rebatch_value) == str:
+                    tensor.type.tensor_type.shape.dim[0].dim_param = rebatch_value
+                elif type(rebatch_value) == int:
+                    tensor.type.tensor_type.shape.dim[0].dim_value = rebatch_value
+                else:
+                    warnings.warn('Unknown type {} for batch size. Fallback to dynamic batch size.'.format(type(rebatch_value)))
+                    tensor.type.tensor_type.shape.dim[0].dim_param = str(rebatch_value)
 
-            if name in self.graph_input_names:
-                self.graph.input.remove(self.node_name2module[name])
-                self.graph.input.append(value_info)
-            else:
-                # newly added inputs
-                self.graph_input_names.append(name)
-                self.graph.input.append(value_info)
-
-            self.node_name2module[name] = value_info
             self.shape_inference()
+        else: # dynamic batch size
+            # Change batch size in input, output and value_info
+            for tensor in list(self.graph.input) + list(self.graph.value_info) + list(self.graph.output):
+                tensor.type.tensor_type.shape.dim[0].dim_param = rebatch_value
+            # print(type(rebatch_value), self.graph.input[0].type.tensor_type.shape.dim[0].dim_value)
+            # print(type(rebatch_value), self.graph.input[0].type.tensor_type.shape.dim[0].dim_param)
+
+            # handle reshapes
+            for node in self.graph.node:
+                if node.op_type != 'Reshape':
+                    continue
+                for init in self.graph.initializer:
+                    # node.input[1] is expected to be a reshape
+                    if init.name != node.input[1]:
+                        continue
+                    # Shape is stored as a list of ints
+                    if len(init.int64_data) > 0:
+                        # This overwrites bias nodes' reshape shape but should be fine
+                        init.int64_data[0] = -1
+                    # Shape is stored as bytes
+                    elif len(init.raw_data) > 0:
+                        shape = bytearray(init.raw_data)
+                        struct.pack_into('q', shape, 0, -1)
+                        init.raw_data = bytes(shape)
+
+    def add_inputs(self, inputs):
+        for input_info in inputs.values():
+            inp = make_input(input_info)
+            if inp.name not in self.graph_input_names:
+                self.graph_input_names.append(inp.name)
+                self.graph.input.append(inp)
+
+                self.node_name2module[inp.name] = inp
+                self.shape_inference()
+
+    def change_inputs(self, inputs, rebatch_info):
+        for input_info in inputs.values():
+            inp = make_input(input_info)
+            if inp.name in self.graph_input_names:
+                self.graph.input.remove(self.node_name2module[inp.name])
+                self.graph.input.append(inp)
+                self.node_name2module[inp.name] = inp
+                self.shape_inference()
+
+        self.change_batch_size(rebatch_info)
 
     def add_outputs(self, outputs):
         # https://github.com/onnx/onnx/issues/3277#issuecomment-1050600445
@@ -277,7 +275,7 @@ class onnxModifier:
             init_type, init_val_str = meta
             if init_val_str == "": continue # in case we clear the input
             # print(init_name, init_type, init_val)
-            init_val = parse_str2np(init_val_str, init_type)
+            init_val = str2np(init_val_str, init_type)
             # print(init_val)
             # for primary initilizers
             if init_name in self.initializer_name2module.keys():
@@ -374,6 +372,7 @@ class onnxModifier:
         for node_name in sorted_node_names:
             sorted_nodes.append(copy.deepcopy(self.node_name2module[node_name]))
         del self.graph.node[:]
+        # TODO: check: does self.node_name2module still work?
         self.graph.node.extend(sorted_nodes)
 
     def post_process(self, kwargs):
@@ -468,9 +467,7 @@ class onnxModifier:
         self.add_nodes(modify_info['added_node_info'], modify_info['node_states'])
         self.change_initializer(modify_info['changed_initializer'])
         self.add_inputs(modify_info['added_inputs'])
-        # TODO: merge `change_batch_size()` and `change_inputs()` in the future
-        self.change_batch_size(modify_info['rebatch_info'])
-        # self.change_inputs(modify_info['changed_input_info'])
+        self.change_inputs(modify_info['added_inputs'], modify_info['rebatch_info'])
         self.change_node_io_name(modify_info['node_renamed_io'])
         self.remove_node_by_node_states(modify_info['node_states'])
         self.add_outputs(modify_info['added_outputs'])
@@ -478,26 +475,21 @@ class onnxModifier:
 
         self.post_process(modify_info['postprocess_args'])
 
-    def check_and_save_model(self, ext=".onnx", save_dir='./modified_onnx'):
+    def check_and_save_model(self, save_dir='./modified_onnx'):
         print("saving model...")
 
         # onnx.checker.check_model(self.model_proto)
+        save_dir = os.path.abspath(save_dir)
         if not os.path.exists(save_dir):
             os.mkdir(save_dir)
-        save_path = os.path.join(save_dir, 'modified_' + os.path.splitext(self.model_name)[0] + ext)
+        save_path = os.path.join(save_dir, 'modified_' + self.model_name)
 
-        if ext == '.onnx':
+        if save_path:
             onnx.save(self.model_proto, save_path)
-        elif ext == '.json':
-            from google.protobuf.json_format import MessageToJson
-            message = MessageToJson(self.model_proto)
-            with open(save_path, "w") as fo:
-                fo.write(message)
+            print("model saved in {} !".format(save_dir))
+            return save_path
         else:
-            print("model saved in {} is not supported !".format(ext))
-            return "NULLPATH"
-        print("model saved in {} !".format(save_dir))
-        return save_path
+            return "NULL"
 
     def inference(self, input_shape=[1, 3, 224, 224], x=None, output_names=None):
         import onnxruntime as rt

@@ -528,9 +528,19 @@ onnx.Graph = class {
 
     get inputs() {
         // return this._inputs;
-        var all_inputs = this._inputs.concat(this._custom_added_inputs);
-        // console.log(all_inputs)
         var filtered_inputs = [];
+        // when the original model input shape is changed (onnxModifier.changeModelInput())
+        var _custom_added_inputs_names = [];
+        for (const inp of this._custom_added_inputs) {
+            _custom_added_inputs_names.push(inp.name);
+        }
+        for (const inp of this._inputs) {
+            if (_custom_added_inputs_names.includes(inp.name)) continue;
+            filtered_inputs.push(inp);
+        }
+
+        var all_inputs = filtered_inputs.concat(this._custom_added_inputs);
+        filtered_inputs = [];
         for (const inp of all_inputs) {
             if (this._custom_deleted_inputs.includes(inp.name)) continue;
             filtered_inputs.push(inp);

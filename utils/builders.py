@@ -1,6 +1,6 @@
 import onnx
 from onnx import AttributeProto
-from .parse_tools import parse_str2val
+from .parse_tools import str2val, str2onnxdtype
 
 def make_new_node(node_info):
     name = node_info['properties']['name']
@@ -12,7 +12,7 @@ def make_new_node(node_info):
         attr_value, attr_type = attr_meta
         if attr_value == 'undefined' or len(attr_value.replace(' ', '')) == 0:
             continue
-        attributes[attr_name] = parse_str2val(attr_value, attr_type)
+        attributes[attr_name] = str2val(attr_value, attr_type)
     # print(attributes)
 
     inputs = []
@@ -54,11 +54,11 @@ def make_attr_changed_node(node, attr_change_info):
         elif attr_type == "STRING":
             return str(value)
         elif attr_type == "FLOATS":
-            return parse_str2val(value, "float[]")
+            return str2val(value, "float[]")
         elif attr_type == "INTS":
-            return parse_str2val(value, "int[]")
+            return str2val(value, "int[]")
         elif attr_type == "STRINGS":
-            return parse_str2val(value, "string[]")
+            return str2val(value, "string[]")
         else:
             raise RuntimeError("type {} is not considered in current version. \
                                You can kindly report an issue for this problem. Thanks!".format(attr_type))
@@ -85,3 +85,13 @@ def make_attr_changed_node(node, attr_change_info):
     # print(node)
 
     return node
+
+def make_input(input_info: str):
+    # ['input.4', 'float32[1,8,96,96]']
+    name, type_ = input_info
+    dtype = str2onnxdtype(type_.split("[")[0])
+    shape = str2val(type_.split("[")[1].split("]")[0], "int[]")
+    value_info = onnx.helper.make_tensor_value_info(
+                                name, dtype, shape)
+
+    return value_info

@@ -4,7 +4,7 @@ from onnx.mapping import NP_TYPE_TO_TENSOR_TYPE
 from onnx import TensorProto
 
 # parse numpy values from string
-def parse_str2np(tensor_str, tensor_type):
+def str2np(tensor_str, tensor_type):
     def parse_value(value_str, value_type):
         if value_type.startswith('int') or value_type.startswith('uint'):
             return int(value_str)
@@ -64,7 +64,7 @@ def parse_str2np(tensor_str, tensor_type):
                           f"tensor value: {val}")
 
 # parse Python or onnx built-in values from string
-def parse_str2val(val_str, val_type):
+def str2val(val_str, val_type):
     def preprocess(ls_val_str):
         ls_val_str = ls_val_str.replace(" ", "")
         # a compatible function in case user inputs double side bracket for list values
@@ -153,43 +153,43 @@ if __name__ == "__main__":
         pass
     # tmp_debug()
 
-    def test_parse_str2np():
+    def test_str2np():
         # # tensor_str = "1.223"
         # tensor_str = "0.023"
-        # val = parse_str2np(tensor_str, "float32")
+        # val = str2np(tensor_str, "float32")
         # print(type(val), val)
 
         # # tensor_str = "[1, 2, 3]"
         # tensor_str = "[[10, 2.3, 3],[1, 2e6, 3]]"
-        # val = parse_str2np(tensor_str, "float32")
+        # val = str2np(tensor_str, "float32")
         # print(type(val), val)
 
         # tensor_str = "[[10, 2, 3],[1, 2, 3]]"
-        # val = parse_str2np(tensor_str, "int64")
+        # val = str2np(tensor_str, "int64")
         # print(type(val), val)
 
         init_val_str = '[[[[0.0171247538316637]],[[0.0175070028011204]],[[0.0174291938997821]]]]'
         init_type = 'float32'
-        init_val = parse_str2np(init_val_str, init_type)
+        init_val = str2np(init_val_str, init_type)
         # print(init_val)
         pass
-    test_parse_str2np()
+    test_str2np()
 
-    def test_parse_str2val():
+    def test_str2val():
         val_str = "1"
-        val = parse_str2val(val_str, "int")
+        val = str2val(val_str, "int")
         print(val)
 
         # val_str = "1, 2, 3"
         val_str = "[1, 2, 3]"
-        val = parse_str2val(val_str, "int[]")
+        val = str2val(val_str, "int[]")
         print(val)
-        val = parse_str2val(val_str, "float[]")
+        val = str2val(val_str, "float[]")
         print(val)
 
         val_str = "int8"
         # val_str = "float"
-        val = parse_str2val(val_str, "DataType")
+        val = str2val(val_str, "DataType")
         print(val)
-    # test_parse_str2val()
+    # test_str2val()
 

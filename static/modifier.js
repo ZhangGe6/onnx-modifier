@@ -121,30 +121,10 @@ modifier.Modifier = class {
         this.applyAndUpdateView();
     }
 
-    reshapeModelInput(input_name, value){
-        if (!this.graph) return; //skip init empty reload
-        var arg_with_name = this.graph._context.argument(input_name);
-        arg_with_name._type._shape._dimensions = Array.from(value.replace(']','').replace('[','').split(',')).map(Number);
-        if (this.changedInputInfo.has(input_name)){
-            this.changedInputInfo.set(input_name, this.changedInputInfo.get(input_name).split('[')[0]+value);
-        }
-        else{
-            this.changedInputInfo.set(input_name, arg_with_name._type._dataType.toString()+value);
-        }
-        this.applyAndUpdateView();
-    }
-
-    retypeModelInput(input_name, value){
-        if (!this.graph) return; //skip init empty reload
-        var arg_with_name = this.graph._context.argument(input_name);
-        arg_with_name._type._dataType = value;
-        if (this.changedInputInfo.has(input_name)){
-            this.changedInputInfo.set(input_name,value+'['+this.changedInputInfo.get(input_name).split('[')[1]);
-        }
-        else{
-            this.changedInputInfo.set(input_name, value+arg_with_name._type._shape.toString());
-        }
-        this.applyAndUpdateView();
+    changeModelInput(input_name, input_shape_type) {
+        // console.log(input_name, input_shape_type);
+        this.deleteModelInput(input_name);
+        this.addModelInput(input_name, input_shape_type);
     }
 
     deleteModelOutput(output_name) {
