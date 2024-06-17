@@ -88,7 +88,7 @@ def str2val(val_str, val_type):
             attr_val.append(float(v))
         return attr_val
     elif val_type == "string":
-        return str(val_type)
+        return str(val_str)
     elif val_type == "string[]":
         attr_val = []
         for v in preprocess(val_str).split(","):
