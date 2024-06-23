@@ -99,8 +99,8 @@ Click `Open Model...` to upload the ONNX model to edit. The model will be parsed
 Graph-level-operation elements are placed on the left-top of the page. Currently, there are three buttons:  `Reset`, `Download` and `Add node`. They can do:
 - `Reset`: Reset the whole model graph to its initial state;
 - `Download`: Save the modified model into disk. Note the two checkboxes on the right
-  - (**experimental**) select `shape inferece` to do [shape inferece](https://github.com/onnx/onnx/blob/main/docs/ShapeInference.md) when saving model.
-    - The `shape inferece` feature is built on [onnx-tool](https://github.com/ThanatosShinji/onnx-tool), which is a powerful ONNX third-party tool.
+  - (**experimental**) select `shape inference` to do [shape inference](https://github.com/onnx/onnx/blob/main/docs/ShapeInference.md) when saving model.
+    - The `shape inference` feature is built on [onnx-tool](https://github.com/ThanatosShinji/onnx-tool), which is a powerful ONNX third-party tool.
   - (**experimental**)  select `clean up` to remove the unused nodes and tensors (like [ONNX GraphSurgeon](https://docs.nvidia.com/deeplearning/tensorrt/onnx-graphsurgeon/docs/ir/graph.html#onnx_graphsurgeon.Graph.cleanup)).
 - `Add node`: Add a new node into the model.
 
@@ -195,9 +195,9 @@ Change the original attribute to a new value, then we are done.
 <img src="./docs/change_attr.gif" style="zoom:75%;" />
 
 ## Edit model input shape
-`onnx-modifier` supports editting input shape now. Click the target model input, then click the `Change input shape (static)` button. In the popped dialog, set a new shape for the input and click "confirm". The downsrteam tensor shape will be updated in the downloaded modified model (rather than in the pannel instantly, as the shape inferece process is applied after "Download" is clicked).
+`onnx-modifier` supports editting input shape now. Click the target model input, then click the `Change input shape (static)` button. In the popped dialog, set a new shape for the input and click "confirm". The downsrteam tensor shape will be updated in the downloaded modified model (rather than in the pannel instantly, as the shape inference process is applied after "Download" is clicked).
 
-`onnx-modifier` supports also supports changing input to be dynamic. Currently only the batch dimension is supported. Just click the `Set dynamic batch size` button, then we get a model which supports dynamic batch size inferece.
+`onnx-modifier` also supports changing input to be dynamic. Currently only the batch dimension is supported. Just click the `Set dynamic batch size` button, then we get a model which supports dynamic batch size inference.
 
 ## Edit model initializers
 Sometimes we want to edit the values which are stored in model initializers, such as the weight/bias of a convolution layer or the shape parameter of a `Reshape` node. `onnx-modifier` supports this feature now! Input a new value for the initializer in the invoked sidebar and click Download, then we are done.

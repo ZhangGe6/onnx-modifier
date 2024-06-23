@@ -1086,7 +1086,14 @@ sidebar.ArgumentView = class {
                         isOptionalLine.innerHTML = 'optional: <code><b>true</b></code>';
                         this._element.appendChild(isOptionalLine);
                     }
-                    var new_init_val = "", new_init_type = "";
+                    var arg_name = this._host._view.modifier.addedNode.get(this._modelNodeName).inputs.get(this._parameterName)[this._arg_index][0]  // [arg.name, arg.is_optional]
+                    var init_val = "", init_type = "";
+                    if (this._host._view.modifier.initializerEditInfo.get(arg_name)) {
+                        // [type, value]
+                        init_val = this._host._view.modifier.initializerEditInfo.get(arg_name)[1];
+                        init_type = this._host._view.modifier.initializerEditInfo.get(arg_name)[0];
+                    }
+
                     // ====== input value ======>
                     const editInitializerVal = this._host.document.createElement('div');
                     editInitializerVal.className = 'sidebar-view-item-value-line-border';
@@ -1097,10 +1104,12 @@ sidebar.ArgumentView = class {
                     inputInitializerVal.setAttribute("type", "text");
                     inputInitializerVal.rows = 8;
                     inputInitializerVal.cols = 44;
+                    inputInitializerVal.innerHTML = init_val;
 
                     inputInitializerVal.addEventListener('input', (e) => {
-                        new_init_val = e.target.value;
-                        this._host._view.modifier.changeAddedNodeInitializer(this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, new_init_type, new_init_val);
+                        init_val = e.target.value;
+                        this._host._view.modifier.changeAddedNodeInitializer(
+                            this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, init_type, init_val);
                     });
                     this._element.appendChild(inputInitializerVal);
                     // <====== input value ======
@@ -1115,17 +1124,12 @@ sidebar.ArgumentView = class {
                     inputInitializerType.setAttribute("type", "text");
                     inputInitializerType.rows = 1;
                     inputInitializerType.cols = 44;
-
-                    var arg_name = this._host._view.modifier.addedNode.get(this._modelNodeName).inputs.get(this._parameterName)[this._arg_index][0]  // [arg.name, arg.is_optional]
-                    if (this._host._view.modifier.initializerEditInfo.get(arg_name)) {
-                        // [type, value]
-                        inputInitializerType.innerHTML = this._host._view.modifier.initializerEditInfo.get(arg_name)[0];
-                        inputInitializerVal.innerHTML = this._host._view.modifier.initializerEditInfo.get(arg_name)[1];
-                    }
+                    inputInitializerType.innerHTML = init_type;
 
                     inputInitializerType.addEventListener('input', (e) => {
-                        new_init_type = e.target.value;
-                        this._host._view.modifier.changeAddedNodeInitializer(this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, new_init_type, new_init_val);
+                        init_type = e.target.value;
+                        this._host._view.modifier.changeAddedNodeInitializer(
+                            this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, init_type, init_val);
                     });
                     this._element.appendChild(inputInitializerType);
                     // <====== input type ======
