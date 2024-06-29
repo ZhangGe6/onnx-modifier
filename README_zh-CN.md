@@ -48,7 +48,7 @@
   ```
 
 ## 从可执行文件启动
-- Windows: 下载可执行文件onnx-modifier.exe (28.3MB) [Google Drive](https://drive.google.com/file/d/1LRXgZauQ5BUENe_PvilRW8WvSO-4Jr9j/view?usp=sharing) / [Baidu NetDisk](https://pan.baidu.com/s/1OTkr9QTi6zKhiTTI3Sjnqw?pwd=inks)，双击即可启动。
+- Windows: 下载可执行文件onnx-modifier.exe (28.3MB) [Google Drive](https://drive.google.com/file/d/1LRXgZauQ5BUENe_PvilRW8WvSO-4Jr9j/view?usp=sharing) / [Baidu NetDisk](https://pan.baidu.com/share/init?surl=CDGCC5bzmRL4b0F60PANYg&pwd=vh32)，双击即可启动。
   - 默认使用Edge浏览器作为运行环境。
 > 生成可执行文件的步骤记录在`app_desktop.py`文件中。未来会为其他平台生成可执行文件。
 

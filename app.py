@@ -1,7 +1,8 @@
 import argparse
+import logging
 from flask import Flask, render_template, request
 from onnx_modifier import onnxModifier
-
+logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
 onnx_modifier = None

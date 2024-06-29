@@ -6,7 +6,7 @@
 import os
 import copy
 import struct
-import warnings
+import logging
 import json
 import numpy as np
 import onnx
@@ -31,7 +31,7 @@ class onnxModifier:
     @classmethod
     def from_name_json_stream(cls, name, stream):
         from google.protobuf.json_format import Parse
-        print(f"loading model from json {name} ...")
+        logging.info(f"loading model from json {name} ...")
         stream.seek(0)
         onnx_json = json.load(stream)
         onnx_str = json.dumps(onnx_json)
@@ -41,10 +41,10 @@ class onnxModifier:
     @classmethod
     def from_name_protobuf_stream(cls, name, stream):
         # https://leimao.github.io/blog/ONNX-IO-Stream/
-        print("loading model...")
+        logging.info("loading model...")
         stream.seek(0)
         model_proto = onnx.load_model(stream, "protobuf", load_external_data=False)
-        print("load done!")
+        logging.info("load done!")
         return cls(name, model_proto)
 
     def reload(self):
@@ -89,12 +89,12 @@ class onnxModifier:
                 continue
             if node_state == 'Deleted':
                 if node_name in self.graph_output_names:
-                    # print('removing output {} ...'.format(node_name))
+                    logging.debug('removing output {} ...'.format(node_name))
                     self.graph.output.remove(self.node_name2module[node_name])
                     self.graph_output_names = [n for n in self.graph_output_names if n != node_name]
                     self.node_name2module.pop(node_name, None)
                 elif not node_name in self.graph_input_names:
-                    # print('removing node {} ...'.format(node_name))
+                    logging.debug('removing node {} ...'.format(node_name))
                     self.graph.node.remove(self.node_name2module[node_name])
                     self.node_name2module.pop(node_name, None)
 
@@ -161,7 +161,6 @@ class onnxModifier:
 
     def change_node_attr(self, node_changed_attr):
         # we achieve it by deleting the original node and make a (copied) new node
-        # print(node_changed_attr)
         for node_name in node_changed_attr.keys():
             orig_node = self.node_name2module[node_name]
             attr_changed_node = make_attr_changed_node(orig_node, node_changed_attr[node_name])
@@ -178,9 +177,7 @@ class onnxModifier:
         for node_info in nodes_info.values():
             if node_states[node_info['properties']['name']] == "Deleted":
                 continue
-            # print(node_info)
             node = make_new_node(node_info)
-            # print(node)
             self.graph.node.append(node)
             # update the node_name2module
             self.node_name2module[node.name] = node
@@ -191,7 +188,6 @@ class onnxModifier:
         # https://github.com/onnx/onnx/issues/2182
         rebatch_type = rebatch_info['type']
         rebatch_value = rebatch_info['value']
-        # print(rebatch_type, rebatch_value)
         if rebatch_type == 'fixed':
             rebatch_value = int(rebatch_value)
             for tensor in self.graph.input:
@@ -200,7 +196,7 @@ class onnxModifier:
                 elif type(rebatch_value) == int:
                     tensor.type.tensor_type.shape.dim[0].dim_value = rebatch_value
                 else:
-                    warnings.warn('Unknown type {} for batch size. Fallback to dynamic batch size.'.format(type(rebatch_value)))
+                    logging.warning('Unknown type {} for batch size. Fallback to dynamic batch size.'.format(type(rebatch_value)))
                     tensor.type.tensor_type.shape.dim[0].dim_param = str(rebatch_value)
 
             self.shape_inference()
@@ -229,25 +225,28 @@ class onnxModifier:
                         struct.pack_into('q', shape, 0, -1)
                         init.raw_data = bytes(shape)
 
-    def add_inputs(self, inputs):
-        for input_info in inputs.values():
-            inp = make_input(input_info)
-            if inp.name not in self.graph_input_names:
-                self.graph_input_names.append(inp.name)
-                self.graph.input.append(inp)
+    def replace_primitive_input(self, new_input):
+        self.graph.input.remove(self.node_name2module[new_input.name])
+        self.graph.input.append(new_input)
+        self.node_name2module[new_input.name] = new_input
 
-                self.node_name2module[inp.name] = inp
-                self.shape_inference()
+    def add_new_input(self, new_input):
+        self.graph_input_names.append(new_input.name)
+        self.graph.input.append(new_input)
+        self.node_name2module[new_input.name] = new_input
 
-    def change_inputs(self, inputs, rebatch_info):
+    def edit_inputs(self, inputs, rebatch_info):
         for input_info in inputs.values():
             inp = make_input(input_info)
             if inp.name in self.graph_input_names:
-                self.graph.input.remove(self.node_name2module[inp.name])
-                self.graph.input.append(inp)
-                self.node_name2module[inp.name] = inp
-                self.shape_inference()
+                logging.debug(f"Replacing the input {inp.name}")
+                self.replace_primitive_input(inp)
+            else:
+                logging.debug(f"Adding new input {inp.name}")
+                self.add_new_input(inp)
 
+        if inputs:
+            self.shape_inference()
         self.change_batch_size(rebatch_info)
 
     def add_outputs(self, outputs):
@@ -266,7 +265,7 @@ class onnxModifier:
                 self.graph_output_names.append("out_" + info.name)
                 self.node_name2module["out_" + info.name] = info
             else:
-                print(f"[Warning]: {name} is not added successfully!")
+                logging.warning(f"{name} is not added successfully!")
 
     def change_initializer(self, changed_initializer):
         # print(changed_initializer)
@@ -449,26 +448,21 @@ class onnxModifier:
         if useShapeInference:
             self.shape_inference()
         if useCleanUp:
-            print("[EXPERIMENTAL] Remove idle nodes...")
+            logging.warning("[EXPERIMENTAL] Remove idle nodes...")
             remove_isolated_nodes()
         if self.need_topsort:
             self.toposort()
 
     def modify(self, modify_info):
         '''
-        1. Some functions, such as change_initializer(), should be placed
-           before change_node_io_name(), to avoid name mismatch error.
-        2. add_nodes() should be placed at the first place, otherwise
-           remove_node_by_node_states() will delete the initializer of
-           newly added nodes by mistake.
+        The order of editing functions should be considered carefully
         '''
-        # print(modify_info)
+        logging.debug("=== modify_info ===\n", modify_info)
 
         self.add_nodes(modify_info['added_node_info'], modify_info['node_states'])
         self.change_initializer(modify_info['changed_initializer'])
-        self.add_inputs(modify_info['added_inputs'])
-        self.change_inputs(modify_info['added_inputs'], modify_info['rebatch_info'])
         self.change_node_io_name(modify_info['node_renamed_io'])
+        self.edit_inputs(modify_info['added_inputs'], modify_info['rebatch_info'])
         self.remove_node_by_node_states(modify_info['node_states'])
         self.add_outputs(modify_info['added_outputs'])
         self.change_node_attr(modify_info['node_changed_attr'])
@@ -476,7 +470,7 @@ class onnxModifier:
         self.post_process(modify_info['postprocess_args'])
 
     def check_and_save_model(self, save_dir='./modified_onnx'):
-        print("saving model...")
+        logging.info("saving model...")
 
         # onnx.checker.check_model(self.model_proto)
         save_dir = os.path.abspath(save_dir)
@@ -486,7 +480,7 @@ class onnxModifier:
 
         if save_path:
             onnx.save(self.model_proto, save_path)
-            print("model saved in {} !".format(save_dir))
+            logging.info("model saved in {} !".format(save_dir))
             return save_path
         else:
             return "NULL"
@@ -507,6 +501,5 @@ class onnxModifier:
             output_names = [inference_session.get_outputs()[0].name]
 
         input_name = inference_session.get_inputs()[0].name
-        out = inference_session.run(output_names, {input_name: x})[0]
-        print(out.shape, out.dtype)
-        # print(out[0][0][0][0])
+        outs = inference_session.run(output_names, {input_name: x})
+        return outs
