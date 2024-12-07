@@ -499,6 +499,34 @@ modifier.Modifier = class {
         this.applyAndUpdateView();
     }
 
+
+    downloadGraph( body_str) {
+        fetch('/download', {
+            // Declare what type of data we're sending
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            // Specify the method
+            method: 'POST',
+            body: body_str
+        }).then((response) => {
+            // https://devpress.csdn.net/python/62f517797e66823466189f02.html
+            if (response.status == '200') {
+                response.text().then(data => {
+                    if (data != "NULL" && data != "NULLPATH") {
+                        swal("Success!", "Modified model has been successfuly saved in:\n" + data, "success");
+                    }
+                    else if (data == "NULL") {
+                        swal("Some error happens!", "You are kindly to check the python cmdline print ", "error");
+                    }
+                    //skip data == "NULLPATH" (may caused by cancellation of save operation)
+                })
+            } else {
+                swal("Error happens!", "Please check the log and create an issue on https://github.com/ZhangGe6/onnx-modifier", "error");
+            }
+        })
+    }
+
     resetGraph() {
         // reset node states
         this.name2NodeStates = new Map();

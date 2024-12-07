@@ -120,7 +120,6 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
 .graph-op-button-addNode:active {  background: #e7e7e7; }
 .graph-op-add-node-dropdown {
     font-size: 15px;
-    position:absolute;
     left: 2px;
     top: 135px;
 }
@@ -152,7 +151,7 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
 }
 
 .message-box .message {
-    margin: 24px 0;
+    margin: 10px 0;
 }
 
 .message-box .dialog-content {
@@ -432,17 +431,6 @@ warning_msg::before {
         </svg>
     </button>
 
-    <button id="reset-graph" class="graph-op-button-reset">Reset</button>
-    <button id="download-graph" class="graph-op-button-download">Download</button>
-    <input type="checkbox" id="shapeInference" class="download-checkbox-shapeInference"/>
-    <input type="text" value="shape inference" class="download-anno-shapeInference" readonly/> </td>
-    <input type="checkbox" id="cleanUp" class="download-checkbox-cleanUp"/>
-    <input type="text" value="clean up" class="download-anno-cleanUp" readonly/> </td>
-    <button id="add-node" class="graph-op-button-addNode">Add node</button>
-    <select id="add-node-dropdown" class="graph-op-add-node-dropdown">
-    </select>
-	<button id="load-model" class="graph-button-load">LoadModel</button>
-
     <button id="back-button" class="toolbar-back-button" title="Back">
         &#x276E;
     </button>
@@ -496,6 +484,37 @@ warning_msg::before {
     <div style="font-weight: bold; color: rgba(0, 0, 0, 0.01); user-select: none;">.</div>
     <div style="font-weight: bold; color: rgba(0, 0, 0, 0.01); user-select: none;">.</div>
 </div>
+
+<dialog id="download-onnx-option-dialog" class="dialog message-box">
+    <p class="title"> Download Options </p>
+    <div class="dialog-content">
+        <div class = "message"> Options</div>
+        <label>
+            <input type="checkbox" id="shapeInference"/> shapeInference
+        </label>
+        <br>
+        <label>
+            <input type="checkbox" id="cleanUp"/> cleanUp
+        </label>
+    </div>
+    <div class="footer">
+        <button data-value="">Cancel</button>
+        <button id="confirm-enable" data-value="Confirm">Confirm</button>
+    </div>
+</dialog>
+
+<dialog id="add-node-dialog" class="dialog message-box">
+    <p class="title"> Add Node </p>
+    <div class="dialog-content">
+        <div class = "message"> Op Type </div>
+        <select id="add-node-dropdown" class="graph-op-add-node-dropdown">
+        </select>
+    </div>
+    <div class="footer">
+        <button data-value=""> Cancel </button>
+        <button id="add-node-confirm-enable" data-value="Confirm">Confirm</button>
+    </div>
+</dialog>
 
 <dialog id="addinput-dialog" class="dialog message-box">
     <p class="title"> Add New Input </p>
