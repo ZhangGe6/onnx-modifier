@@ -10,7 +10,7 @@ except ModuleNotFoundError:
 
 from app import app
 
-FlaskUI(app, maximized=True, idle_interval=5).run()
+FlaskUI(app, maximized=True, idle_interval=float("inf")).run()
 
 '''
 This script is used for generating excutable files.
