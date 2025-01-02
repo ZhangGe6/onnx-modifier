@@ -128,6 +128,36 @@ host.BrowserHost = class {
 
         this._menu = new host.Dropdown(this, 'menu-button', 'menu-dropdown');
         this._menu.add({
+            label: 'Load Model',
+            click: () => {
+                openFileDialog.value = '';
+                openFileDialog.click();
+            }
+        })
+        this._menu.add({})
+        this._menu.add({
+            label: 'Refresh',
+            click: () => this._view.modifier.resetGraph()
+        });
+        this._menu.add({});
+        this._menu.add({
+            label: 'Add Node...',
+            click:() => {
+                let dialog = document.getElementById('add-node-dialog');
+                this.show_confirm_dialog(dialog).then((is_not_cancel) => {
+                    if (!is_not_cancel) return;
+                    var addNodeDropDown = this.document.getElementById('add-node-dropdown');
+                    var selected_val = addNodeDropDown.options[addNodeDropDown.selectedIndex].value
+                    var add_op_domain = selected_val.split(':')[0]
+                    var add_op_type = selected_val.split(':')[1]
+                    // console.log(selected_val)
+                    // this._view._graph.add_node(add_op_domain, add_op_type)
+                    this._view.modifier.addNode(add_op_domain, add_op_type);
+                    this._view._updateGraph();
+                })
+            }
+        })
+        this._menu.add({
             label: 'Properties...',
             accelerator: 'CmdOrCtrl+Enter',
             click: () => this._view.showModelProperties()
@@ -191,6 +221,22 @@ host.BrowserHost = class {
             accelerator: 'CmdOrCtrl+Alt+E',
             click: () => this._view.export(document.title + '.svg')
         });
+        this._menu.add({
+            label: 'Download as onnx',
+            click:() => {
+                let dialog = document.getElementById('download-onnx-option-dialog');
+                this.show_confirm_dialog(dialog).then((is_not_cancel) => {
+                    if (!is_not_cancel) return;
+                    const downloadWithShapeInfCheckBox = this.document.getElementById('shapeInference');
+                    this._view.modifier.onOffShapeInf(downloadWithShapeInfCheckBox.checked);
+       
+                    const downloadWithCleanUp = this.document.getElementById('cleanUp');
+                    this._view.modifier.onOffCleanUp(downloadWithCleanUp.checked);
+
+                    this._view.modifier.downloadGraph(this._buildModificationInfo())
+                })
+            }
+        });
         this.document.getElementById('menu-button').addEventListener('click', (e) => {
             this._menu.toggle();
             e.preventDefault();
@@ -206,53 +252,6 @@ host.BrowserHost = class {
         //     this._view._updateGraph();
         // })
 
-        const resetButton = this.document.getElementById('reset-graph');
-        resetButton.addEventListener('click', () => {
-            // this._view._graph.resetGraph();
-            // this._view._updateGraph();
-            this._view.modifier.resetGraph();
-        })
-
-        const downloadWithShapeInfCheckBox = this.document.getElementById('shapeInference');
-        downloadWithShapeInfCheckBox.addEventListener('click', () => {
-            // console.log(downloadWithShapeInfCheckBox.checked);
-            this._view.modifier.onOffShapeInf(downloadWithShapeInfCheckBox.checked);
-        })
-        const downloadWithCleanUp = this.document.getElementById('cleanUp');
-        downloadWithCleanUp.addEventListener('click', () => {
-            // console.log(downloadWithCleanUp.checked);
-            this._view.modifier.onOffCleanUp(downloadWithCleanUp.checked);
-        })
-
-        const downloadButton = this.document.getElementById('download-graph');
-        downloadButton.addEventListener('click', () => {
-            // console.log(this._view._graph._renameMap)
-            // // https://healeycodes.com/talking-between-languages
-            fetch('/download', {
-                // Declare what type of data we're sending
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                // Specify the method
-                method: 'POST',
-                body: this._buildModificationInfo()
-            }).then((response) => {
-                // https://devpress.csdn.net/python/62f517797e66823466189f02.html
-                if (response.status == '200') {
-                    response.text().then(data => {
-                        if (data != "NULL" && data != "NULLPATH") {
-                            swal("Success!", "Modified model has been successfuly saved in:\n" + data, "success");
-                        }
-                        else if (data == "NULL") {
-                            swal("Some error happens!", "You are kindly to check the python cmdline print ", "error");
-                        }
-                        //skip data == "NULLPATH" (may caused by cancellation of save operation)
-                    })
-                } else {
-                    swal("Error happens!", "Please check the log and create an issue on https://github.com/ZhangGe6/onnx-modifier", "error");
-                }
-            })
-        });
 		// const saveJsonButton = this.document.getElementById('save-json');
         // saveJsonButton.addEventListener('click', () => {
 		// 	fetch('/jsondownload', {
@@ -279,19 +278,6 @@ host.BrowserHost = class {
         //         }
         //     })
 		// });
-        const addNodeButton = this.document.getElementById('add-node');
-        addNodeButton.addEventListener('click', () => {
-            // this._view._graph.resetGraph();
-            // this._view._updateGraph();
-            var addNodeDropDown = this.document.getElementById('add-node-dropdown');
-            var selected_val = addNodeDropDown.options[addNodeDropDown.selectedIndex].value
-            var add_op_domain = selected_val.split(':')[0]
-            var add_op_type = selected_val.split(':')[1]
-            // console.log(selected_val)
-            // this._view._graph.add_node(add_op_domain, add_op_type)
-            this._view.modifier.addNode(add_op_domain, add_op_type);
-            this._view._updateGraph();
-        })
 
         this.document.getElementById('version').innerText = this.version;
 
@@ -353,13 +339,6 @@ host.BrowserHost = class {
                         this._view.modifier.clearGraph();
                     }
                 }
-            });
-        }
-        const openModelButton = this.document.getElementById('load-model');
-        if (openModelButton && openFileDialog) {
-            openModelButton.addEventListener('click', () => {
-                openFileDialog.value = '';
-                openFileDialog.click();
             });
         }
         const githubButton = this.document.getElementById('github-button');
