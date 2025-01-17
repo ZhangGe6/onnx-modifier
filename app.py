@@ -1,6 +1,7 @@
 import argparse
 import logging
-from flask import Flask, render_template, request
+import time
+from flask import Flask, render_template, request, send_file
 from onnx_modifier import onnxModifier
 logging.basicConfig(level=logging.INFO)
 
@@ -23,6 +24,23 @@ def open_model():
                                     onnx_file.filename, onnx_file.stream)
 
     return 'OK', 200
+
+@app.route('/merge_model', methods=['POST'])
+def merge_model():
+
+    onnx_file1 = request.files['file0']
+    onnx_file2 = request.files['file1']
+    timestamp = time.time()
+    global onnx_modifier
+    onnx_modifier, stream ,merged_name = onnxModifier.merge(
+        onnx_file1.filename, onnx_file1.stream, 
+        onnx_file2.filename, onnx_file2.stream, 
+        "", str(int(timestamp)) + "_")
+    
+    return send_file(stream,
+                     mimetype='application/octet-stream',
+                     as_attachment=True,
+                     download_name=merged_name)
 
 
 @app.route('/download', methods=['POST'])
