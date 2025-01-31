@@ -93,7 +93,7 @@
     .node-item-function text { fill: #dfdfdfdf; }
     .node-item-function:hover { cursor: pointer; }
     .node-item-function:hover path { fill: #666666; }
-    
+
     .node-item-type path { fill: #303030; }
     .node-item-type text { fill: #dfdfdf; }
     .node-item-type:hover { cursor: pointer; }
@@ -134,3 +134,6 @@
     .node-item-type-quantization path { fill: rgb(80, 40, 0, 0.7); }
     .node-item-type-custom path { fill: rgb(64, 64, 64, 0.7); }
 }
+
+ /* render selected nodes */
+ .highlight path { stroke: #FF6347; stroke-width: 2px;}

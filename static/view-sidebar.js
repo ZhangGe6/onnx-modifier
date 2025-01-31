@@ -9,6 +9,7 @@ sidebar.Sidebar = class {
         this._host = host;
         this._id = id ? ('-' + id) : '';
         this._stack = [];
+        this.node_owner = null;
         this._closeSidebarHandler = () => {
             this._pop();
         };
@@ -63,6 +64,10 @@ sidebar.Sidebar = class {
         if (container) {
             container.style.width = '100%';
             container.focus();
+        }
+        if (this.node_owner) {
+            this.node_owner.element.classList.remove('highlight');
+            this.node_owner = null;
         }
     }
 
@@ -120,6 +125,11 @@ sidebar.Sidebar = class {
         if (container) {
             container.style.width = 'max(40vw, calc(100vw - 500px))';
         }
+    }
+
+    // used if the side bar is invoked to show a node's property
+    mark_node_owner(node) {
+        this.node_owner = node;
     }
 };
 

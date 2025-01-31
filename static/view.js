@@ -821,6 +821,10 @@ view.View = class {
                     nodeSidebar.toggleInput(input.name);
                 }
                 this._sidebar.open(nodeSidebar.render(), 'Node Properties');
+
+                var node = this.modifier.name2ViewNode.get(modelNodeName);
+                node.element.classList.add('highlight');
+                this._sidebar.mark_node_owner(node);
             }
             catch (error) {
                 const content = " in '" + this._model.identifier + "'.";
