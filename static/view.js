@@ -26,6 +26,11 @@ view.View = class {
             direction: 'vertical',
             mousewheel: 'scroll'
         };
+
+        this.isAltKeyDown = false;
+        this.selectedFisrtNodeName = null;
+        this.selectedSecondNodeName = null;
+
         this.lastScrollLeft = 0;
         this.lastScrollTop = 0;
         this._zoom = 1;
@@ -59,6 +64,42 @@ view.View = class {
             container.addEventListener('scroll', (e) => this._scrollHandler(e));
             container.addEventListener('wheel', (e) => this._wheelHandler(e), { passive: false });
             container.addEventListener('mousedown', (e) => this._mouseDownHandler(e));
+
+            // for select nodes
+
+            container.addEventListener('keydown', (e) => {
+                
+                if (e.key === 'Alt' && !this.isAltKeyDown) {
+                    this.isAltKeyDown = true;
+                }
+            });
+            container.addEventListener('keyup', (e) => {
+                
+                if (e.key === 'Alt' && this.isAltKeyDown) {
+                    this.isAltKeyDown = false;
+                    this.selectedFisrtNodeName = null;
+                    this.selectedSecondNodeName = null;
+                    this._graph.remove_highlight();
+                }
+                if (this.isAltKeyDown && e.key.toLowerCase() === 'j') {
+                    if(this.isAltKeyDown && this.selectedFisrtNodeName) {
+                        var time_now = Date.parse(new Date()) / 1000;
+                        var sets = this._graph.getPathNodeNames(this.selectedFisrtNodeName, this.selectedSecondNodeName);
+                        for (const name of sets) {
+                            this.modifier.duplicateNode(name, time_now);
+                        }
+                    }
+                } else if (this.isAltKeyDown && e.key.toLowerCase() === 'l') {
+                
+                    if(this.isAltKeyDown && this.selectedFisrtNodeName) {
+                        var sets = this._graph.getPathNodeNames(this.selectedFisrtNodeName, this.selectedSecondNodeName);
+                        for (const name of sets) {
+                            this._host._view.modifier.deleteSingleNode(name);
+                        }
+                    }
+                }
+            });
+                
             switch (this._host.agent) {
                 case 'safari':
                     container.addEventListener('gesturestart', (e) => this._gestureStartHandler(e), false);
@@ -74,7 +115,36 @@ view.View = class {
         });
     }
 
+    highlight(node, input, modelNodeName) {
+        if (node) {
+            if(this.isAltKeyDown) {
+                if(this.selectedFisrtNodeName)
+                {
+                    this.selectedSecondNodeName = modelNodeName;
+                    var sets = this._graph.getPathNodeNames(this.selectedFisrtNodeName, this.selectedSecondNodeName);
+                    this._graph.set_highlight(sets.add(this.selectedFisrtNodeName))
+                } else {
+                    this.selectedFisrtNodeName = modelNodeName;
+                    this.selectedSecondNodeName = modelNodeName;
+                    var sets = new Set([this.selectedFisrtNodeName]);
+                    this._graph.set_highlight(sets);
+                }
+            }
+           
+        }
+        
+    }
+
+    showLoading() {
+        this._host.document.getElementById('loading').style.display = 'flex';
+    }
+      
+    hideLoading() {
+        this._host.document.getElementById('loading').style.display = 'none';
+    }
+
     show(page) {
+        this.hideLoading();
         if (!page) {
             page = (!this._model && !this.activeGraph) ? 'welcome' : 'default';
         }
@@ -779,7 +849,7 @@ view.View = class {
     }
 
     showNodeProperties(node, input, modelNodeName) {
-        if (node) {
+        if (node && !this.isAltKeyDown) {
             try {
                 // console.log(node)   // 注意是onnx.Node, 不是grapher.Node，所以没有update()， 没有element元素
                 const nodeSidebar = new sidebar.NodeSidebar(this._host, node, modelNodeName);
@@ -1073,6 +1143,7 @@ view.Node = class extends grapher.Node {
         const tooltip = this.context.view.options.names && (node.name || node.location) ? type.name : (node.name || node.location);
         const title = header.add(null, styles, content, tooltip);
         title.on('click', () => this.context.view.showNodeProperties(node, null, this.modelNodeName));
+        title.on('click', () => this.context.view.highlight(node, null, this.modelNodeName));
         if (node.type.nodes && node.type.nodes.length > 0) {
             const definition = header.add(null, styles, '\u0192', 'Show Function Definition');
             definition.on('click', () => this.context.view.pushGraph(node.type));
@@ -1083,12 +1154,22 @@ view.Node = class extends grapher.Node {
         }
 
         const initializers = [];
+        const editedInitializers = [];
         let hiddenInitializers = false;
         if (this.context.view.options.initializers) {
             for (const input of node.inputs) {
-                if (input.visible && input.arguments.length === 1 && input.arguments[0].initializer != null) {
-                    initializers.push(input);
+                if (input.visible && input.arguments.length === 1 ) {
+                    if (this.context.modifier.initializerEditInfo && 
+                        this.context.modifier.initializerEditInfo.has(input.arguments[0].name))
+                    {
+                        editedInitializers.push(
+                            [...this.context.modifier.initializerEditInfo.get(input.arguments[0].name),input.name,arguments[0].name]);
+                    } else if(input.arguments[0].initializer != null)
+                    {
+                        initializers.push(input);
+                    }
                 }
+
                 if ((!input.visible || input.arguments.length > 1) &&
                     input.arguments.some((argument) => argument.initializer != null)) {
                     hiddenInitializers = true;
@@ -1105,15 +1186,24 @@ view.Node = class extends grapher.Node {
             const bu = b.name.toUpperCase();
             return (au < bu) ? -1 : (au > bu) ? 1 : 0;
         });
-        if (initializers.length > 0 || hiddenInitializers || sortedAttributes.length > 0) {
+        if ((initializers.length > 0|| editedInitializers.length)|| hiddenInitializers || sortedAttributes.length > 0) {
             const list = this.list();
             list.on('click', () => this.context.view.showNodeProperties(node, null, this.modelNodeName));
+            list.on('click', () => this.context.view.highlight(node, null, this.modelNodeName));
             for (const initializer of initializers) {
                 const argument = initializer.arguments[0];
-                const type = argument.type;
+                var editType = null;
                 let shape = '';
+                if(argument.name)
+                {
+                    var initializerEditInfo = this.context.modifier.initializerEditInfo.get(argument.name);
+                    shape = initializerEditInfo?initializerEditInfo[0]:'';
+                    editType = (shape != '')?initializerEditInfo.split('[')[0]:null;
+                }
+                const type =  editType || argument.type;
+                
                 let separator = '';
-                if (type && type.shape && type.shape.dimensions && Array.isArray(type.shape.dimensions)) {
+                if (shape == '' && type && type.shape && type.shape.dimensions && Array.isArray(type.shape.dimensions)) {
                     shape = '\u3008' + type.shape.dimensions.map((d) => d ? d : '?').join('\u00D7') + '\u3009';
                     if (type.shape.dimensions.length === 0 && argument.initializer && !argument.initializer.state) {
                         try {
@@ -1137,6 +1227,40 @@ view.Node = class extends grapher.Node {
                     }
                 }
                 list.add(argument.name ? 'initializer-' + argument.name : '', initializer.name, shape, type ? type.toString() : '', separator);
+            }
+
+            // it is good looking as the param in editedInitializer is rendered
+
+            for (const editedInitializer of editedInitializers) {
+                const arg_name = editedInitializer[3];
+                const InitializerName = editedInitializer[2];
+                const shapeInfo = editedInitializer[0];
+                const tensorValue = editedInitializer[1];
+                
+                let shape = '';
+                let separator = '';
+                let type = '';
+                if(shapeInfo)
+                {
+                    var shapeInfoTmp = shapeInfo.split('[');
+                    var shapeStr = '';
+                    type = shapeInfoTmp[0];
+                    if(shapeInfoTmp.length > 1) {
+                        shapeStr = shapeInfoTmp[1].split(']')[0];
+                    }
+                    if(shapeStr == '') {
+                        shape = tensorValue.replace("\s+","");
+                        separator = " = ";
+                    } else {
+                        shape = '\u3008' + shapeStr.replace("\s+","").replace(/,|，/g,'\u00D7') + '\u3009';
+                    }
+                     
+                    if (shape && shape.length > 10) {
+                        shape = shape.substring(0, 10) + '\u2026';
+                    }
+                }
+            
+                list.add(arg_name ? 'initializer-' + arg_name : '', InitializerName, shape, type, separator);
             }
             if (hiddenInitializers) {
                 list.add(null, '\u3008' + '\u2026' + '\u3009', '', null, '');

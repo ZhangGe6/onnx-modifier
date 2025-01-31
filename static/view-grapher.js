@@ -131,6 +131,93 @@ grapher.Graph = class {
         }
     }
 
+    // highlight the selected nodes
+    remove_highlight() {
+        for (const [name,node] of this.modifier.name2ViewNode) {
+            node.element.classList.remove("highlight");
+        }
+    }
+
+    set_highlight(sets) {
+        this.remove_highlight();
+        for(const set of sets) {
+            var node = this.modifier.name2ViewNode.get(set);
+            node.element.classList.add('highlight');
+        }
+    
+    }
+
+    // find nodes between the two selected nodes
+
+    getAllPaths(start, end, paths, path = [], dead_nodes = [], depth = 0) {
+        var len = 0;
+        if  (depth > 200 ) return len;
+        var direction_switcher = false;
+        if(depth === 0 ) {
+            if(!this.modifier.namedEdges.get(start) || 
+                !this.modifier.name2ModelNode.get(end)) {
+                return len;
+            } else {
+                direction_switcher = true;
+            }
+            
+        }
+
+        path.push(start);
+
+        if (start === end) {
+            len = path.length;
+            path.forEach(item => paths.add(item));
+            // paths = new Set([...paths, ...path]);
+        } else {
+            
+            const neighbors = this.modifier.namedEdges.get(start) || [];
+            var path_len = path.length;
+            for (let neighbor of neighbors) {
+                if(paths.has(neighbor))
+                {
+                    path.forEach(item => paths.add(item));
+                    continue;
+                }else if(dead_nodes.includes(neighbor))
+                {
+                    continue;
+                }
+                while(path.length - path_len > 0)
+                {
+                    path.pop();
+                }
+                len += this.getAllPaths(neighbor, end, paths, path, dead_nodes, depth + 1);
+                
+            }
+            while(path.length - path_len > 0)
+            {
+                path.pop();
+            }
+            
+            if (len == 0) {
+                dead_nodes.push(start);
+            }
+        }
+
+        if (direction_switcher && len == 0) {
+            dead_nodes = [];
+            path = [];
+            len = this.getAllPaths(end, start, paths, path, dead_nodes, depth + 1);
+        }
+
+        return len;
+    }
+
+    getPathNodeNames(start, end)
+    {
+        var twoDimensionalArray = new Set();
+        this.getAllPaths(start, end, twoDimensionalArray);
+        return twoDimensionalArray;
+
+    }
+
+    //
+
     build(document, origin) {
         const createGroup = (name) => {
             const element = document.createElementNS('http://www.w3.org/2000/svg', 'g');
