@@ -733,7 +733,7 @@ class NodeAttributeView {
 
                 var attr_input = document.createElement("INPUT");
                 attr_input.setAttribute("type", "text");
-                attr_input.setAttribute("size", "42");
+                attr_input.setAttribute("size", "38");
                 attr_input.setAttribute("value", content ? content : 'undefined');
                 attr_input.addEventListener('input', (e) => {
                     this._host._view.modifier.changeNodeAttribute(this._modelNodeName, this._attributeName, e.target.value, type);
@@ -933,7 +933,7 @@ sidebar.ArgumentView = class {
 
             var arg_input = document.createElement("INPUT");
             arg_input.setAttribute("type", "text");
-            arg_input.setAttribute("size", "42");
+            arg_input.setAttribute("size", "38");
             arg_input.setAttribute("value", name);
             arg_input.addEventListener('input', (e) => {
                 this._host._view.modifier.changeNodeInputOutput(this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, e.target.value);
