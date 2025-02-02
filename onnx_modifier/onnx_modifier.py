@@ -11,10 +11,10 @@ import json
 import numpy as np
 import onnx
 from onnx import numpy_helper
-from utils import str2np, str2val
-from utils import np2onnxdtype, str2onnxdtype
-from utils import make_new_node, make_attr_changed_node, make_input
-from utils import get_infered_shape
+from .utils import str2np, str2val
+from .utils import np2onnxdtype, str2onnxdtype
+from .utils import make_new_node, make_attr_changed_node, make_input
+from .utils import get_infered_shape
 
 class onnxModifier:
     def __init__(self, model_name, model_proto):
