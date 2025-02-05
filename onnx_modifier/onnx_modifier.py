@@ -484,6 +484,7 @@ class onnxModifier:
         logging.debug("=== modify_info ===\n", modify_info)
 
         self.add_nodes(modify_info['added_node_info'], modify_info['node_states'])
+        self.change_initializer(modify_info['added_tensor'])
         self.change_initializer(modify_info['changed_initializer'])
         self.change_node_io_name(modify_info['node_renamed_io'])
         self.edit_inputs(modify_info['added_inputs'], modify_info['rebatch_info'])

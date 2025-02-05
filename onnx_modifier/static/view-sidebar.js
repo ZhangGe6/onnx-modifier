@@ -224,6 +224,8 @@ sidebar.NodeSidebar = class {
 
 
         this._addHeader('Model Input Output editing helper');
+        this._addButton('Duplicate Node');
+        this.add_span();
         this._addButton('Add Output');
         this.add_span();
         this._addButton('Add Input');
@@ -326,6 +328,12 @@ sidebar.NodeSidebar = class {
         if (title === 'Add Output') {
             buttonElement.addEventListener('click', () => {
                 this._host._view.modifier.addModelOutput(this._modelNodeName);
+            });
+        }
+        if (title === 'Duplicate Node') {
+            buttonElement.addEventListener('click', () => {
+                var time_now = Date.parse(new Date())/1000;
+                this._host._view.modifier.duplicateNode(this._modelNodeName, time_now);
             });
         }
         if (title === 'Add Input') {
@@ -1022,7 +1030,7 @@ sidebar.ArgumentView = class {
                     this._element.appendChild(location);
                 }
 
-                if (initializer) {
+                if (initializer && !this._argument.is_custom_added) {
                     const editInitializerVal = this._host.document.createElement('div');
                     editInitializerVal.className = 'sidebar-view-item-value-line-border';
                     editInitializerVal.innerHTML = 'This is an initializer, you can input a new value for it here:';
