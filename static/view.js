@@ -73,8 +73,16 @@ view.View = class {
             this.error(err, null, null);
         });
     }
+    showLoading() {
+        this._host.document.getElementById('loading').style.display = 'flex';
+    }
+      
+    hideLoading() {
+        this._host.document.getElementById('loading').style.display = 'none';
+    }
 
     show(page) {
+        this.hideLoading();
         if (!page) {
             page = (!this._model && !this.activeGraph) ? 'welcome' : 'default';
         }
