@@ -467,6 +467,10 @@ modifier.Modifier = class {
         for (const [modelNodeName, node_info] of this.addedNode) {
             // console.log(node_info)
             var node = this.graph.make_custom_added_node(node_info);
+            if (!node) {
+                console.log("node not supported yet");
+                continue;
+            }
             // console.log(node)
 
             for (const input of node.inputs) {

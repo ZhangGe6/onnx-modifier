@@ -1727,18 +1727,33 @@ onnx.Metadata = class {
     }
 
     constructor(data) {
+        this._order_list = ["Conv", "BatchNormalization", "LeakyRelu", "Concat", "Add", "UserDefined"]
         this._map = new Map();
+        let disorder_maps = this._map;
         if (data) {
             const metadata = JSON.parse(data);
             for (const item of metadata) {
-                if (!this._map.has(item.module)) {
-                    this._map.set(item.module, new Map());
+                if (!disorder_maps.has(item.module)) {
+                    disorder_maps.set(item.module, new Map());
                 }
-                const map = this._map.get(item.module);
+                const map = disorder_maps.get(item.module);
                 if (!map.has(item.name)) {
                     map.set(item.name, []);
                 }
                 map.get(item.name).push(item);
+            }
+            
+            // reorder the map, facilitate the addition of nodes
+            for(let [name, disorder_map] of disorder_maps) {
+                let ordered_map = new Map();
+                for (let order of this._order_list) {
+                    if(disorder_map.has(order))
+                    {
+                        ordered_map.set(order, disorder_map.get(order));
+                        disorder_map.delete(order);
+                    }
+                }
+                this._map.set(name, new Map([...ordered_map, ...disorder_map]))
             }
         }
     }
