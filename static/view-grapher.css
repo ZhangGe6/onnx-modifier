@@ -165,3 +165,5 @@
     100% { transform: rotate(360deg); }
 
 }
+
+.highlight path { fill: #03cdfb;}

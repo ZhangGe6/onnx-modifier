@@ -622,6 +622,7 @@ host.BrowserHost = class {
             // 'modified_inputs_info' : this.arrayToObject(this.process_modified_inputs(this._view.modifier.inputModificationForSave,
             //     this._view.modifier.renameMap, this._view.modifier.name2NodeStates)),
             'rebatch_info' : this.mapToObjectRec(this._view.modifier.reBatchInfo),
+            'added_tensor' : this.mapToObjectRec(this._view.modifier.addedTensor),
             'changed_initializer' : this.mapToObjectRec(this._view.modifier.initializerEditInfo),
             'postprocess_args' : {'shapeInf' : this._view.modifier.downloadWithShapeInf, 'cleanUp' : this._view.modifier.downloadWithCleanUp}
         })

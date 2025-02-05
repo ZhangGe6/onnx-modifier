@@ -131,6 +131,95 @@ grapher.Graph = class {
         }
     }
 
+    // highlight the selected nodes
+    removeHighlight() {
+        for (const [name,node] of this.modifier.name2ViewNode) {
+            node.element.classList.remove("highlight");
+        }
+    }
+
+    setHighlight(sets) {
+        this.removeHighlight();
+        for(const set of sets) {
+            var node = this.modifier.name2ViewNode.get(set);
+            node.element.classList.add('highlight');
+        }
+    
+    }
+
+    // find nodes between the two selected nodes
+
+    getAllPathNodesRecursive(startNodeName, endNodeName, allPathNodeNames, currentPathNodeNames = [], deadPathNodeNames = [], depth = 0) {
+        var len = 0;
+        if (depth > 400) return len;
+        var direction_switcher = false;         // startNode and endNode may be swapped
+        if(depth === 0 ) {
+            if(!this.modifier.namedEdges.get(startNodeName) || 
+                !this.modifier.name2ModelNode.get(endNodeName)) {
+                return len;
+            } else {
+                direction_switcher = true;
+            }
+            
+        }
+
+        currentPathNodeNames.push(startNodeName);
+
+        if (startNodeName === endNodeName) {
+            len = currentPathNodeNames.length;
+            currentPathNodeNames.forEach(item => allPathNodeNames.add(item));
+            // allPathNodeNames = new Set([...allPathNodeNames, ...currentPathNodeNames]);
+        } else {
+            
+            const children = this.modifier.namedEdges.get(startNodeName) || [];
+            var currentPathLen = currentPathNodeNames.length;
+            for (let child of children) {
+                if(allPathNodeNames.has(child))
+                {
+                    currentPathNodeNames.forEach(item => allPathNodeNames.add(item));
+                    continue;
+                }else if(deadPathNodeNames.includes(child))
+                {
+                    continue;
+                }
+                while(currentPathNodeNames.length - currentPathLen > 0)
+                {
+                    currentPathNodeNames.pop();
+                }
+                len += this.getAllPathNodesRecursive(child, endNodeName, allPathNodeNames, 
+                                                        currentPathNodeNames, deadPathNodeNames, depth + 1);
+                
+            }
+            while(currentPathNodeNames.length - currentPathLen > 0)
+            {
+                currentPathNodeNames.pop();
+            }
+            
+            if (len == 0) {
+                deadPathNodeNames.push(startNodeName);
+            }
+        }
+
+        if (direction_switcher && len == 0) {
+            deadPathNodeNames = [];
+            currentPathNodeNames = [];
+            len = this.getAllPathNodesRecursive(endNodeName, startNodeName, allPathNodeNames, 
+                                                currentPathNodeNames, deadPathNodeNames, depth + 1);
+        }
+
+        return len;
+    }
+
+    getAllPathNodeNames(startNodeName, endNodeName)
+    {
+        var allPathNodeNames = new Set([startNodeName]);
+        this.getAllPathNodesRecursive(startNodeName, endNodeName, allPathNodeNames);
+        return allPathNodeNames;
+
+    }
+
+    //
+
     build(document, origin) {
         const createGroup = (name) => {
             const element = document.createElementNS('http://www.w3.org/2000/svg', 'g');

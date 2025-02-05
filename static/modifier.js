@@ -23,6 +23,8 @@ modifier.Modifier = class {
         this.downloadWithShapeInf = false;
         this.downloadWithCleanUp = false;
 
+        this.addedTensor = new Map();
+
     }
 
     loadModelGraph(model, graphs) {
@@ -79,13 +81,13 @@ modifier.Modifier = class {
     }
 
 
-    try_get_node_name(op_type)
+    try_get_node_name(op_type, input_node_id)
     {
-        var node_id = (this.addNodeKey++).toString();  // in case input (onnx) node has no name
+        var node_id = (input_node_id || this.addNodeKey++).toString();  // in case input (onnx) node has no name
         var modelNodeName = 'custom_added_' + op_type + node_id;
 
         if (this.addedNode.has(modelNodeName) || this.name2NodeStates.get(modelNodeName) ){
-            modelNodeName = this.randomString(16, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
+            modelNodeName = try_get_node_name(op_type, Date.parse(new Date()));//this.randomString(16, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
         }
         return modelNodeName;
     }
@@ -102,6 +104,69 @@ modifier.Modifier = class {
 
         this.applyAndUpdateView();
     }
+
+    // duplicate a node with ( _cp + unique_id ) as param suffix
+    duplicateNode(node_name, unique_id = "") {
+        //avoid to add a existed name node
+        var srcModelNode = this.name2ModelNode.get(node_name);
+        if (!srcModelNode.type){
+            return;
+        }
+        var dstModelNodeName = this.try_get_node_name(srcModelNode.type.name);
+
+        var properties = new Map();
+        properties.set('domain', "ai.onnx");
+        properties.set('op_type', srcModelNode.type.name);
+        properties.set('name', dstModelNodeName);
+
+
+        var attributes = new Map();
+        for (const attribute of srcModelNode.attributes) {
+            attributes.set(attribute.name, [
+                attribute.value?attribute.value.toString():"undefined", 
+                attribute.type||"undefined"])
+            // attributes.set(key, modelNode.attributes.get(key));
+        }
+
+        var outputs = new Map();
+        for (const output of srcModelNode.outputs) {
+            var dstNameList = [];
+            for (const srcArg of output.arguments) {
+                var dstName = srcArg.name + "_cp" + unique_id;
+                dstNameList.push([dstName, false]);
+                this.graph.copy_tensor(dstName, srcArg.name);
+
+            }
+            outputs.set(output.name, dstNameList);
+           
+        }
+
+        var inputs = new Map();
+        for (const input of srcModelNode.inputs) {
+            var dstNameList = [];
+            for (const srcArg of input.arguments) {
+                var dstName = srcArg.name + "_cp" + unique_id;
+                
+                if (this.graph._context._tensors && 
+                    this.graph._context._tensors.has(srcArg.name)) {
+                    this.graph.copy_tensor(dstName, srcArg.name);
+                    var initializer_info = this.graph.get_initializer_info(dstName);
+                    if(initializer_info) {
+                        this.addedTensor.set(dstName, initializer_info);
+                    }
+                    
+                }
+                dstNameList.push([dstName, false])
+            }  
+            inputs.set(input.name, dstNameList)
+         
+        }
+
+        this.addedNode.set(dstModelNodeName, 
+            new view.LightNodeInfo(properties, attributes, inputs, outputs));
+        this.applyAndUpdateView();
+    }
+
 
     addModelOutput(node_name) {
         var modelNode = this.name2ModelNode.get(node_name);
@@ -489,6 +554,7 @@ modifier.Modifier = class {
             this.graph.reset_custom_added_node();
             this.graph.reset_custom_modified_outputs();
             this.graph.reset_custom_modified_inputs();
+            this.graph.reset_custom_added_tensors();
         }
         // reset load location
         var container = this.view._getElementById('graph');
