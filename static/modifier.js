@@ -44,6 +44,17 @@ modifier.Modifier = class {
             this.name2NodeStatesOrig.set(name, 'Exist');
         }
         this.updateAddNodeDropDown();
+        this.updateLoadModelDropDown();
+    }
+
+    isOptionExists(selectElement, optionText) {
+
+        for (let i = 0; i < selectElement.options.length; i++) {
+            if (selectElement.options[i].text === optionText) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // TODO: add filter feature like here: https://www.w3schools.com/howto/howto_js_dropdown.asp
@@ -52,9 +63,11 @@ modifier.Modifier = class {
         var addNodeDropdown = this.view._host.document.getElementById('add-node-dropdown');
         for (const node of this.model.supported_nodes) {
             // node: [domain, op]
-            var option = new Option(node[1], node[0] + ':' + node[1]);
-            // console.log(option)
-            addNodeDropdown.appendChild(option);
+            if (!this.isOptionExists(addNodeDropdown, node[1])) {
+                var option = new Option(node[1], node[0] + ':' + node[1]);
+                // console.log(option)
+                addNodeDropdown.appendChild(option);
+            }
         }
     }
 
