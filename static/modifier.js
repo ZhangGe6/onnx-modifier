@@ -58,6 +58,21 @@ modifier.Modifier = class {
         }
     }
 
+    updateLoadModelDropDown() {
+        // update dropdown supported node lost
+        var loadModelDropdown = this.view._host.document.getElementById('load-model-dropdown');
+        this.supported_load_mode = ["new", "tail", "parallel"]
+        
+        if (loadModelDropdown.options.length == 0) {
+            for (let [index, mode] of this.supported_load_mode.entries()) {
+                var option = new Option(mode, index);
+                loadModelDropdown.appendChild(option);
+            }
+            
+        }
+        
+    }
+
     getShapeTypeInfo(name) {
         for (var value_info of this.graph._value_info) {
             if (value_info.name == name && value_info.type && value_info.type.tensor_type) {

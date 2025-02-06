@@ -117,11 +117,12 @@ host.BrowserHost = class {
     }
 
     // open the the model at flask server and reload
-    remote_open_model(obj_files) {
+    // open mode 0: open new model, 1: add to tail, 2: parallel
+    remote_open_model(obj_files, append_model = 0) {
         var files = Array.from(obj_files);
         const acceptd_file = files.filter(file => this._view.accept(file.name)).slice(0, 2);
         // console.log(file)
-        if(acceptd_file.length == 1)
+        if(acceptd_file.length == 1 && append_model == 0)
         {   
             var file = acceptd_file[0];
             this.upload_filename = file.name;
@@ -145,22 +146,30 @@ host.BrowserHost = class {
                 this._open(file, files);
                 this._view.modifier.clearGraph();
             }
-        } else if (acceptd_file.length == 2)
-        {
+        } else if (acceptd_file.length == 2 || append_model != 0) {
             var form = new FormData();
-            for(var i = 0; i < acceptd_file.length; i++)
-            {
-                form.append('file'+i, acceptd_file[i]);
+            var url;
+            if (append_model == 0) {
+                url = '/merge_model';
+                for(var i = 0; i < acceptd_file.length; i++)
+                {
+                    form.append('file' + i, acceptd_file[i]);
+                }
             }
+            else if (append_model != 0) {
+                url = '/append_model';
+                form.append('file', acceptd_file[0]);
+            }
+            form.append('method', Number(append_model));
             // console.log(file)
             // this.upload_filename = file.name;
             let filename = 'unknown';
             // https://stackoverflow.com/questions/66039996/javascript-fetch-upload-files-to-python-flask-restful
             this._view.showLoading();
-            fetch('/merge_model', {
+            fetch(url, {
                 method: 'POST',
                 body: form
-            }).then(function (response) {
+            }).then((response) =>{
                 
                 const contentDisposition = response.headers.get('content-disposition');
                 if (contentDisposition) {
@@ -170,6 +179,7 @@ host.BrowserHost = class {
                     }
                 }
                 if (!response.ok) {
+                    this._view.hideLoading();
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 var blob = response.blob();
@@ -400,13 +410,18 @@ host.BrowserHost = class {
             });
             openFileDialog.addEventListener('change', (e) => {
                 if (e.target && e.target.files && e.target.files.length > 0) {
-                    this.remote_open_model(e.target.files);
+                    this.remote_open_model(e.target.files, this.loadModelMode);
                 }
             });
         
         }
 
-
+        var loadModelDropDown = this.document.getElementById('load-model-dropdown');
+        if (loadModelDropDown) {
+            loadModelDropDown.addEventListener('change', (e) => {
+                this.loadModelMode = loadModelDropDown.selectedIndex;
+            });
+        }
 
         const openModelButton = this.document.getElementById('load-model');
         if (openModelButton && openFileDialog) {
@@ -432,7 +447,7 @@ host.BrowserHost = class {
         this.document.body.addEventListener('drop', (e) => {
             e.preventDefault();
             if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-                this.remote_open_model(e.dataTransfer.files);
+                this.remote_open_model(e.dataTransfer.files, this.loadModelMode);
 
             }
         });
