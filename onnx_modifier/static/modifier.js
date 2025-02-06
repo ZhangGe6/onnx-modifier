@@ -44,6 +44,7 @@ modifier.Modifier = class {
             this.name2NodeStatesOrig.set(name, 'Exist');
         }
         this.updateAddNodeDropDown();
+        this.updateLoadModelDropDown();
     }
 
     // TODO: add filter feature like here: https://www.w3schools.com/howto/howto_js_dropdown.asp
@@ -56,6 +57,21 @@ modifier.Modifier = class {
             // console.log(option)
             addNodeDropdown.appendChild(option);
         }
+    }
+
+    updateLoadModelDropDown() {
+        // update dropdown supported node lost
+        var loadModelDropdown = this.view._host.document.getElementById('load-model-dropdown');
+        this.supported_load_mode = ["new", "tail", "parallel"]
+        
+        if (loadModelDropdown.options.length == 0) {
+            for (let [index, mode] of this.supported_load_mode.entries()) {
+                var option = new Option(mode, index);
+                loadModelDropdown.appendChild(option);
+            }
+            
+        }
+        
     }
 
     getShapeTypeInfo(name) {

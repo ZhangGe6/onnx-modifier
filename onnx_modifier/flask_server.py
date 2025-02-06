@@ -40,6 +40,22 @@ def merge_model():
                      mimetype='application/octet-stream',
                      as_attachment=True,
                      download_name=merged_name)
+    
+@app.route('/append_model', methods=['POST'])
+def append_model():
+    method = request.form.get('method')
+    onnx_file1 = request.files['file']
+    timestamp = time.time()
+    global onnx_modifier
+    if onnx_modifier:
+        onnx_modifier, stream ,merged_name = onnx_modifier.append(
+            onnx_file1.filename, onnx_file1.stream, 
+            str(int(timestamp)) + "_", int(method))
+
+    return send_file(stream,
+                     mimetype='application/octet-stream',
+                     as_attachment=True,
+                     download_name=merged_name)
 
 @app.route('/download', methods=['POST'])
 def modify_and_download_model():

@@ -173,7 +173,7 @@ grapher.Graph = class {
             // allPathNodeNames = new Set([...allPathNodeNames, ...currentPathNodeNames]);
         } else {
             
-            const children = this.modifier.namedEdges.get(startNodeName) || [];
+            const children = new Set(this.modifier.namedEdges.get(startNodeName) || []);
             var currentPathLen = currentPathNodeNames.length;
             for (let child of children) {
                 if(allPathNodeNames.has(child))
