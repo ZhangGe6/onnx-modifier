@@ -1691,7 +1691,11 @@ onnx.Metadata = class {
                 for (const metadata of map.get(name)) {
                     const matchVersion = current ? current.version : -1;
                     const importVersion = imports.get(metadata.module) || 0;
-                    if (importVersion >= metadata.version && matchVersion < metadata.version) {
+                    // get the op with the version that are latest but doesn't exceed import version.
+                    // TODO: take op domain into consideration to avoid op mismatch
+                    // this can happen when different domains have the op with same name
+                    // https://github.com/ZhangGe6/onnx-modifier/issues/136
+                    if (metadata.version > matchVersion && metadata.version <= importVersion) {
                         current = metadata;
                     }
                 }
