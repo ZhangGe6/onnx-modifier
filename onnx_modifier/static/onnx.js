@@ -465,6 +465,10 @@ onnx.Graph = class {
         this._custom_added_inputs = []
         this._custom_deleted_inputs = []
 
+        this._custom_added_tensors = new Set()
+        this._graph_config_max_input_count = 12;
+        this._graph_config_max_output_count = 12;
+
         // model parameter assignment here!
         // console.log(graph)
         for (const initializer of graph.initializer) {
@@ -564,6 +568,34 @@ onnx.Graph = class {
         return this._nodes.concat(this._custom_added_node);
     }
 
+    // for duplicated nodes we should manage the tensors in initializers
+    // its behavior is a little different with editedInitializers
+
+    reset_custom_added_tensors() {
+        for (const tensor_name of this._custom_added_tensors) {
+            this._context._tensors.delete(tensor_name);
+        }
+        this._custom_added_tensors = new Set()
+
+    }
+
+    copy_tensor(dst_name, source_name) {
+        var tensor= this._context.tensor(source_name);
+        tensor.name = dst_name;
+        tensor.is_custom_added = 1;
+        this._context._tensors.set(dst_name, tensor);
+        this._custom_added_tensors.add(dst_name);
+        
+    }
+
+    get_initializer_info(name) {
+        var initializer = this._context._tensors.get(name).initializer;
+        if (!initializer) return null;
+        return initializer.type?[initializer.type.toString().replace(/\s+/g, ''), initializer.value?initializer.toString(1).replace(/\s+/g, ''):""]:null
+    }
+
+    //
+
     reset_custom_added_node() {
         this._custom_added_node = []
         // this._custom_add_node_io_idx = 0
@@ -576,6 +608,10 @@ onnx.Graph = class {
     make_custom_added_node(node_info) {
         // type of node_info == LightNodeInfo
         const schema = this._context.metadata.type(node_info.properties.get('op_type'), node_info.properties.get('domain'));
+        if(!schema)
+        {
+            return null;
+        }
         // console.log(schema)
 
         // console.log(node_info.attributes)
@@ -583,8 +619,8 @@ onnx.Graph = class {
         // console.log(node_info.outputs)
         // var max_input = schema.max_input
         // var min_input = schema.max_input
-        var max_custom_add_input_num = Math.min(schema.max_input, 8)  // set at most 8 custom_add inputs
-        var max_custom_add_output_num = Math.min(schema.max_output, 8)  // set at most 8 custom_add outputs
+        var max_custom_add_input_num = Math.min(schema.max_input, this._graph_config_max_input_count)  // set at most 12 custom_add inputs
+        var max_custom_add_output_num = Math.min(schema.max_output, this._graph_config_max_output_count)  // set at most 12 custom_add outputs
 
         // console.log(node_info)
         var inputs = []
@@ -605,7 +641,14 @@ onnx.Graph = class {
                         else {
                             var arg_name = 'list_custom_input_' + (this._custom_add_node_io_idx++).toString()
                         }
-                        arg_list.push(this._context.argument(arg_name))
+                        var arg = this._context.argument(arg_name);
+                        if (node_info_input && node_info_input[j] && node_info_input[j].length == 2) {
+                            arg.is_optional = node_info_input[j][1];
+                    
+                        } else if (input.option && input.option == 'optional') {
+                            arg.is_optional = true;
+                        }
+                        arg_list.push(arg);
                     }
                 }
                 else {
@@ -615,14 +658,21 @@ onnx.Graph = class {
                     else {
                         var arg_name = 'custom_input_' + (this._custom_add_node_io_idx++).toString()
                     }
-                    arg_list = [this._context.argument(arg_name)]
+                    var arg = this._context.argument(arg_name);
+                    if (node_info_input && node_info_input[0] && node_info_input[0].length == 2) {
+                        arg.is_optional = node_info_input[0][1];
+                            
+                    } else if(input.option && input.option == 'optional') {
+                        arg.is_optional = true;
+                    }
+                    arg_list = [arg]
                 }
 
                 for (var arg of arg_list) {
                     arg.is_custom_added = true;
-                    if (input.option && input.option == 'optional') {
-                        arg.is_optional = true;
-                    }
+                    // if (input.option && input.option == 'optional') {
+                    //     arg.is_optional = true;
+                    // }
                 }
                 inputs.push(new onnx.Parameter(input.name, arg_list));
             }
@@ -643,6 +693,12 @@ onnx.Graph = class {
                         else {
                             var arg_name = 'list_custom_output_' + (this._custom_add_node_io_idx++).toString()
                         }
+                        if (node_info_output && node_info_output[i] && node_info_output[i].length == 2) {
+                            arg.is_optional = node_info_output[i][1];
+                                
+                        } else if (output.option && output.option == 'optional') {
+                            arg.is_optional = true;
+                        }
                         arg_list.push(this._context.argument(arg_name))
                     }
                 }
@@ -653,15 +709,20 @@ onnx.Graph = class {
                     else {
                         var arg_name = 'custom_output_' + (this._custom_add_node_io_idx++).toString()
                     }
-
+                    if (node_info_output && node_info_output[0] && node_info_output[0].length == 2) {
+                        arg.is_optional = node_info_output[0][1];
+                            
+                    } else if (output.option && output.option == 'optional') {
+                        arg.is_optional = true;
+                    }
                     arg_list = [this._context.argument(arg_name)]
                 }
 
                 for (var arg of arg_list) {
                     arg.is_custom_added = true;
-                    if (output.option && output.option == 'optional') {
-                        arg.is_optional = true;
-                    }
+                    // if (output.option && output.option == 'optional') {
+                    //     arg.is_optional = true;
+                    // }
                 }
                 outputs.push(new onnx.Parameter(output.name, arg_list));
             }
@@ -1216,13 +1277,13 @@ onnx.Tensor = class {
         return this._decode(context, 0);
     }
 
-    toString() {
+    toString(unlimit=0) {
         const context = this._context();
         // console.log(context)
         if (context.state) {
             return '';
         }
-        context.limit = 10000;
+        context.limit = (unlimit==0)?10000:100000000;
         const value = this._decode(context, 0);
         // console.log(value)
         // console.log(onnx.Tensor._stringify(value, '', '    '))
@@ -1666,18 +1727,33 @@ onnx.Metadata = class {
     }
 
     constructor(data) {
+        this._order_list = ["Conv", "BatchNormalization", "LeakyRelu", "Concat", "Add", "UserDefined"]
         this._map = new Map();
+        let disorder_maps = this._map;
         if (data) {
             const metadata = JSON.parse(data);
             for (const item of metadata) {
-                if (!this._map.has(item.module)) {
-                    this._map.set(item.module, new Map());
+                if (!disorder_maps.has(item.module)) {
+                    disorder_maps.set(item.module, new Map());
                 }
-                const map = this._map.get(item.module);
+                const map = disorder_maps.get(item.module);
                 if (!map.has(item.name)) {
                     map.set(item.name, []);
                 }
                 map.get(item.name).push(item);
+            }
+            
+            // reorder the map, facilitate the addition of nodes
+            for(let [name, disorder_map] of disorder_maps) {
+                let ordered_map = new Map();
+                for (let order of this._order_list) {
+                    if(disorder_map.has(order))
+                    {
+                        ordered_map.set(order, disorder_map.get(order));
+                        disorder_map.delete(order);
+                    }
+                }
+                this._map.set(name, new Map([...ordered_map, ...disorder_map]))
             }
         }
     }
@@ -1899,6 +1975,7 @@ onnx.GraphContext = class {
     }
 
     argument(name, original_name) {
+        if(!original_name) original_name = name;
         const tensor = this.tensor(name);
         // console.log(tensor)
         const type = tensor.initializer ? tensor.initializer.type : tensor.type || null;

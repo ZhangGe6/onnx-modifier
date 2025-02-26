@@ -23,6 +23,8 @@ modifier.Modifier = class {
         this.downloadWithShapeInf = false;
         this.downloadWithCleanUp = false;
 
+        this.addedTensor = new Map();
+
     }
 
     loadModelGraph(model, graphs) {
@@ -42,6 +44,17 @@ modifier.Modifier = class {
             this.name2NodeStatesOrig.set(name, 'Exist');
         }
         this.updateAddNodeDropDown();
+        this.updateLoadModelDropDown();
+    }
+
+    isOptionExists(selectElement, optionText) {
+
+        for (let i = 0; i < selectElement.options.length; i++) {
+            if (selectElement.options[i].text === optionText) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // TODO: add filter feature like here: https://www.w3schools.com/howto/howto_js_dropdown.asp
@@ -50,10 +63,27 @@ modifier.Modifier = class {
         var addNodeDropdown = this.view._host.document.getElementById('add-node-dropdown');
         for (const node of this.model.supported_nodes) {
             // node: [domain, op]
-            var option = new Option(node[1], node[0] + ':' + node[1]);
-            // console.log(option)
-            addNodeDropdown.appendChild(option);
+            if (!this.isOptionExists(addNodeDropdown, node[1])) {
+                var option = new Option(node[1], node[0] + ':' + node[1]);
+                // console.log(option)
+                addNodeDropdown.appendChild(option);
+            }
         }
+    }
+
+    updateLoadModelDropDown() {
+        // update dropdown supported node lost
+        var loadModelDropdown = this.view._host.document.getElementById('load-model-dropdown');
+        this.supported_load_mode = ["new", "tail", "parallel"]
+        
+        if (loadModelDropdown.options.length == 0) {
+            for (let [index, mode] of this.supported_load_mode.entries()) {
+                var option = new Option(mode, index);
+                loadModelDropdown.appendChild(option);
+            }
+            
+        }
+        
     }
 
     getShapeTypeInfo(name) {
@@ -79,13 +109,13 @@ modifier.Modifier = class {
     }
 
 
-    try_get_node_name(op_type)
+    try_get_node_name(op_type, input_node_id)
     {
-        var node_id = (this.addNodeKey++).toString();  // in case input (onnx) node has no name
+        var node_id = (input_node_id || this.addNodeKey++).toString();  // in case input (onnx) node has no name
         var modelNodeName = 'custom_added_' + op_type + node_id;
 
         if (this.addedNode.has(modelNodeName) || this.name2NodeStates.get(modelNodeName) ){
-            modelNodeName = this.randomString(16, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
+            modelNodeName = try_get_node_name(op_type, Date.parse(new Date()));//this.randomString(16, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
         }
         return modelNodeName;
     }
@@ -102,6 +132,69 @@ modifier.Modifier = class {
 
         this.applyAndUpdateView();
     }
+
+    // duplicate a node with ( _cp + unique_id ) as param suffix
+    duplicateNode(node_name, unique_id = "") {
+        //avoid to add a existed name node
+        var srcModelNode = this.name2ModelNode.get(node_name);
+        if (!srcModelNode.type){
+            return;
+        }
+        var dstModelNodeName = this.try_get_node_name(srcModelNode.type.name);
+
+        var properties = new Map();
+        properties.set('domain', "ai.onnx");
+        properties.set('op_type', srcModelNode.type.name);
+        properties.set('name', dstModelNodeName);
+
+
+        var attributes = new Map();
+        for (const attribute of srcModelNode.attributes) {
+            attributes.set(attribute.name, [
+                attribute.value?attribute.value.toString():"undefined", 
+                attribute.type||"undefined"])
+            // attributes.set(key, modelNode.attributes.get(key));
+        }
+
+        var outputs = new Map();
+        for (const output of srcModelNode.outputs) {
+            var dstNameList = [];
+            for (const srcArg of output.arguments) {
+                var dstName = srcArg.name + "_cp" + unique_id;
+                dstNameList.push([dstName, false]);
+                this.graph.copy_tensor(dstName, srcArg.name);
+
+            }
+            outputs.set(output.name, dstNameList);
+           
+        }
+
+        var inputs = new Map();
+        for (const input of srcModelNode.inputs) {
+            var dstNameList = [];
+            for (const srcArg of input.arguments) {
+                var dstName = srcArg.name + "_cp" + unique_id;
+                
+                if (this.graph._context._tensors && 
+                    this.graph._context._tensors.has(srcArg.name)) {
+                    this.graph.copy_tensor(dstName, srcArg.name);
+                    var initializer_info = this.graph.get_initializer_info(dstName);
+                    if(initializer_info) {
+                        this.addedTensor.set(dstName, initializer_info);
+                    }
+                    
+                }
+                dstNameList.push([dstName, false])
+            }  
+            inputs.set(input.name, dstNameList)
+         
+        }
+
+        this.addedNode.set(dstModelNodeName, 
+            new view.LightNodeInfo(properties, attributes, inputs, outputs));
+        this.applyAndUpdateView();
+    }
+
 
     addModelOutput(node_name) {
         var modelNode = this.name2ModelNode.get(node_name);
@@ -402,6 +495,10 @@ modifier.Modifier = class {
         for (const [modelNodeName, node_info] of this.addedNode) {
             // console.log(node_info)
             var node = this.graph.make_custom_added_node(node_info);
+            if (!node) {
+                console.log("node not supported yet");
+                continue;
+            }
             // console.log(node)
 
             for (const input of node.inputs) {
@@ -489,6 +586,7 @@ modifier.Modifier = class {
             this.graph.reset_custom_added_node();
             this.graph.reset_custom_modified_outputs();
             this.graph.reset_custom_modified_inputs();
+            this.graph.reset_custom_added_tensors();
         }
         // reset load location
         var container = this.view._getElementById('graph');

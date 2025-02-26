@@ -116,7 +116,89 @@ host.BrowserHost = class {
         });
     }
 
+    // open the the model at flask server and reload
+    // open mode 0: open new model, 1: add to tail, 2: parallel
+    remote_open_model(obj_files, append_model = 0) {
+        var files = Array.from(obj_files);
+        const acceptd_file = files.filter(file => this._view.accept(file.name)).slice(0, 2);
+        // console.log(file)
+        if(acceptd_file.length == 1 && append_model == 0)
+        {   
+            var file = acceptd_file[0];
+            this.upload_filename = file.name;
+            var form = new FormData();
+            form.append('file', file);
+            
+            // https://stackoverflow.com/questions/66039996/javascript-fetch-upload-files-to-python-flask-restful
+            fetch('/open_model', {
+                method: 'POST',
+                body: form
+            }).then(function (response) {
+                return response.text();
+            }).then(function (text) {
+                console.log('POST response: ');
+                // Should be 'OK' if everything was successful
+                console.log(text);
+            });
 
+
+            if (file) {
+                this._open(file, files);
+                this._view.modifier.clearGraph();
+            }
+        } else if (acceptd_file.length == 2 || append_model != 0) {
+            var form = new FormData();
+            var url;
+            if (append_model == 0) {
+                url = '/merge_model';
+                for(var i = 0; i < acceptd_file.length; i++)
+                {
+                    form.append('file' + i, acceptd_file[i]);
+                }
+            }
+            else if (append_model != 0) {
+                url = '/append_model';
+                form.append('file', acceptd_file[0]);
+            }
+            form.append('method', Number(append_model));
+            // console.log(file)
+            // this.upload_filename = file.name;
+            let filename = 'unknown';
+            // https://stackoverflow.com/questions/66039996/javascript-fetch-upload-files-to-python-flask-restful
+            this._view.showLoading();
+            fetch(url, {
+                method: 'POST',
+                body: form
+            }).then((response) =>{
+                
+                const contentDisposition = response.headers.get('content-disposition');
+                if (contentDisposition) {
+                    const matches = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/i);
+                    if (matches && matches[1]) {
+                        filename = decodeURIComponent(matches[1].replace(/['"]/g, ''));
+                    }
+                }
+                if (!response.ok) {
+                    this._view.hideLoading();
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                var blob = response.blob();
+                return blob;
+            }).then(blob => {
+                var file = new File([blob], filename);
+                // console.log('POST response: ');
+                // // Should be 'OK' if everything was successful
+                // console.log(text);
+                if (file) {
+                    this.upload_filename = file.name;
+                    files = [];
+                    files.push(file);
+                    this._open(file, files);
+                    this._view.modifier.clearGraph();
+                }
+            });
+        } 
+    }
 
     start() {
         this.window.addEventListener('error', (e) => {
@@ -328,40 +410,26 @@ host.BrowserHost = class {
             });
             openFileDialog.addEventListener('change', (e) => {
                 if (e.target && e.target.files && e.target.files.length > 0) {
-                    const files = Array.from(e.target.files);
-                    const file = files.find((file) => this._view.accept(file.name));
-                    // console.log(file)
-                    this.upload_filename = file.name;
-                    var form = new FormData();
-                    form.append('file', file);
-
-                    // https://stackoverflow.com/questions/66039996/javascript-fetch-upload-files-to-python-flask-restful
-                    fetch('/open_model', {
-                        method: 'POST',
-                        body: form
-                    }).then(function (response) {
-                        return response.text();
-                    }).then(function (text) {
-                        console.log('POST response: ');
-                        // Should be 'OK' if everything was successful
-                        console.log(text);
-                    });
-
-
-                    if (file) {
-                        this._open(file, files);
-                        this._view.modifier.clearGraph();
-                    }
+                    this.remote_open_model(e.target.files, this.loadModelMode);
                 }
             });
+        
         }
-        const openModelButton = this.document.getElementById('load-model');
-        if (openModelButton && openFileDialog) {
-            openModelButton.addEventListener('click', () => {
-                openFileDialog.value = '';
-                openFileDialog.click();
+
+        var loadModelDropDown = this.document.getElementById('load-model-dropdown');
+        if (loadModelDropDown) {
+            loadModelDropDown.addEventListener('change', (e) => {
+                this.loadModelMode = loadModelDropDown.selectedIndex;
             });
         }
+
+        // const openModelButton = this.document.getElementById('load-model');
+        // if (openModelButton && openFileDialog) {
+        //     openModelButton.addEventListener('click', () => {
+        //         openFileDialog.value = '';
+        //         openFileDialog.click();
+        //     });
+        // }
         const githubButton = this.document.getElementById('github-button');
         const githubLink = this.document.getElementById('logo-github');
         if (githubButton && githubLink) {
@@ -379,27 +447,8 @@ host.BrowserHost = class {
         this.document.body.addEventListener('drop', (e) => {
             e.preventDefault();
             if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-                const files = Array.from(e.dataTransfer.files);
-                const file = files.find((file) => this._view.accept(file.name));
-                this.upload_filename = file.name;
-                var form = new FormData();
-                form.append('file', file);
+                this.remote_open_model(e.dataTransfer.files, this.loadModelMode);
 
-                // https://stackoverflow.com/questions/66039996/javascript-fetch-upload-files-to-python-flask-restful
-                fetch('/open_model', {
-                    method: 'POST',
-                    body: form
-                }).then(function (response) {
-                    return response.text();
-                }).then(function (text) {
-                    console.log('POST response: ');
-                    // Should be 'OK' if everything was successful
-                    console.log(text);
-                });
-                if (file) {
-                    this._open(file, files);
-                    this._view.modifier.clearGraph();
-                }
             }
         });
 
@@ -588,6 +637,7 @@ host.BrowserHost = class {
             // 'modified_inputs_info' : this.arrayToObject(this.process_modified_inputs(this._view.modifier.inputModificationForSave,
             //     this._view.modifier.renameMap, this._view.modifier.name2NodeStates)),
             'rebatch_info' : this.mapToObjectRec(this._view.modifier.reBatchInfo),
+            'added_tensor' : this.mapToObjectRec(this._view.modifier.addedTensor),
             'changed_initializer' : this.mapToObjectRec(this._view.modifier.initializerEditInfo),
             'postprocess_args' : {'shapeInf' : this._view.modifier.downloadWithShapeInf, 'cleanUp' : this._view.modifier.downloadWithCleanUp}
         })
