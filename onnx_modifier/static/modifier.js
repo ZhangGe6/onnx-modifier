@@ -48,11 +48,13 @@ modifier.Modifier = class {
     updateAddNodeDropDown() {
         // update dropdown supported node lost
         var addNodeDropdown = this.view._host.document.getElementById('add-node-dropdown');
-        for (const node of this.model.supported_nodes) {
-            // node: [domain, op]
-            var option = new Option(node[1], node[0] + ':' + node[1]);
-            // console.log(option)
-            addNodeDropdown.appendChild(option);
+        if (addNodeDropdown) {
+            for (const node of this.model.supported_nodes) {
+                // node: [domain, op]
+                var option = new Option(node[1], node[0] + ':' + node[1]);
+                // console.log(option)
+                addNodeDropdown.appendChild(option);
+            }
         }
     }
 
