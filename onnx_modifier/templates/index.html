@@ -29,539 +29,100 @@
 <script src="{{url_for('static', filename='view.js')}}"></script>
 <script src="{{url_for('static', filename='index.js')}}"></script>
 <script src="{{url_for('static', filename='modifier.js')}}"></script>
-<script src="{{url_for('static', filename='theme-toggle.js')}}"></script>
 <style>
-:root {
-    /* ISO-Standard Professional Colors */
-    --primary-color: #0066CC;
-    --primary-hover: #0052A3;
-    --primary-light: #E6F2FF;
-    --success-color: #00A651;
-    --success-hover: #008542;
-    --warning-color: #FF9500;
-    --warning-hover: #CC7700;
-    --danger-color: #DC3545;
-    --danger-hover: #BB2D3B;
-    --neutral-color: #6C757D;
-    --neutral-hover: #5A6268;
-    
-    /* Background Colors - Light Theme */
-    --bg-primary: #FFFFFF;
-    --bg-secondary: #F8F9FA;
-    --bg-tertiary: #E9ECEF;
-    
-    /* Text Colors - Light Theme */
-    --text-primary: #212529;
-    --text-secondary: #6C757D;
-    --text-light: #ADB5BD;
-    
-    /* Border Colors - Light Theme */
-    --border-color: #DEE2E6;
-    --border-light: #E9ECEF;
-    --border-dark: #CED4DA;
-    
-    /* Shadows - ISO Standard */
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
-    --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.15);
-    --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.15);
-    --shadow-xl: 0 8px 24px rgba(0, 0, 0, 0.15);
-    
-    /* Spacing - ISO Standard 8px grid */
-    --spacing-xs: 4px;
-    --spacing-sm: 8px;
-    --spacing-md: 16px;
-    --spacing-lg: 24px;
-    --spacing-xl: 32px;
-    
-    /* Border Radius */
-    --radius-sm: 4px;
-    --radius-md: 6px;
-    --radius-lg: 8px;
-}
-
-/* Dark Theme */
-body.dark-theme {
-    --bg-primary: #1E1E1E;
-    --bg-secondary: #252525;
-    --bg-tertiary: #2D2D2D;
-    
-    --text-primary: #E4E4E7;
-    --text-secondary: #A1A1AA;
-    --text-light: #71717A;
-    
-    --border-color: #3F3F46;
-    --border-light: #373737;
-    --border-dark: #52525B;
-    
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.5);
-    --shadow-xl: 0 8px 24px rgba(0, 0, 0, 0.6);
-}
-
-/* Dark theme for graph canvas */
-body.dark-theme .graph {
-    background: #1E1E1E;
-}
-
-body.dark-theme .default {
-    background-color: #1E1E1E;
-}
-
-/* Dark theme for welcome screen */
-body.dark-theme .welcome {
-    background: linear-gradient(135deg, #1E1E1E 0%, #2D2D2D 100%);
-}
-
-body.dark-theme .welcome button {
-    color: #E4E4E7;
-    background-color: rgba(255, 255, 255, 0.1);
-    border: 2px solid #E4E4E7;
-}
-
-body.dark-theme .welcome button:hover {
-    color: #1E1E1E;
-    background-color: #E4E4E7;
-}
-
-html { touch-action: none; overflow: hidden; width: 100%; height: 100%; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; }
-body { touch-action: none; overflow: hidden; width: 100%; height: 100%; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif; font-size: 14px; text-rendering: geometricPrecision; background: var(--bg-secondary); color: var(--text-primary); transition: background-color 0.3s ease, color 0.3s ease; }
-button { font-family: inherit; cursor: pointer; }
-
-/* Light Theme - Default */
-body:not(.dark-theme) {
-    background: #F8F9FA;
-    color: #212529;
-}
-
-body:not(.dark-theme) .graph {
-    background: #FFFFFF;
-}
-
-body:not(.dark-theme) .canvas {
-    background: #FFFFFF;
-}
-
-body:not(.dark-theme) .welcome {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-body:not(.dark-theme) .default {
-    background-color: #F8F9FA;
-}
-
-/* Right Control Panel */
-.control-panel {
-    position: fixed;
-    top: 0;
-    right: 0;
-    width: 320px;
-    height: 100vh;
-    background: var(--bg-primary);
-    border-left: 1px solid var(--border-color);
-    box-shadow: var(--shadow-lg);
-    z-index: 50;
-    display: none;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-/* Show control panel only in default state (when model is loaded) */
-body:not(.welcome):not(.spinner) .control-panel {
-    display: flex;
-}
-
-body.default .control-panel {
-    display: flex;
-}
-
-.control-panel-header {
-    padding: var(--spacing-lg);
-    border-bottom: 1px solid var(--border-color);
-    background: var(--bg-secondary);
-}
-
-.control-panel-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin: 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--spacing-sm);
-}
-
-.control-panel-title-text {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-}
-
-.control-panel-title-text::before {
-    content: "⚙";
-    font-size: 20px;
-}
-
-/* Theme Toggle Switch */
-.theme-toggle {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-}
-
-.theme-toggle-switch {
-    position: relative;
-    width: 48px;
-    height: 24px;
-    background: var(--border-color);
-    border-radius: 12px;
-    cursor: pointer;
-    transition: background 0.3s;
-}
-
-.theme-toggle-switch:hover {
-    background: var(--border-dark);
-}
-
-.theme-toggle-slider {
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 20px;
-    height: 20px;
-    background: white;
-    border-radius: 50%;
-    transition: transform 0.3s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-}
-
-.theme-toggle-slider::before {
-    content: "☀";
-}
-
-body.dark-theme .theme-toggle-switch {
-    background: var(--primary-color);
-}
-
-body.dark-theme .theme-toggle-slider {
-    transform: translateX(24px);
-    background: var(--bg-primary);
-}
-
-body.dark-theme .theme-toggle-slider::before {
-    content: "🌙";
-}
-
-.control-panel-content {
-    flex: 1;
-    overflow-y: auto;
-    padding: var(--spacing-lg);
-}
-
-.control-section {
-    margin-bottom: var(--spacing-xl);
-}
-
-.control-section-title {
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--text-secondary);
-    margin: 0 0 var(--spacing-md) 0;
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-}
-
-/* ISO Standard Buttons - Unified Style */
-.btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-sm);
-    padding: 10px 16px;
-    font-size: 14px;
-    font-weight: 600;
-    line-height: 1.5;
-    border-radius: 8px;
-    border: 1px solid #E9ECEF;
-    background: #FFFFFF;
-    color: #495057;
-    transition: all 0.2s ease;
-    text-decoration: none;
-    white-space: nowrap;
-    cursor: pointer;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-}
-
-.btn:hover:not(:disabled) {
-    background: #F8F9FA;
-    border-color: #0066CC;
-    color: #0066CC;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 102, 204, 0.08);
-}
-
-.btn:active:not(:disabled) {
-    transform: translateY(0);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-}
-
-.btn:focus {
-    outline: none;
-    border-color: #0066CC;
-    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
-}
-
-.btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-/* Remove color variants - all buttons now use same style */
-.btn-primary,
-.btn-success,
-.btn-warning,
-.btn-danger,
-.btn-secondary {
-    background: #FFFFFF;
-    color: #495057;
-    border-color: #E9ECEF;
-}
-
-.btn-primary:hover:not(:disabled),
-.btn-success:hover:not(:disabled),
-.btn-warning:hover:not(:disabled),
-.btn-danger:hover:not(:disabled),
-.btn-secondary:hover:not(:disabled) {
-    background: #F8F9FA;
-    border-color: #0066CC;
-    color: #0066CC;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 102, 204, 0.08);
-}
-
-/* Dark theme buttons */
-body.dark-theme .btn,
-body.dark-theme .btn-primary,
-body.dark-theme .btn-success,
-body.dark-theme .btn-warning,
-body.dark-theme .btn-danger,
-body.dark-theme .btn-secondary {
-    background: #252525;
-    color: #E4E4E7;
-    border-color: #3F3F46;
-}
-
-body.dark-theme .btn:hover:not(:disabled),
-body.dark-theme .btn-primary:hover:not(:disabled),
-body.dark-theme .btn-success:hover:not(:disabled),
-body.dark-theme .btn-warning:hover:not(:disabled),
-body.dark-theme .btn-danger:hover:not(:disabled),
-body.dark-theme .btn-secondary:hover:not(:disabled) {
-    background: #2D2D2D;
-    border-color: #0066CC;
-    color: #60A5FA;
-}
-
-/* Button Grid Layout - 2 columns */
-.button-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    margin-bottom: 16px;
-}
-
-.button-grid .btn {
-    margin-bottom: 0;
-}
-
-/* Single button in grid takes full width */
-.button-grid .btn:only-child {
-    grid-column: 1 / -1;
-}
-
-/* Button Icons (using Unicode symbols for ISO compliance) */
-.btn-icon-reset::before { content: "↻"; font-size: 16px; }
-.btn-icon-download::before { content: "⬇"; font-size: 16px; }
-.btn-icon-add::before { content: "+"; font-size: 18px; font-weight: 700; }
-.btn-icon-load::before { content: "📁"; font-size: 16px; }
-.btn-icon-save::before { content: "💾"; font-size: 16px; }
-
-/* Form Controls */
-.form-group {
-    margin-bottom: var(--spacing-md);
-}
-
-.form-label {
-    display: block;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-primary);
-    margin-bottom: var(--spacing-xs);
-}
-
-.form-select {
-    width: 100%;
-    padding: 8px 32px 8px 12px;
-    font-size: 14px;
-    font-family: inherit;
-    color: var(--text-primary);
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236C757D' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.form-select:hover {
-    border-color: var(--border-dark);
-}
-
-.form-select:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px var(--primary-light);
-}
-
-.form-check {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    margin-bottom: var(--spacing-sm);
-}
-
-.form-check-input {
-    width: 18px;
-    height: 18px;
-    border: 2px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    accent-color: var(--primary-color);
-}
-
-.form-check-label {
-    font-size: 13px;
-    color: var(--text-primary);
-    cursor: pointer;
-    user-select: none;
-}
+html { touch-action: none; overflow: hidden; width: 100%; height: 100%; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; text-rendering: optimizeLegibility; -webkit-text-rendering: optimizeLegibility; -moz-text-rendering: optimizeLegibility; -ms-text-rendering: optimizeLegibility; -o-text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; -moz-font-smoothing: antialiased; -ms-font-smoothing: antialiased; -o-font-smoothing: antialiased; }
+body { touch-action: none; overflow: hidden; width: 100%; height: 100%; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "PingFang SC"; font-size: 12px; text-rendering: geometricPrecision; }
+button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "PingFang SC"; }
 .center { position: absolute; margin: auto; top: 0; right: 0; bottom: 0; left: 0; user-select: none; -webkit-user-select: none; -moz-user-select: none; }
 .select { user-select: text; -webkit-user-select: text; -moz-user-select: text; }
 .open-file-dialog { display: none; }
 .transparent { width: 100%; height: 100%; background-color: #000000; display: none; opacity: 0; }
-.graph { display: flex; height: 100%; width: calc(100% - 320px); overflow: auto; outline: none; touch-action: pan-x pan-y; background: #FFFFFF; transition: background-color 0.3s ease; }
-
-/* Full width graph on welcome screen */
-.welcome .graph {
-    width: 100%;
-    background: transparent;
-}
-
-.welcome.spinner .graph {
-    width: 100%;
-    background: transparent;
-}
-
-/* Adjusted width when model is loaded */
-.default .graph {
-    width: calc(100% - 320px);
-    background: #FFFFFF;
-}
+.graph { display: flex; height: 100%; width: 100%; overflow: auto; outline: none; touch-action: pan-x pan-y; }
 .canvas { margin: auto; flex-shrink: 0; text-rendering: geometricPrecision; user-select: none; -webkit-user-select: none; -moz-user-select: none; }
-.toolbar { position: absolute; top: 12px; left: 12px; padding: 0; margin: 0; user-select: none; -webkit-user-select: none; -moz-user-select: none; display: flex; flex-direction: row; flex-wrap: nowrap; gap: 8px; align-items: flex-start; }
+.toolbar { position: absolute; top: 10px; left: 10px; padding: 0; margin: 0; user-select: none; -webkit-user-select: none; -moz-user-select: none; }
 .toolbar button:focus { outline: 0; }
-.toolbar-button { 
-    background: rgba(255, 255, 255, 0.95); 
-    border-radius: 10px; 
-    border: 1px solid rgba(0, 0, 0, 0.1); 
-    margin: 0; 
-    padding: 8px; 
-    fill: None; 
-    stroke: #495057; 
-    cursor: pointer; 
-    width: 44px; 
-    height: 44px; 
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
+.toolbar-button { background: None; border-radius: 6px; border: 0; margin: 0; padding: 0; fill: None; stroke: #777; cursor: pointer; width: 24px; height: 24px; }
+.toolbar-button { float: left; background: None; border-radius: 6px; border: 0; margin: 0; margin-right: 1px; padding: 0; fill: None; stroke: #777; cursor: pointer; width: 24px; height: 24px; }
+.toolbar-back-button { float: left; background: #777; border-top-left-radius: 6px; border-bottom-left-radius: 6px; border: 0px solid; border-color: #777; margin: 2px 0 2px 8px; padding: 0 8px 0 8px; cursor: pointer; height: 20px; color: #ffffff; font-size: 11px; line-height: 0; transition: 0.1s; }
+.toolbar-back-button:hover { background: #000000; border-color: #000000; }
+.toolbar-name-button { float: left; background: rgba(255, 255, 255, 0.95); border-top-right-radius: 6px; border-bottom-right-radius: 6px; border: 1px solid #777; color: #777; border-left: 1px; border-left-color: #ffffff; margin: 2px 0 2px 0; padding: 0 12px 0 6px; cursor: pointer; width: auto; height: 20px; font-size: 11px; line-height: 0; transition: 0.1s; }
+.toolbar-name-button:hover { color: #000000; }
+.graph-op-button-reset {
+    cursor: pointer;
+    background-color: white;
+    border: 1px solid grey;
+    border-radius: 3px;
+    color: black;
+    font-family:"Oliviar Sans Light";
+    font-size: 20px;
+    position:absolute;
+    left: 2px;
+    top: 30px;
 }
-.toolbar-button:hover {
-    background: #FFFFFF;
-    border-color: #0066CC;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 102, 204, 0.15);
+.graph-op-button-reset:active {  background: #e7e7e7; }
+.graph-op-button-download {
+    cursor: pointer;
+    background-color: white;
+    border: 1px solid grey;
+    border-radius: 3px;
+    color: black;
+    font-family:"Oliviar Sans Light";
+    font-size: 20px;
+    position:absolute;
+    left: 2px;
+    top: 65px;
 }
-.toolbar-button:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+.graph-op-button-download:active {  background: #e7e7e7; }
+.download-checkbox-shapeInference {
+    position:absolute;
+    left: 120px;
+    top: 62px;
+    width: 15px;
+    height: 15px;
 }
-.toolbar-button .icon {
-    width: 28px;
-    height: 28px;
-}
-.toolbar-back-button { float: left; background: var(--primary-color); border-top-left-radius: 8px; border-bottom-left-radius: 8px; border: 0px solid; border-color: var(--primary-color); margin: 2px 0 2px 8px; padding: 0 12px; cursor: pointer; height: 32px; color: #ffffff; font-size: 13px; line-height: 32px; transition: all 0.2s; font-weight: 500; box-shadow: var(--shadow-sm); }
-.toolbar-back-button:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); }
-.toolbar-name-button { float: left; background: rgba(255, 255, 255, 0.98); border-top-right-radius: 8px; border-bottom-right-radius: 8px; border: 1px solid var(--border-light); color: var(--text-primary); border-left: 1px; border-left-color: #ffffff; margin: 2px 0 2px 0; padding: 0 16px 0 12px; cursor: pointer; width: auto; height: 32px; font-size: 13px; line-height: 32px; transition: all 0.2s; font-weight: 500; box-shadow: var(--shadow-sm); }
-.toolbar-name-button:hover { color: var(--primary-color); border-color: var(--primary-color); transform: translateY(-1px); box-shadow: var(--shadow-md); }
-
-/* Light theme toolbar adjustments */
-body:not(.dark-theme) .toolbar-button .stroke {
-    stroke: #495057;
-}
-
-body:not(.dark-theme) .toolbar-button:hover .stroke {
-    stroke: #0066CC;
-}
-
-body:not(.dark-theme) .toolbar-button .border {
-    stroke: rgba(0, 0, 0, 0.08);
+.download-anno-shapeInference {
+    position:absolute;
+    left: 140px;
+    top: 62px;
+    font-family:"Oliviar Sans Light";
+    font-size: 10px;
+    border:none
 }
 
-/* Dark theme toolbar adjustments */
-body.dark-theme .toolbar-button {
-    background: rgba(30, 30, 30, 0.95);
-    border-color: rgba(255, 255, 255, 0.1);
+.download-checkbox-cleanUp {
+    position:absolute;
+    left: 120px;
+    top: 80px;
+    width: 15px;
+    height: 15px;
 }
-
-body.dark-theme .toolbar-button:hover {
-    background: #252525;
-    border-color: #0066CC;
-}
-
-body.dark-theme .toolbar-button .stroke {
-    stroke: #E4E4E7;
-}
-
-body.dark-theme .toolbar-button:hover .stroke {
-    stroke: #60A5FA;
-}
-
-body.dark-theme .toolbar-button .border {
-    stroke: rgba(255, 255, 255, 0.08);
-}
-/* Hide old left-side buttons - moved to right panel */
-.graph-op-button-reset,
-.graph-op-button-download,
-.graph-op-button-addNode,
-.graph-op-add-node-dropdown,
-.download-checkbox-shapeInference,
-.download-anno-shapeInference,
-.download-checkbox-cleanUp,
 .download-anno-cleanUp {
-    display: none !important;
+    position:absolute;
+    left: 140px;
+    top: 80px;
+    font-family:"Oliviar Sans Light";
+    font-size: 10px;
+    border:none
+}
+
+.graph-op-button-addNode {
+    cursor: pointer;
+    background-color: white;
+    border: 1px solid grey;
+    border-radius: 3px;
+    color: black;
+    font-family:"Oliviar Sans Light";
+    font-size: 20px;
+    position:absolute;
+    left: 2px;
+    top: 100px;
+}
+.graph-op-button-addNode:active {  background: #e7e7e7; }
+.graph-op-add-node-dropdown {
+    font-size: 15px;
+    position:absolute;
+    left: 2px;
+    top: 135px;
 }
 .graph-add-input-dropdown {
     font-size: 15px;
@@ -569,50 +130,25 @@ body.dark-theme .toolbar-button .border {
 .dialog {min-width: 544px}
 .message-box {
     border: none !important;
-    border-radius: 16px;
-    box-shadow: var(--shadow-xl);
-    padding: 2rem;
-    max-width: 480px;
-    background: var(--bg-primary);
+    border-radius: 10px;
+    box-shadow: 0 0 #0000, 0 0 #0000, 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    padding: 1.6rem;
+    max-width: 400px;
 }
-.message-box h1 {text-align: center; color: var(--text-primary); }
-.message-box div {font-size: 15px; color: var(--text-primary);}
-.message-box .footer {text-align: right; padding-top: 24px; display: flex; gap: 12px; justify-content: flex-end;}
-.message-box .footer button {
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: none;
-}
-.message-box .footer button[data-value=""] {
-    background: #E5E7EB;
-    color: #374151;
-}
-.message-box .footer button[data-value=""]:hover {
-    background: #D1D5DB;
-}
-.message-box .footer button[data-value="Confirm"] {
-    background: var(--primary-color);
-    color: white;
-}
-.message-box .footer button[data-value="Confirm"]:hover {
-    background: var(--primary-hover);
-}
+.message-box h1 {text-align: center; }
+.message-box div {font-size: 16px;}
+.message-box .footer {text-align: right; padding-top: 24px;}
 .message-box .center-item {text-align: center;}
 .dialog .text {text-align: center;}
 
 
 .message-box .title {
-    border-bottom: 2px solid var(--border-light);
-    padding: 0 0 16px 0;
+    border-bottom: 1px solid;
+    padding: 16px 0;
     font-weight: 700;
-    font-size: 18px;
-    line-height: 28px;
-    margin: 0 0 20px 0;
-    color: var(--text-light);
+    font-size: 16px;
+    line-height: 24px;
+    margin: 0;
 }
 
 .message-box .message {
@@ -637,36 +173,6 @@ body.dark-theme .toolbar-button .border {
 .message-box .content-item .input > input:not([type="checkbox"]),select {
     width: 100%;
     box-sizing: border-box;
-    padding: 10px 12px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    font-size: 14px;
-    font-family: inherit;
-    transition: all 0.2s;
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
-}
-.message-box .content-item .input > input:focus,
-.message-box .content-item .input > select:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
-}
-
-/* Light theme input fields */
-body:not(.dark-theme) .message-box .content-item .input > input:not([type="checkbox"]),
-body:not(.dark-theme) .message-box .content-item .input > select {
-    background-color: #FFFFFF;
-    color: #212529;
-    border-color: #E9ECEF;
-}
-
-/* Dark theme input fields */
-body.dark-theme .message-box .content-item .input > input:not([type="checkbox"]),
-body.dark-theme .message-box .content-item .input > select {
-    background-color: #252525;
-    color: #E4E4E7;
-    border-color: #3F3F46;
 }
 
 .message-box-disappear {
@@ -763,10 +269,10 @@ warning_msg::before {
 .icon .border { stroke: #fff; }
 .icon .stroke { stroke: #808080; }
 .icon:hover .stroke { stroke: #000000; }
-.dropdown { display: none; position: absolute; min-width: 240px; z-index: 1000; border-radius: 12px; background-color: var(--bg-primary); border: 1px solid var(--border-color); padding: 8px; margin-left: 2px; overflow: hidden; box-shadow: var(--shadow-lg); }
-.dropdown button { display: block; border: none; border-radius: 8px; background-color: transparent; color: var(--text-primary); width: 100%; text-align: left; padding: 10px 16px; white-space: nowrap; font-size: 13px; transition: all 0.2s; font-weight: 500; }
-.dropdown button:hover { color: white; background-color: var(--primary-color); transform: translateX(4px); }
-.dropdown .separator { margin: 8px 0; border-top: 1px solid var(--border-color); border-bottom: 0; }
+.dropdown { display: none; position: absolute; min-width: 225px; z-index: 1; border-radius: 4px; background-color: #f6f6f6; border: 1px solid rgba(0,0,0,.15); padding-top: 2px; padding-bottom: 2px; margin-left: 2px; overflow: hidden; }
+.dropdown button { display: block; border: none; border-radius: 0; background-color: transparent; color: black; width: 100%; text-align: left; padding: 4px 12px 5px 12px; white-space: no-wrap; font-size: 12px; }
+.dropdown button:hover { color: #ffffff; background-color: #2e6bd2; }
+.dropdown .separator { margin-top: 2px; margin-bottom: 2px; border-top: 1px; border-bottom: 0; border-style: solid; border-color: #e5e5e5; }
 .about { background-color: #ffffff; }
 .about { overflow: hidden; }
 .about .logo { background-color: #ececec; color: #242424; width: 320px; height: 170px; padding: 40px; opacity: 1.0; border-radius: 5px; border: 0.5px solid #cccccc; box-shadow: 0 0 30px #ddd; }
@@ -793,23 +299,23 @@ warning_msg::before {
 .about .graph { display: flex; opacity: 1; }
 .about .toolbar { display: block; opacity: 1; }
 .about .transparent { display: block; opacity: 0.5; }
-.welcome { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+.welcome { background-color: #ececec; color: #242424; }
 .welcome .logo { width: 582px; height: 128px; }
-.welcome .logo-text { top: -57px; width: 582px; transition: 0.3s; }
-.welcome .logo-name { top: -170px; width: 582px; transition: 0.3s; }
-.welcome .logo-icon { left: 248px; top: -18px; width: 106px; height: 106px; transition: 0.3s; }
+.welcome .logo-text { top: -57px; width: 582px; transition: 0.1s; }
+.welcome .logo-name { top: -170px; width: 582px; transition: 0.1s; }
+.welcome .logo-icon { left: 248px; top: -18px; width: 106px; height: 106px; transition: 0.1s; }
 .welcome .logo-spinner { left: 248px; top: -18px; width: 106px; height: 106px; display: none; }
-.welcome .logo-stroke { stroke: white; }
-.welcome .logo-fill { fill: white; }
-.welcome .logo-border { stroke: rgba(255, 255, 255, 0.5); }
-.welcome .logo-glyph { fill: white; }
+.welcome .logo-stroke { stroke: #444444; }
+.welcome .logo-fill { fill: #444444; }
+.welcome .logo-border { stroke: #555555; }
+.welcome .logo-glyph { fill: #444444; }
 .welcome .logo-message { display: none; }
 .welcome .logo-github { display: none; }
-.welcome button { font-size: 14px; font-weight: 600; line-height: 1.25; text-align: center; vertical-align: middle; min-width: 140px; height: 48px; border-radius: 24px; transition: all 0.3s; user-select: none; -webkit-user-select: none; -moz-user-select: none; color: white; background-color: rgba(255, 255, 255, 0.2); border: 2px solid white; backdrop-filter: blur(10px); }
-.welcome button:hover { color: #667eea; background-color: white; cursor: pointer; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); }
+.welcome button { font-size: 12px; font-weight: bold; line-height: 1.25; text-align: center; vertical-align: middle; min-width: 60px; height: 32px; border-radius: 16px; transition: 0.1s; user-select: none; -webkit-user-select: none; -moz-user-select: none; color: #444444; background-color: #ececec; border: 1px solid #444444; }
+.welcome button:hover { color: #ececec; background-color: #444444; cursor: pointer; transition: 0.2s; }
 .welcome button:focus { outline: 0; }
-.welcome .open-file-button { top: 170px; left: -170px; width: 160px; opacity: 1; }
-.welcome .github-button { top: 170px; left: 170px; width: 160px; opacity: 1; }
+.welcome .open-file-button { top: 170px; left: -150px; width: 125px; opacity: 1; }
+.welcome .github-button { top: 170px; left: 150px; width: 125px; opacity: 1; }
 .welcome .consent-accept-button { top: 220px; left: 0px; width: 125px; display: none; opacity: 0; }
 .welcome .consent-message { top: 120px; left: 0px; font-size: 13px; text-align: center; line-height: 20px; color: #444444; display: none; opacity: 0; }
 .welcome .graph { display: none; opacity: 0; }
@@ -878,8 +384,7 @@ warning_msg::before {
 .about.desktop .logo { width: 320px; padding: 40px; }
 }
 @media only screen and (max-device-width: 1024px) {
-.toolbar-button { width: 52px; height: 52px; }
-.toolbar-button .icon { width: 32px; height: 32px; }
+.toolbar-button { width: 32px; height: 32px; }
 .toolbar-back-button { margin-top: 6px; margin-bottom: 6px; }
 .toolbar-name-button { margin-top: 6px; margin-bottom: 6px; }
 }
@@ -927,47 +432,15 @@ warning_msg::before {
         </svg>
     </button>
 
-    <!-- Theme Toggle in Toolbar -->
-    <button class="toolbar-button toolbar-theme-toggle" id="theme-toggle-btn" title="Toggle Theme">
-        <svg class="icon theme-icon-light" viewbox="0 0 100 100">
-            <circle class="border" cx="50" cy="50" r="20" stroke-width="8" stroke="#fff" fill="none"></circle>
-            <line class="border" x1="50" y1="10" x2="50" y2="20" stroke-width="6" stroke-linecap="round" stroke="#fff"></line>
-            <line class="border" x1="50" y1="80" x2="50" y2="90" stroke-width="6" stroke-linecap="round" stroke="#fff"></line>
-            <line class="border" x1="10" y1="50" x2="20" y2="50" stroke-width="6" stroke-linecap="round" stroke="#fff"></line>
-            <line class="border" x1="80" y1="50" x2="90" y2="50" stroke-width="6" stroke-linecap="round" stroke="#fff"></line>
-            <circle class="stroke" cx="50" cy="50" r="20" stroke-width="4" fill="none"></circle>
-            <line class="stroke" x1="50" y1="10" x2="50" y2="20" stroke-width="3" stroke-linecap="round"></line>
-            <line class="stroke" x1="50" y1="80" x2="50" y2="90" stroke-width="3" stroke-linecap="round"></line>
-            <line class="stroke" x1="10" y1="50" x2="20" y2="50" stroke-width="3" stroke-linecap="round"></line>
-            <line class="stroke" x1="80" y1="50" x2="90" y2="50" stroke-width="3" stroke-linecap="round"></line>
-        </svg>
-        <svg class="icon theme-icon-dark" viewbox="0 0 100 100" style="display: none;">
-            <path class="border" d="M 50 20 A 30 30 0 1 0 50 80 A 20 20 0 1 1 50 20" stroke-width="8" stroke="#fff" fill="none"></path>
-            <path class="stroke" d="M 50 20 A 30 30 0 1 0 50 80 A 20 20 0 1 1 50 20" stroke-width="4" fill="none"></path>
-        </svg>
-    </button>
-
-    <button id="reset-graph" class="toolbar-button" title="Reset Graph">
-        <svg class="icon" viewbox="0 0 100 100">
-            <circle class="border" cx="50" cy="50" r="35" stroke-width="8" stroke="#fff" fill="none"></circle>
-            <path class="border" d="M 50 20 L 50 35 M 50 20 L 40 30" stroke-width="8" stroke-linecap="round" stroke="#fff"></path>
-            <circle class="stroke" cx="50" cy="50" r="35" stroke-width="4" fill="none"></circle>
-            <path class="stroke" d="M 50 20 L 50 35 M 50 20 L 40 30" stroke-width="4" stroke-linecap="round"></path>
-        </svg>
-    </button>
-
-    <button id="download-graph" class="toolbar-button" title="Download Model">
-        <svg class="icon" viewbox="0 0 100 100">
-            <path class="border" d="M 50 20 L 50 60" stroke-width="8" stroke-linecap="round" stroke="#fff"></path>
-            <path class="border" d="M 50 60 L 35 45 M 50 60 L 65 45" stroke-width="8" stroke-linecap="round" stroke="#fff"></path>
-            <path class="border" d="M 25 70 L 25 80 L 75 80 L 75 70" stroke-width="8" stroke-linecap="round" stroke="#fff" fill="none"></path>
-            <path class="stroke" d="M 50 20 L 50 60" stroke-width="4" stroke-linecap="round"></path>
-            <path class="stroke" d="M 50 60 L 35 45 M 50 60 L 65 45" stroke-width="4" stroke-linecap="round"></path>
-            <path class="stroke" d="M 25 70 L 25 80 L 75 80 L 75 70" stroke-width="4" stroke-linecap="round" fill="none"></path>
-        </svg>
-    </button>
-
-    <div style="flex: 1;"></div>
+    <button id="reset-graph" class="graph-op-button-reset">Reset</button>
+    <button id="download-graph" class="graph-op-button-download">Download</button>
+    <input type="checkbox" id="shapeInference" class="download-checkbox-shapeInference"/>
+    <input type="text" value="shape inference" class="download-anno-shapeInference" readonly/> </td>
+    <input type="checkbox" id="cleanUp" class="download-checkbox-cleanUp"/>
+    <input type="text" value="clean up" class="download-anno-cleanUp" readonly/> </td>
+    <button id="add-node" class="graph-op-button-addNode">Add node</button>
+    <select id="add-node-dropdown" class="graph-op-add-node-dropdown">
+    </select>
 
     <button id="back-button" class="toolbar-back-button" title="Back">
         &#x276E;
@@ -976,8 +449,6 @@ warning_msg::before {
     </button>
     <div id="menu-dropdown" class="dropdown"></div>
 </div>
-
-<!-- Control Panel Removed - Functions moved to toolbar -->
 <div id="transparent" class="transparent"></div>
 <div class="center logo">
     <a href="https://github.com/ZhangGe6/onnx-modifier" target="blank_">
