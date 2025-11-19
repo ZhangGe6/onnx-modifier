@@ -213,19 +213,16 @@ host.BrowserHost = class {
             this._view.modifier.resetGraph();
         })
 
-        // Shape Inference and Clean Up checkboxes removed from UI
-        const downloadWithShapeInfCheckBox = this.document.getElementById('shapeInference');
-        if (downloadWithShapeInfCheckBox) {
-            downloadWithShapeInfCheckBox.addEventListener('click', () => {
-                this._view.modifier.onOffShapeInf(downloadWithShapeInfCheckBox.checked);
-            })
-        }
-        const downloadWithCleanUp = this.document.getElementById('cleanUp');
-        if (downloadWithCleanUp) {
-            downloadWithCleanUp.addEventListener('click', () => {
-                this._view.modifier.onOffCleanUp(downloadWithCleanUp.checked);
-            })
-        }
+        // Checkboxes are now dynamically created in the sidebar when a node is clicked
+        // Event delegation to handle dynamically created checkboxes
+        this.document.addEventListener('click', (e) => {
+            if (e.target && e.target.id === 'shapeInference') {
+                this._view.modifier.onOffShapeInf(e.target.checked);
+            }
+            if (e.target && e.target.id === 'cleanUp') {
+                this._view.modifier.onOffCleanUp(e.target.checked);
+            }
+        })
 
         const downloadButton = this.document.getElementById('download-graph');
         downloadButton.addEventListener('click', () => {
@@ -282,18 +279,24 @@ host.BrowserHost = class {
         //         }
         //     })
 		// });
-        // Add Node button removed from UI
-        const addNodeButton = this.document.getElementById('add-node');
-        if (addNodeButton) {
-            addNodeButton.addEventListener('click', () => {
+        // Add Node button is now dynamically created in the sidebar
+        // Event delegation to handle dynamically created button
+        this.document.addEventListener('click', (e) => {
+            if (e.target && e.target.id === 'add-node') {
                 var addNodeDropDown = this.document.getElementById('add-node-dropdown');
-                var selected_val = addNodeDropDown.options[addNodeDropDown.selectedIndex].value
-                var add_op_domain = selected_val.split(':')[0]
-                var add_op_type = selected_val.split(':')[1]
-                this._view.modifier.addNode(add_op_domain, add_op_type);
-                this._view._updateGraph();
-            })
-        }
+                if (addNodeDropDown && addNodeDropDown.selectedIndex >= 0) {
+                    var selected_val = addNodeDropDown.options[addNodeDropDown.selectedIndex].value
+                    if (selected_val && selected_val !== '') {
+                        var add_op_domain = selected_val.split(':')[0]
+                        var add_op_type = selected_val.split(':')[1]
+                        this._view.modifier.addNode(add_op_domain, add_op_type);
+                        this._view._updateGraph();
+                    } else {
+                        alert('Please select a node type from the dropdown first.');
+                    }
+                }
+            }
+        })
 
         this.document.getElementById('version').innerText = this.version;
 

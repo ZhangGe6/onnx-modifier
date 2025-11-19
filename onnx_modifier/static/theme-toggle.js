@@ -27,8 +27,17 @@
     
     function initThemeToggle() {
         const toggleBtn = document.getElementById('theme-toggle-btn');
+        const toggleBtnPanel = document.getElementById('theme-toggle-btn-panel');
+        
         if (toggleBtn) {
             toggleBtn.addEventListener('click', function() {
+                toggleTheme();
+                updateThemeIcon();
+            });
+        }
+        
+        if (toggleBtnPanel) {
+            toggleBtnPanel.addEventListener('click', function() {
                 toggleTheme();
                 updateThemeIcon();
             });

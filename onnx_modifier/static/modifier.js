@@ -47,14 +47,29 @@ modifier.Modifier = class {
     // TODO: add filter feature like here: https://www.w3schools.com/howto/howto_js_dropdown.asp
     updateAddNodeDropDown() {
         // update dropdown supported node lost
-        var addNodeDropdown = this.view._host.document.getElementById('add-node-dropdown');
-        if (addNodeDropdown) {
-            for (const node of this.model.supported_nodes) {
-                // node: [domain, op]
-                var option = new Option(node[1], node[0] + ':' + node[1]);
-                // console.log(option)
-                addNodeDropdown.appendChild(option);
+        // Dropdown is now created dynamically in sidebar, so we need to wait for it
+        const checkAndPopulate = () => {
+            var addNodeDropdown = this.view._host.document.getElementById('add-node-dropdown');
+            if (addNodeDropdown && addNodeDropdown.options.length <= 1) {
+                for (const node of this.model.supported_nodes) {
+                    // node: [domain, op]
+                    var option = new Option(node[1], node[0] + ':' + node[1]);
+                    addNodeDropdown.appendChild(option);
+                }
             }
+        };
+        
+        // Try immediately
+        checkAndPopulate();
+        
+        // Also set up a mutation observer to populate when sidebar is opened
+        const observer = new MutationObserver(() => {
+            checkAndPopulate();
+        });
+        
+        const sidebarContent = this.view._host.document.getElementById('sidebar-content');
+        if (sidebarContent) {
+            observer.observe(sidebarContent, { childList: true, subtree: true });
         }
     }
 
