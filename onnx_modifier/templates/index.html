@@ -124,6 +124,20 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
     left: 2px;
     top: 135px;
 }
+.load-model-text {
+    font-size: 15px;
+    position: absolute;
+    border: none;
+    left: 2px;
+    top: 180px;
+    font-family:"Oliviar Sans Light";
+}
+.op-load-model-dropdown {
+    font-size: 15px;
+    position:absolute;
+    left: 2px;
+    top: 210px;
+}
 .graph-add-input-dropdown {
     font-size: 15px;
 }
@@ -391,6 +405,9 @@ warning_msg::before {
 </style>
 </head>
 <body class="welcome spinner">
+<div id="loading" class="loading-overlay">
+    <div class="loading-spinner"></div>
+</div>
 <div id="graph" class="graph" tabindex="0">
     <svg id="canvas" class="canvas" preserveaspectratio="xMidYMid meet" width="100%" height="100%"></svg>
 </div>
@@ -440,6 +457,9 @@ warning_msg::before {
     <input type="text" value="clean up" class="download-anno-cleanUp" readonly/> </td>
     <button id="add-node" class="graph-op-button-addNode">Add node</button>
     <select id="add-node-dropdown" class="graph-op-add-node-dropdown">
+    </select>
+	<input id="load-model"  style="text" class="load-model-text" value="load model mode:" readonly/>
+    <select id="load-model-dropdown" class="op-load-model-dropdown">
     </select>
 
     <button id="back-button" class="toolbar-back-button" title="Back">

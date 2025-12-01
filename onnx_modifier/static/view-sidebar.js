@@ -224,6 +224,8 @@ sidebar.NodeSidebar = class {
 
 
         this._addHeader('Model Input Output editing helper');
+        this._addButton('Duplicate Node');
+        this.add_span();
         this._addButton('Add Output');
         this.add_span();
         this._addButton('Add Input');
@@ -326,6 +328,12 @@ sidebar.NodeSidebar = class {
         if (title === 'Add Output') {
             buttonElement.addEventListener('click', () => {
                 this._host._view.modifier.addModelOutput(this._modelNodeName);
+            });
+        }
+        if (title === 'Duplicate Node') {
+            buttonElement.addEventListener('click', () => {
+                var time_now = Date.parse(new Date())/1000;
+                this._host._view.modifier.duplicateNode(this._modelNodeName, time_now);
             });
         }
         if (title === 'Add Input') {
@@ -965,6 +973,61 @@ sidebar.ArgumentView = class {
         return this._renameAuxelements;
     }
 
+    // just move numpy dataloader commands to a single funtion
+    add_np_dataloader(inputInitializerVal, inputInitializerType)
+    {
+        const editInitializerNumpyVal = this._host.document.createElement('div');
+        editInitializerNumpyVal.className = 'sidebar-view-item-value-line-border';
+        editInitializerNumpyVal.innerHTML = 'Or import from a *.npy file:';
+        this._element.appendChild(editInitializerNumpyVal);
+
+        const openFileButton_ = this._host.document.createElement('button');
+        openFileButton_.setAttribute("display", "none");
+        openFileButton_.innerHTML = "Open *.npy"
+        const openFileDialog_ = this._host.document.createElement('input');
+        openFileDialog_.setAttribute("type", "file");
+
+        openFileButton_.addEventListener('click', () => {
+            openFileDialog_.value = '';
+            openFileDialog_.click();
+        });
+        var orig_arg_name = this._host._view.modifier.getOriginalName(this._param_type, this._modelNodeName, this._param_index, this._arg_index);
+        openFileDialog_.addEventListener('change', (e) => {
+            if (e.target && e.target.files && e.target.files.length > 0) {
+                var reader = new FileReader();
+                var context = this;
+                reader.onload = function() {
+                    var npLoader = new npyjs.Npyjs();
+                    npLoader.load(reader.result, (out) => {
+                        // `array` is a one-dimensional array of the raw data
+                        // `shape` is a one-dimensional array that holds a numpy-style shape.
+                        // console.log(
+                        //     `You loaded an array with ${out.shape} \nelements: ${out.data}.`
+                        // );
+                        var fmt_tensor = npLoader.format_np(out.data, out.shape);
+                        var dataType =  context._argument.type?context._argument.type._dataType:`${out.dtype}[${out.shape.toString()}]`
+                        context._host._view.modifier.changeInitializer(context._modelNodeName, context._parameterName, context._param_type, context._param_index,
+                                                                       context._arg_index, dataType, fmt_tensor);
+                        // [type, value]
+                        
+                        var initializerEditInfo = context._host._view.modifier.initializerEditInfo.get(orig_arg_name)
+                        if (initializerEditInfo) {
+                            // [type, value]
+                            inputInitializerVal.innerHTML = initializerEditInfo[1];
+                            if(inputInitializerType) {
+                                inputInitializerType.innerHTML = initializerEditInfo[0];
+                            }
+                            inputInitializerVal.setAttribute("tab-size", '10px');
+                        }
+                        
+                    });
+                };
+                reader.readAsArrayBuffer(e.target.files[0]);
+            }
+        });
+        this._element.appendChild(openFileButton_);
+    }
+
     toggle() {
         if (this._expander) {
             if (this._expander.innerText == '+') {
@@ -1022,7 +1085,7 @@ sidebar.ArgumentView = class {
                     this._element.appendChild(location);
                 }
 
-                if (initializer) {
+                if (initializer && !this._argument.is_custom_added) {
                     const editInitializerVal = this._host.document.createElement('div');
                     editInitializerVal.className = 'sidebar-view-item-value-line-border';
                     editInitializerVal.innerHTML = 'This is an initializer, you can input a new value for it here:';
@@ -1046,46 +1109,7 @@ sidebar.ArgumentView = class {
                     });
                     this._element.appendChild(inputInitializerVal);
 
-                    const editInitializerNumpyVal = this._host.document.createElement('div');
-                    editInitializerNumpyVal.className = 'sidebar-view-item-value-line-border';
-                    editInitializerNumpyVal.innerHTML = 'Or import from a *.npy file:';
-                    this._element.appendChild(editInitializerNumpyVal);
-
-                    const openFileButton_ = this._host.document.createElement('button');
-                    openFileButton_.setAttribute("display", "none");
-                    openFileButton_.innerHTML = "Open *.npy"
-                    const openFileDialog_ = this._host.document.createElement('input');
-                    openFileDialog_.setAttribute("type", "file");
-
-                    openFileButton_.addEventListener('click', () => {
-                        openFileDialog_.value = '';
-                        openFileDialog_.click();
-                    });
-
-                    openFileDialog_.addEventListener('change', (e) => {
-                        if (e.target && e.target.files && e.target.files.length > 0) {
-                            var reader = new FileReader();
-                            var context = this;
-                            reader.onload = function() {
-                                var npLoader = new npyjs.Npyjs();
-                                npLoader.load(reader.result, (out) => {
-                                    // `array` is a one-dimensional array of the raw data
-                                    // `shape` is a one-dimensional array that holds a numpy-style shape.
-                                    // console.log(
-                                    //     `You loaded an array with ${out.shape} \nelements: ${out.data}.`
-                                    // );
-                                    var fmt_tensor = npLoader.format_np(out.data, out.shape);
-                                    context._host._view.modifier.changeInitializer(context._modelNodeName, context._parameterName, context._param_type, context._param_index,
-                                                                                   context._arg_index, context._argument.type._dataType, fmt_tensor);
-                                    // [type, value]
-                                    inputInitializerVal.innerHTML = context._host._view.modifier.initializerEditInfo.get(orig_arg_name)[1];
-                                    inputInitializerVal.setAttribute("tab-size", '10px');
-                                });
-                            };
-                            reader.readAsArrayBuffer(e.target.files[0]);
-                        }
-                    });
-                    this._element.appendChild(openFileButton_);
+                    this.add_np_dataloader(inputInitializerVal, orig_arg_name)
                     // this._element.appendChild(openFileDialog_);
                 }
 
@@ -1142,6 +1166,8 @@ sidebar.ArgumentView = class {
                             this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, init_type, init_val);
                     });
                     this._element.appendChild(inputInitializerType);
+
+                    this.add_np_dataloader(inputInitializerVal, inputInitializerType);
                     // <====== input type ======
                 }
 

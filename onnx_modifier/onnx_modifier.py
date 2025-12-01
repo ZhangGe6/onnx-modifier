@@ -3,6 +3,7 @@
 # https://github.com/saurabh-shandilya/onnx-utils
 # https://stackoverflow.com/questions/52402448/how-to-read-individual-layers-weight-bias-values-from-onnx-model
 
+from io import BytesIO
 import os
 import copy
 import struct
@@ -39,13 +40,87 @@ class onnxModifier:
         return cls(name, model_proto)
 
     @classmethod
-    def from_name_protobuf_stream(cls, name, stream):
+    def from_name_protobuf_stream(cls, name, stream, prefix = ""):
         # https://leimao.github.io/blog/ONNX-IO-Stream/
         logging.info("loading model...")
         stream.seek(0)
         model_proto = onnx.load_model(stream, "protobuf", load_external_data=False)
+        model_proto = onnx.compose.add_prefix(model_proto, prefix=prefix)
         logging.info("load done!")
         return cls(name, model_proto)
+    
+    @classmethod
+    def merge(cls, name1, stream1, name2, stream2, prefix1, prefix2):
+        stream1.seek(0)
+        model_proto1 = onnx.load_model(stream1, "protobuf", load_external_data=False)
+        model_proto1 = onnx.compose.add_prefix(model_proto1, prefix=prefix1)
+        
+        stream2.seek(0)
+        model_proto2 = onnx.load_model(stream2, "protobuf", load_external_data=False)
+        model_proto2 = onnx.compose.add_prefix(model_proto2, prefix=prefix2)
+        
+        model_proto1.graph.input.extend(model_proto2.graph.input)
+        model_proto1.graph.node.extend(model_proto2.graph.node)
+        model_proto1.graph.initializer.extend(model_proto2.graph.initializer)
+        model_proto1.graph.output.extend(model_proto2.graph.output)
+        
+        merged_name = name1.split('.')[0] + "_" + name2.split('.')[0] + ".onnx"
+        byte_stream = BytesIO()
+        onnx.save_model(model_proto1, byte_stream)
+        byte_stream.seek(0)
+        return cls(merged_name, model_proto1), byte_stream, merged_name
+
+
+    def find_next_node_by_input(self, model, input_name):
+        first_node = None
+        for node in model.graph.node:
+            if input_name in node.input:
+                first_node = node
+                break
+        return first_node
+
+    def find_previous_node_by_output(self, model, output_name):
+        last_node = None
+        for node in model.graph.node:
+            if output_name in node.output:
+                last_node = node
+        return last_node
+    
+    def append(self, name, stream, prefix, method = 1):
+        
+        stream.seek(0)
+        model_proto2 = onnx.load_model(stream, "protobuf", load_external_data=False)
+        model_proto2 = onnx.compose.add_prefix(model_proto2, prefix=prefix)
+        
+        model_proto1 = self.model_proto
+        if method == 1:
+            model1_last_node = self.find_previous_node_by_output(model_proto1, model_proto1.graph.output[-1].name)
+            model2_first_node = self.find_next_node_by_input(model_proto2, model_proto2.graph.input[0].name)
+        
+            model1_last_node_output_name = model1_last_node.output[0]
+            model2_first_node_input_name = model2_first_node.input[0]
+        
+            model2_first_node.input.remove(model2_first_node_input_name)
+            model2_first_node.input.insert(0, model1_last_node_output_name)
+            
+            del model_proto1.graph.output[-1]
+            
+            if not self.find_next_node_by_input(model_proto2, model_proto2.graph.input[0].name):
+                del model_proto2.graph.input[0]  
+
+        model_proto1.graph.input.extend(model_proto2.graph.input)
+        model_proto1.graph.node.extend(model_proto2.graph.node)
+        model_proto1.graph.initializer.extend(model_proto2.graph.initializer)
+        model_proto1.graph.output.extend(model_proto2.graph.output)
+        
+        merged_name = self.model_name.split('.')[0] + "_" + name.split('.')[0] + ".onnx"
+        
+        onnx_mdf = onnxModifier(merged_name, model_proto1)      
+        byte_stream = BytesIO()
+        onnx.save_model(onnx_mdf.model_proto, byte_stream)
+        byte_stream.seek(0)
+        
+        return onnx_mdf, byte_stream, merged_name
 
     def reload(self):
         self.model_proto = copy.deepcopy(self.model_proto_backup)
@@ -460,6 +535,7 @@ class onnxModifier:
         logging.debug("=== modify_info ===\n", modify_info)
 
         self.add_nodes(modify_info['added_node_info'], modify_info['node_states'])
+        self.change_initializer(modify_info['added_tensor'])
         self.change_initializer(modify_info['changed_initializer'])
         self.change_node_io_name(modify_info['node_renamed_io'])
         self.edit_inputs(modify_info['added_inputs'], modify_info['rebatch_info'])

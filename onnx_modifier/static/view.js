@@ -26,6 +26,11 @@ view.View = class {
             direction: 'vertical',
             mousewheel: 'scroll'
         };
+
+        this.isAltKeyDown = false;
+        this.selectedFisrtNodeName = null;
+        this.selectedSecondNodeName = null;
+
         this.lastScrollLeft = 0;
         this.lastScrollTop = 0;
         this._zoom = 1;
@@ -59,6 +64,42 @@ view.View = class {
             container.addEventListener('scroll', (e) => this._scrollHandler(e));
             container.addEventListener('wheel', (e) => this._wheelHandler(e), { passive: false });
             container.addEventListener('mousedown', (e) => this._mouseDownHandler(e));
+
+            // for select nodes
+
+            container.addEventListener('keydown', (e) => {
+                
+                if (e.key === 'Alt' && !this.isAltKeyDown) {
+                    this.isAltKeyDown = true;
+                }
+            });
+            container.addEventListener('keyup', (e) => {
+                
+                if (e.key === 'Alt' && this.isAltKeyDown) {
+                    this.isAltKeyDown = false;
+                    this.selectedFisrtNodeName = null;
+                    this.selectedSecondNodeName = null;
+                    this._graph.removeHighlight();
+                }
+                if (this.isAltKeyDown && e.key.toLowerCase() === 'j') {
+                    if(this.isAltKeyDown && this.selectedFisrtNodeName) {
+                        var time_now = Date.parse(new Date()) / 1000;
+                        var sets = this._graph.getAllPathNodeNames(this.selectedFisrtNodeName, this.selectedSecondNodeName);
+                        for (const name of sets) {
+                            this.modifier.duplicateNode(name, time_now);
+                        }
+                    }
+                } else if (this.isAltKeyDown && e.key.toLowerCase() === 'l') {
+                
+                    if(this.isAltKeyDown && this.selectedFisrtNodeName) {
+                        var sets = this._graph.getAllPathNodeNames(this.selectedFisrtNodeName, this.selectedSecondNodeName);
+                        for (const name of sets) {
+                            this._host._view.modifier.deleteSingleNode(name);
+                        }
+                    }
+                }
+            });
+                
             switch (this._host.agent) {
                 case 'safari':
                     container.addEventListener('gesturestart', (e) => this._gestureStartHandler(e), false);
@@ -74,7 +115,36 @@ view.View = class {
         });
     }
 
+    highlight(node, input, modelNodeName) {
+        if (node) {
+            if(this.isAltKeyDown) {
+                if(this.selectedFisrtNodeName)
+                {
+                    this.selectedSecondNodeName = modelNodeName;
+                    var sets = this._graph.getAllPathNodeNames(this.selectedFisrtNodeName, this.selectedSecondNodeName);
+                    this._graph.setHighlight(sets.add(this.selectedFisrtNodeName))
+                } else {
+                    this.selectedFisrtNodeName = modelNodeName;
+                    this.selectedSecondNodeName = modelNodeName;
+                    var sets = new Set([this.selectedFisrtNodeName]);
+                    this._graph.setHighlight(sets);
+                }
+            }
+           
+        }
+        
+    }
+
+    showLoading() {
+        this._host.document.getElementById('loading').style.display = 'flex';
+    }
+      
+    hideLoading() {
+        this._host.document.getElementById('loading').style.display = 'none';
+    }
+
     show(page) {
+        this.hideLoading();
         if (!page) {
             page = (!this._model && !this.activeGraph) ? 'welcome' : 'default';
         }
@@ -779,7 +849,7 @@ view.View = class {
     }
 
     showNodeProperties(node, input, modelNodeName) {
-        if (node) {
+        if (node && !this.isAltKeyDown) {
             try {
                 // console.log(node)   // 注意是onnx.Node, 不是grapher.Node，所以没有update()， 没有element元素
                 const nodeSidebar = new sidebar.NodeSidebar(this._host, node, modelNodeName);
@@ -1077,6 +1147,7 @@ view.Node = class extends grapher.Node {
         const tooltip = this.context.view.options.names && (node.name || node.location) ? type.name : (node.name || node.location);
         const title = header.add(null, styles, content, tooltip);
         title.on('click', () => this.context.view.showNodeProperties(node, null, this.modelNodeName));
+        title.on('click', () => this.context.view.highlight(node, null, this.modelNodeName));
         if (node.type.nodes && node.type.nodes.length > 0) {
             const definition = header.add(null, styles, '\u0192', 'Show Function Definition');
             definition.on('click', () => this.context.view.pushGraph(node.type));
@@ -1112,6 +1183,7 @@ view.Node = class extends grapher.Node {
         if (initializers.length > 0 || hiddenInitializers || sortedAttributes.length > 0) {
             const list = this.list();
             list.on('click', () => this.context.view.showNodeProperties(node, null, this.modelNodeName));
+            list.on('click', () => this.context.view.highlight(node, null, this.modelNodeName));
             for (const initializer of initializers) {
                 const argument = initializer.arguments[0];
                 const type = argument.type;
