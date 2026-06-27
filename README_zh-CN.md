@@ -28,29 +28,36 @@
 `onnx-modifier`基于流行的模型可视化工具 [Netron](https://github.com/lutzroeder/netron) 和轻量级Web应用框架 [Flask](https://github.com/pallets/flask) 开发。希望它能给社区带来一些贡献~
 
 # 安装与运行
-目前支持两种方法运行`onnx-modifier`：
+目前支持三种方法运行`onnx-modifier`：
+
+## 安装预编译的wheel包启动
+安装预编译的wheel包：
+```bash
+pip install onnx-modifier
+```
+执行
+```bash
+onnx-modifier
+```
 
 ## 源码+命令行启动
 
-- 拉取`onnx-modifier`，安装所需要的Python库
+拉取`onnx-modifier`源码，安装所需要的依赖库
+```bash
+git clone https://github.com/ZhangGe6/onnx-modifier.git
+cd onnx-modifier
 
-  ```bash
-  git clone https://github.com/ZhangGe6/onnx-modifier.git
-  cd onnx-modifier
+pip install -r requirements.txt
+```
 
-  pip install -r requirements.txt
-  ```
-
-- 运行
-
-  ```bash
-  python app.py
-  ```
+运行
+```bash
+python entry.py
+```
 
 ## 从可执行文件启动
 - Windows: 下载可执行文件onnx-modifier.exe (28.3MB) [Google Drive](https://drive.google.com/file/d/1LRXgZauQ5BUENe_PvilRW8WvSO-4Jr9j/view?usp=sharing) / [Baidu NetDisk](https://pan.baidu.com/s/1ZUWP615F9EcsHQLijCCmQA?pwd=vh32)，双击即可启动。
   - 默认使用Edge浏览器作为运行环境。
-> 生成可执行文件的步骤记录在`app_desktop.py`文件中。未来会为其他平台生成可执行文件。
 
 点击输出中的url（默认为`http://127.0.0.1:5000/`），即可在浏览器中进入onnx-modifier界面。点击`Open Model...`，上传所需要编辑的模型文件，上传完毕后，网络可视化结构会自动显示。
 

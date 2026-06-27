@@ -1,14 +1,11 @@
-FROM python:3.8
-ENV DEBIAN_FRONTEND=noninteractive
+FROM swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/python:3.9-slim
 
-RUN apt-get clean && apt-get update -y && apt-get upgrade -y && pip install --upgrade pip
+WORKDIR /app
 
-RUN pip3 install -U onnx flask onnx_tool
+COPY . /app
 
-COPY ./static /static
-COPY ./templates /templates
-COPY ./utils /utils
-COPY ./*.py /
-RUN chmod +x /app.py
+RUN echo "pip install "
 
-CMD ["/bin/bash", "-c", "python3 app.py --host='0.0.0.0' --debug=True"]
+RUN pip install --no-cache-dir -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple --progress-bar off
+
+CMD ["python", "entry.py", "--host", "0.0.0.0", "--port", "5000"]

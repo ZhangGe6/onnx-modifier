@@ -226,59 +226,26 @@ host.BrowserHost = class {
 
         const downloadButton = this.document.getElementById('download-graph');
         downloadButton.addEventListener('click', () => {
-            // console.log(this._view._graph._renameMap)
-            // // https://healeycodes.com/talking-between-languages
             fetch('/download', {
-                // Declare what type of data we're sending
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                // Specify the method
+                headers: { 'Content-Type': 'application/json' },
                 method: 'POST',
                 body: this._buildModificationInfo()
-            }).then((response) => {
-                // https://devpress.csdn.net/python/62f517797e66823466189f02.html
-                if (response.status == '200') {
-                    response.text().then(data => {
-                        if (data != "NULL" && data != "NULLPATH") {
-                            swal("Success!", "Modified model has been successfuly saved in:\n" + data, "success");
+            }).then(response => {
+                if (response.ok) {
+                    response.text().then(fileName => {
+                        if (fileName && fileName !== "NULL") {
+                            window.location.href = `/download?name=${encodeURIComponent(fileName)}`;
+                            swal("Success!", "Downloading: " + fileName, "success");
+                        } else {
+                            swal("Error", "Model generation failed", "error");
                         }
-                        else if (data == "NULL") {
-                            swal("Some error happens!", "You are kindly to check the python cmdline print ", "error");
-                        }
-                        //skip data == "NULLPATH" (may caused by cancellation of save operation)
-                    })
+                    });
                 } else {
-                    swal("Error happens!", "Please check the log and create an issue on https://github.com/ZhangGe6/onnx-modifier", "error");
+                    swal("Error", "Server error", "error");
                 }
-            })
+            });
         });
-		// const saveJsonButton = this.document.getElementById('save-json');
-        // saveJsonButton.addEventListener('click', () => {
-		// 	fetch('/jsondownload', {
-        //         // Declare what type of data we're sending
-        //         headers: {
-        //           'Content-Type': 'application/json'
-        //         },
-        //         // Specify the method
-        //         method: 'POST',
-        //         body: this._buildModificationInfo()
-        //     }).then((response) => {
-        //         // https://devpress.csdn.net/python/62f517797e66823466189f02.html
-        //         if (response.status == '200') {
-        //             response.text().then(data => {
-        //                 if (data != "NULL" && data != "NULLPATH") {
-        //                     swal("Success!", "model json has been successfuly saved in:\n" + data, "success");
-        //                 }
-        //                 else if (data == "NULL") {
-        //                     swal("Some error happens!", "You are kindly to check the python cmdline print ", "error");
-        //                 }
-        //             })
-        //         } else {
-        //             swal("Error happens!", "You are kindly to check the log ", "error");
-        //         }
-        //     })
-		// });
+
         const addNodeButton = this.document.getElementById('add-node');
         addNodeButton.addEventListener('click', () => {
             // this._view._graph.resetGraph();

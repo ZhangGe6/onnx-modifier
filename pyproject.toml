@@ -1,0 +1,25 @@
+[project]
+name = "onnx-modifier"
+version = "1.0.0"
+description = "A tool to modify ONNX models in a visualization fashion, based on Netron and Flask."
+readme = "README_pypi.md"
+authors = [
+  { name="Zhang Ge", email="sjtu.zg123@gmail.com" },
+]
+
+dependencies = [
+    "onnx==1.13.0",
+    "flask==2.2.5",
+    "onnx-tool==0.8.1"
+]
+
+[build-system]
+requires = ["flit_core<4"]
+build-backend = "flit_core.buildapi"
+
+[project.scripts]
+onnx-modifier = "onnx_modifier.flask_server:launch_flask_server"
+
+[project.urls]
+Homepage = "https://github.com/ZhangGe6/onnx-modifier"
+Issues = "https://github.com/ZhangGe6/onnx-modifier/issues"
